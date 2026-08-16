@@ -1,14 +1,23 @@
 import { config, fields, collection, singleton } from "@keystatic/core";
 
-const isDev = process.env.NODE_ENV === "development";
-
-export default config({
-  storage: isDev
-    ? { kind: "local" }
-    : {
+/**
+ * GitHub storage everywhere, so /keystatic behaves the same locally and live.
+ * Running `pnpm dev` with no credentials shows Keystatic's setup wizard, which
+ * creates the GitHub app and writes the KEYSTATIC_* values into .env.
+ *
+ * `KEYSTATIC_STORAGE=local pnpm dev` edits the files on disk directly instead,
+ * with no GitHub account involved.
+ */
+const storage =
+  process.env.KEYSTATIC_STORAGE === "local"
+    ? ({ kind: "local" } as const)
+    : ({
         kind: "github",
         repo: { owner: "mattmatt-mm", name: "Matt-Matt-Design" },
-      },
+      } as const);
+
+export default config({
+  storage,
 
   ui: {
     brand: { name: "mattmattdesign" },

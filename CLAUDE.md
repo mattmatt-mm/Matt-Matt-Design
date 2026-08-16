@@ -140,7 +140,9 @@ Do not merge steps 3 and 4.
 
 **Never run `pnpm build` while `pnpm dev` is running.** They share `.next`, and the build wipes it out from under the dev server, producing a cascade of bogus `Cannot find module './NNN.js'` errors. Stop the dev server, build, then restart.
 
-A local production build needs the three `KEYSTATIC_*` vars set to anything non-empty, or `/api/keystatic` fails to collect page data. See `.env.example`.
+The build succeeds without the `KEYSTATIC_*` vars — `app/api/keystatic/[...params]/route.ts` builds its handler on first request precisely so that missing CMS credentials cannot fail the public site's build. Do not move that construction back to module scope.
+
+Storage is GitHub in every environment. `pnpm dev` with no credentials serves the setup wizard at `/keystatic/setup`, which creates the GitHub app and writes `.env`. `KEYSTATIC_STORAGE=local pnpm dev` edits files on disk with no GitHub account involved.
 
 ---
 
