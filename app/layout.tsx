@@ -26,7 +26,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={geistPixel.variable}>
-      <body>{children}</body>
+      {/* Browser extensions (Grammarly, password managers) add attributes to
+          <body> before React hydrates, which otherwise reports a mismatch that
+          has nothing to do with this code. This suppresses the warning for
+          <body>'s own attributes only — one level deep — so genuine hydration
+          bugs anywhere inside the app are still reported. */}
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }
