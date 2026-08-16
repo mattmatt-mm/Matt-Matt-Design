@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.pem
+
+.env
+.env*.local
+
+.vercel
+next-env.d.ts
+*.tsbuildinfo
+
+# local design-diff harness (not shipped)
+public/_design/
