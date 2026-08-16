@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Column } from "@/components/Column";
@@ -51,17 +50,9 @@ export default async function WorkPage({ params }: Props) {
       <article className="mt-15">
         <h1 className="text-title">{entry.title}</h1>
 
-        {/* `label` groups rows in the list only — it is not shown here. */}
-        {entry.cover ? (
-          <Image
-            src={entry.cover}
-            alt=""
-            width={500}
-            height={300}
-            className="mt-6 h-auto w-full"
-          />
-        ) : null}
-
+        {/* `label` groups rows in the list only — it is not shown here.
+            `cover` is the social-preview image; the body already opens with it,
+            so rendering it again here would just duplicate the lead image. */}
         <div className="mt-6">
           <Prose node={entry.body} />
         </div>

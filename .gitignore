@@ -15,3 +15,6 @@ next-env.d.ts
 
 # local design-diff harness (not shipped)
 public/_design/
+
+# source exports — 50MB of originals; the optimised copies live in public/images
+raw/Notion Export/
