@@ -45,10 +45,8 @@ export default async function WritingPost({ params }: Props) {
         >
           {entry.title}
         </h1>
-        {entry.label ? (
-          <p className="text-muted mt-3 whitespace-pre-line">{entry.label}</p>
-        ) : null}
 
+        {/* `label` groups rows in the list only — it is not shown here. */}
         <div className="mt-6">
           <Prose node={entry.body} lang={entry.lang} />
         </div>

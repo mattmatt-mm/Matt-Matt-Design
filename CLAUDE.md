@@ -107,6 +107,8 @@ Rules:
 
 There is no `group` field. Grouping is derived in `lib/content.ts`: consecutive entries sharing a `label` form a group, only the first keeps the visible label, and the rule before a new group runs full width.
 
+`label` is a list-only category. It never appears on a detail page.
+
 Gotchas:
 - Quote numeric labels in frontmatter (`label: "2026"`), or YAML parses them as numbers and Keystatic rejects the entry.
 - Chinese titles produce empty auto-slugs — the slug field must be typed by hand.

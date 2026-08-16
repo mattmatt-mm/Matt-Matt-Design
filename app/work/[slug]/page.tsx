@@ -50,10 +50,8 @@ export default async function WorkPage({ params }: Props) {
 
       <article className="mt-15">
         <h1 className="text-title">{entry.title}</h1>
-        {entry.label ? (
-          <p className="text-muted mt-3 whitespace-pre-line">{entry.label}</p>
-        ) : null}
 
+        {/* `label` groups rows in the list only — it is not shown here. */}
         {entry.cover ? (
           <Image
             src={entry.cover}
