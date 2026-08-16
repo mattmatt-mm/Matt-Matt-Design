@@ -50,7 +50,8 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - Tab bar: `12` top padding, label, `12` bottom padding, `1px` `--color-line` rule. Each tab has `4px` horizontal padding and tabs are `8px` apart; the active tab's `2px` fg marker spans the **padded** box and overlaps the hairline.
 - List row: `12` top padding, `21` line, `12` bottom padding, `1px` divider = **46px pitch**. Label column **100px**.
 - The divider is **inset to the title column** between rows of the same group and runs **full width** before a row that starts a new group. No divider after the last row.
-- A label prints only on the **first row of its group**. It is absolutely positioned from 640px up, so a two-line label ("26 / Spring") overhangs the rule instead of growing the row.
+- A label prints only on the **first row of its group**. It is absolutely positioned, so a two-line label ("26 / Spring") overhangs the rule instead of growing the row.
+- **The two-column row never stacks.** Category left, title right, at every width including mobile — the 100px label column and the inset rule are fixed, and only the title column narrows. Do not add a breakpoint that collapses it.
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 500×300 image is exactly 366px.
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
@@ -64,7 +65,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - No page transitions, scroll effects, or parallax.
 
 ### Responsive
-One breakpoint: `640px`. Below it the label column collapses above the title (`4px` gap), rows go auto-height with `12px` vertical padding.
+One breakpoint: `640px`, and it only governs the page gutters — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout).
 
 ---
 

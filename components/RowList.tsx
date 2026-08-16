@@ -44,17 +44,17 @@ export function RowList({ rows }: { rows: Row[] }) {
 
         return (
           <li key={`${row.group}-${row.title}`}>
-            {/* From 640px up the label is out of flow, so a two-line label
-                (e.g. "26 / Spring") overhangs the rule rather than growing the
-                row — as in the export. Below that it stacks above the title. */}
+            {/* Two columns at every width — label left, title right. The label
+                is out of flow so a two-line label ("26 / Spring") overhangs the
+                rule rather than growing the row, as in the export. */}
             <div className="relative py-3">
               {row.label ? (
-                <span className="text-muted mb-1 block whitespace-pre-line sm:absolute sm:top-3 sm:left-0 sm:mb-0 sm:w-25">
+                <span className="text-muted absolute top-3 left-0 w-25 whitespace-pre-line">
                   {row.label}
                 </span>
               ) : null}
               <div
-                className="sm:ml-25"
+                className="ml-25"
                 lang={row.lang === "zh" ? "zh-Hant" : undefined}
               >
                 <Title row={row} />
@@ -63,7 +63,7 @@ export function RowList({ rows }: { rows: Row[] }) {
 
             {next ? (
               <div
-                className={`bg-line h-px ${startsNewGroup ? "" : "sm:ml-25"}`}
+                className={`bg-line h-px ${startsNewGroup ? "" : "ml-25"}`}
                 aria-hidden="true"
               />
             ) : null}
