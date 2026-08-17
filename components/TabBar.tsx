@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const tabs = [
   { href: "/", label: "Experience" },
@@ -14,12 +14,43 @@ const tabs = [
 const WORD_MS = 480;
 const LETTER_MS = 240;
 
+/** Raise or lower the tap sound here. 0 silences it. */
+const TAP_VOLUME = 0.5;
+
 export function TabBar() {
   const pathname = usePathname();
   // `plays` increments per tap so the letters remount and the hop replays.
   const [tapped, setTapped] = useState<{ href: string; plays: number } | null>(
     null,
   );
+  const tapSound = useRef<HTMLAudioElement | null>(null);
+
+  // Built once on the client so the first tap is not the one that waits for
+  // the download.
+  useEffect(() => {
+    const audio = new Audio("/sounds/tap.wav");
+    audio.preload = "auto";
+    audio.volume = TAP_VOLUME;
+    tapSound.current = audio;
+    return () => {
+      tapSound.current = null;
+    };
+  }, []);
+
+  function tap(href: string) {
+    const audio = tapSound.current;
+    if (audio) {
+      // rewind so quick successive taps each sound, rather than being swallowed
+      audio.currentTime = 0;
+      // a blocked or interrupted play must never break navigation
+      void audio.play().catch(() => {});
+    }
+
+    setTapped((prev) => ({
+      href,
+      plays: (prev?.href === href ? prev.plays : 0) + 1,
+    }));
+  }
 
   return (
     <nav className="border-line flex gap-2 border-b pt-3 pb-3">
@@ -38,12 +69,7 @@ export function TabBar() {
             key={tab.href}
             href={tab.href}
             aria-current={active ? "page" : undefined}
-            onClick={() =>
-              setTapped((prev) => ({
-                href: tab.href,
-                plays: (prev?.href === tab.href ? prev.plays : 0) + 1,
-              }))
-            }
+            onClick={() => tap(tab.href)}
             /* The 2px marker straddles the hairline: 1px above it, 1px over it. */
             className={`relative px-1 no-underline ${
               active
@@ -59,7 +85,9 @@ export function TabBar() {
                   key={`${hopping ? tapped.plays : 0}-${i}`}
                   className={hopping ? "tab-letter" : undefined}
                   style={
-                    hopping ? { animationDelay: `${Math.round(i * step)}ms` } : undefined
+                    hopping
+                      ? { animationDelay: `${Math.round(i * step)}ms` }
+                      : undefined
                   }
                 >
                   {letter}

@@ -114,6 +114,12 @@ export default config({
           label: "Project name",
           description: "The grey second line under the caption.",
         }),
+        project: fields.relationship({
+          label: "Links to case study",
+          collection: "experience",
+          description:
+            "Optional. Pick an Experience entry and this image becomes a link to it. Ignored if that entry has no page of its own.",
+        }),
         image: fields.image({
           label: "Image",
           directory: "public/images/gallery",

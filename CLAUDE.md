@@ -61,6 +61,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
+- Tapping a tab hops each letter up `2px` and back — `240ms` per letter, staggered so the whole word lands in `480ms` at any length — and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the letters are `aria-hidden` with an `sr-only` label beside them so the word is announced once.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
 - No page transitions, scroll effects, or parallax.
 

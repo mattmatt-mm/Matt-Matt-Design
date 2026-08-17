@@ -102,7 +102,18 @@ function measure(publicPath: string): { width: number; height: number } {
 }
 
 export async function getGallery(): Promise<GalleryEntry[]> {
-  const all = await reader.collections.gallery.all();
+  const [all, experience] = await Promise.all([
+    reader.collections.gallery.all(),
+    reader.collections.experience.all(),
+  ]);
+
+  // an image only links out if the case study it points at actually has a page
+  const pageFor = new Map(
+    experience
+      .filter((e) => e.entry.hasPage && !e.entry.externalUrl)
+      .map((e) => [e.slug, `/work/${e.slug}`]),
+  );
+
   const sorted = [...all].sort((a, b) =>
     (b.entry.date ?? "").localeCompare(a.entry.date ?? ""),
   );
@@ -112,6 +123,7 @@ export async function getGallery(): Promise<GalleryEntry[]> {
     projectName: e.entry.projectName ?? "",
     image: e.entry.image ?? undefined,
     alt: e.entry.alt ?? "",
+    href: e.entry.project ? pageFor.get(e.entry.project) : undefined,
     ...(e.entry.image ? measure(e.entry.image) : {}),
   }));
 }
