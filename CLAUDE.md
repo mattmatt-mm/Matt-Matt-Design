@@ -13,7 +13,9 @@ Matt is a designer, not an engineer. He edits content through a UI, never a term
 
 Next.js 15 (App Router, TS) · Tailwind v4 (`@theme`) · Keystatic (git storage) · `next/image` · Vercel · pnpm.
 
-Not using: databases, i18n routing, state libraries, animation libraries.
+Not using: databases, i18n routing, state libraries, animation libraries — the one
+exception is `gradient-shimmer`, a zero-dependency component used solely for the
+intro links (see Interaction).
 
 ---
 
@@ -62,6 +64,13 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
 - Tapping a tab hops each letter up `2px` and back — `240ms` per letter, staggered so the whole word lands in `480ms` at any length — and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the letters are `aria-hidden` with an `sr-only` label beside them so the word is announced once.
+- The intro links (LinkedIn, Github, email) get a `sunrise` gradient sweep from
+  `gradient-shimmer`. It runs one sweep on a visitor's **first** landing — the
+  `mmd:intro-shimmer-seen` localStorage key silences it forever after; clear that
+  key to see it again — and loops while the pointer rests on a link. Hovering out
+  waits for the sweep in progress to finish rather than cutting a gradient off
+  mid-word. Skipped entirely under `prefers-reduced-motion`. The shimmer span is
+  forced back to `display: inline` so the link's underline is not lost.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
 - No page transitions, scroll effects, or parallax.
 

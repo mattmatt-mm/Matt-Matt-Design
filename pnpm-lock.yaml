@@ -20,6 +20,9 @@ importers:
       '@markdoc/markdoc':
         specifier: ^0.5.9
         version: 0.5.9(@types/react@19.2.18)(react@19.2.8)
+      gradient-shimmer:
+        specifier: ^0.1.1
+        version: 0.1.1(react@19.2.8)
       image-size:
         specifier: ^2.0.2
         version: 2.0.2
@@ -882,6 +885,11 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  gradient-shimmer@0.1.1:
+    resolution: {integrity: sha512-zSbJINOyDE04rxudOg0O30Vm/iozjln3f0/t5wgISzSoR0KDOhenEnmgWwX6kwxEsIidCMXu61QmLxa9zWVzwg==}
+    peerDependencies:
+      react: '>=18'
 
   graphql-tag@2.12.7:
     resolution: {integrity: sha512-xnE/NFzy+0eIesvAsREJZ284zTl/wYuBAvpsFSDhRGRdRHdnE90M21Q3xAWyYInb0J756c6x0pIQ62+vtvOs1Q==}
@@ -2221,6 +2229,10 @@ snapshots:
       is-glob: 4.0.3
 
   graceful-fs@4.2.11: {}
+
+  gradient-shimmer@0.1.1(react@19.2.8):
+    dependencies:
+      react: 19.2.8
 
   graphql-tag@2.12.7(graphql@16.14.2):
     dependencies:

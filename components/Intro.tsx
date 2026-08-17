@@ -1,3 +1,5 @@
+import { ShimmerLink } from "@/components/ShimmerLink";
+
 type Social = { label: string; url: string };
 
 export function Intro({
@@ -18,11 +20,12 @@ export function Intro({
         You can find me on{" "}
         {socials.map((social, i) => (
           <span key={social.url}>
-            <a href={social.url}>{social.label}</a>
+            <ShimmerLink href={social.url}>{social.label}</ShimmerLink>
             {i < socials.length - 1 ? ", " : ""}
           </span>
         ))}
-        , or reach me via <a href={`mailto:${email}`}>email</a>.
+        , or reach me via{" "}
+        <ShimmerLink href={`mailto:${email}`}>email</ShimmerLink>.
       </p>
     </div>
   );
