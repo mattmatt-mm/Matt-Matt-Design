@@ -52,7 +52,10 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - The divider is **inset to the title column** between rows of the same group and runs **full width** before a row that starts a new group. No divider after the last row.
 - A label prints only on the **first row of its group**. It is absolutely positioned, so a two-line label ("26 / Spring") overhangs the rule instead of growing the row.
 - **The two-column row never stacks.** Category left, title right, at every width including mobile — the 100px label column and the inset rule are fixed, and only the title column narrows. Do not add a breakpoint that collapses it.
-- Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 500×300 image is exactly 366px.
+- Gallery is **not a tab**. It is a standing section in the shared layout, below whichever list is open: `60` from the list, a muted `Gallery` heading (16/21, weight 400 — no new type size), `12`, then the images.
+- Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Heroes have their own aspect ratios, so the old uniform 366px pitch no longer applies.
+- A gallery entry links to `/work/<slug>` only when its `project` relationship points at an entry with `hasPage` and no `externalUrl`; otherwise the image is inert.
+- `/gallery` is a permanent redirect to `/` (`next.config.ts`) — it was a real page until the gallery became a section.
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.
@@ -60,7 +63,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 ### Interaction
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
-- Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
+- Tabs are **real links** (`/`, `/writing`), not client toggles.
 - Tapping a tab hops each letter up `2px` and back — `240ms` per letter, staggered so the whole word lands in `480ms` at any length — and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the letters are `aria-hidden` with an `sr-only` label beside them so the word is announced once.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
 - No page transitions, scroll effects, or parallax.
@@ -75,10 +78,9 @@ One breakpoint: `640px`, and it only governs the page gutters — `24px` inline 
 ```
 app/
   layout.tsx                            fonts, metadata defaults
-  (site)/layout.tsx                     Header + Intro + TabBar — shared, must not remount
+  (site)/layout.tsx                     Header + Intro + TabBar + Gallery — shared, must not remount
   (site)/page.tsx                       /          Experience list
-  (site)/gallery/page.tsx               /gallery
-  (site)/writing/page.tsx               /writing
+  (site)/writing/page.tsx               /writing   Writing list
   work/[slug]/page.tsx                  experience detail
   writing/[slug]/page.tsx               writing detail
   keystatic/[[...params]]/page.tsx      admin UI

@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 
 const tabs = [
   { href: "/", label: "Experience" },
-  { href: "/gallery", label: "Gallery" },
   { href: "/writing", label: "Writing" },
 ];
 
