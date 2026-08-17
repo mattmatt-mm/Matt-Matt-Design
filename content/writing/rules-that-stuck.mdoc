@@ -1,0 +1,52 @@
+---
+title: Rules that stuck
+lang: en
+label: |-
+  26
+  Summer
+publishedAt: 2026-08-17
+draft: false
+---
+A few years in, most of what I thought was taste turned out to be a handful of rules I now apply without thinking. They are unglamorous. They are also the difference between an interface that feels considered and one that feels assembled.
+
+These are the ones I reach for first, with the motion ones you can play with.
+
+## Ease everything out
+
+{% demo kind="easing" /%}
+
+Nothing you have ever touched moves at a constant speed. Things build momentum and shed it. Linear motion reads as mechanical for exactly that reason — it is the one curve with no physical referent.
+
+Decelerating into the destination is the cheapest change you can make to an interface. One curve covers almost everything: `cubic-bezier(0.2, 0, 0, 1)`. Fast at the start, slow at the finish, arrives without a bump.
+
+Save easing *into* a motion for things leaving the screen. Something on its way out has no destination worth landing on.
+
+## Make it shorter than you think
+
+{% demo kind="duration" /%}
+
+An animation is a delay you have chosen to impose. That framing kills most of the long ones.
+
+Small things moving short distances want 150–200ms. Larger surfaces can take 300ms. Past that you are asking the reader to wait so you can show them a transition, which is a bad trade the second time they see it.
+
+The test is whether it still feels good on the fiftieth use, not the first.
+
+## Answer immediately, settle gently
+
+{% demo kind="press" /%}
+
+Feedback to a press should be instant. Not 100ms — instant, on the frame the finger lands. Any delay between touching a thing and it acknowledging you reads as the interface thinking, and a thinking interface feels slow no matter how fast it actually is.
+
+Coming back can take its time. Down at 0ms, up over 160ms. That asymmetry is most of what makes a control feel physical, and it costs one line of CSS.
+
+## The rest, briefly
+
+- Optical alignment beats mathematical alignment. A triangle centred by its bounding box looks off-centre, because the eye measures mass, not boxes. Nudge it and trust your eye over the number.
+- Line length wants 45 to 75 characters. Wider and the eye loses the return; narrower and it never gets going.
+- Hit areas want 44px even when the thing you can see is 16px. Pad the target, not the icon.
+- Never remove a focus ring without replacing it. Keyboard users are navigating your interface blindfolded if you do.
+- Honour `prefers-reduced-motion`. For some people the animation you are proud of is a headache.
+- Two greys and a black go further than a palette. Colour is the loudest tool you have and most interfaces spend it on decoration rather than meaning.
+- Give hierarchy through colour and position before you reach for size and weight. Once everything is shouting, nothing is.
+- Write button labels as the action they perform. "Save changes" over "OK" — a person skimming a dialog reads the button first and the sentence second.
+- Empty states are a design surface, not an oversight. It is the first thing a new user sees and the one screen you can guarantee they will hit.

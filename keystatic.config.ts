@@ -1,4 +1,5 @@
 import { config, fields, collection, singleton } from "@keystatic/core";
+import { block } from "@keystatic/core/content-components";
 
 /**
  * GitHub storage everywhere, so /keystatic behaves the same locally and live.
@@ -176,7 +177,29 @@ export default config({
           defaultValue: false,
           description: "Drafts are hidden on the live site.",
         }),
-        body: fields.markdoc({ label: "Body" }),
+        body: fields.markdoc({
+          label: "Body",
+          components: {
+            // Registered here too, so the editor keeps the tag intact on save
+            // rather than treating it as unknown markup.
+            demo: block({
+              label: "Interactive example",
+              description:
+                "A side-by-side Don't/Do example the reader can play with.",
+              schema: {
+                kind: fields.select({
+                  label: "Example",
+                  options: [
+                    { label: "Easing — linear vs ease-out", value: "easing" },
+                    { label: "Duration — too slow vs right", value: "duration" },
+                    { label: "Press — dead vs responsive", value: "press" },
+                  ],
+                  defaultValue: "easing",
+                }),
+              },
+            }),
+          },
+        }),
       },
     }),
   },

@@ -171,6 +171,91 @@
   }
 }
 
+@layer components {
+  /* Interactive examples inside a post. The square travels a fixed 160px so
+     the two panes stay comparable at any column width. */
+  .prose .demo {
+    margin-block: 24px;
+  }
+
+  .demo-track {
+    position: relative;
+    width: 184px;
+    height: 24px;
+  }
+
+  .demo-travel {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 24px;
+    background-color: var(--color-fg);
+  }
+
+  @keyframes demo-travel-linear {
+    0% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(160px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  /* Same path, but each leg decelerates into its destination. */
+  @keyframes demo-travel-eased {
+    0% {
+      transform: translateX(0);
+      animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    }
+    50% {
+      transform: translateX(160px);
+      animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .demo-travel--linear {
+    animation: demo-travel-linear 640ms linear both;
+  }
+
+  .demo-travel--eased {
+    animation: demo-travel-eased 640ms both;
+  }
+
+  .demo-travel--slow {
+    animation: demo-travel-eased 1280ms both;
+  }
+
+  .demo-travel--quick {
+    animation: demo-travel-eased 320ms both;
+  }
+
+  /* Answer immediately, settle gently: no delay going down, eased coming up. */
+  .demo-press {
+    transition: transform 160ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .demo-press:active {
+    transform: scale(0.97);
+    transition-duration: 0s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .demo-travel {
+      animation: none;
+    }
+
+    .demo-press {
+      transition: none;
+    }
+  }
+}
+
 @layer utilities {
   /* Traditional Chinese needs more leading than Latin. 28px keeps it on the
      4px grid (1.6 would land on 25.6px and break the grid). */
