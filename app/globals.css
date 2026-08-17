@@ -142,6 +142,35 @@
   }
 }
 
+@layer components {
+  /* Tab tap: each letter hops 2px and settles. Rise eases out, fall eases in,
+     so it reads as a hop rather than a slide. */
+  @keyframes tab-letter-hop {
+    0% {
+      transform: translateY(0);
+      animation-timing-function: ease-out;
+    }
+    50% {
+      transform: translateY(-2px);
+      animation-timing-function: ease-in;
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  .tab-letter {
+    display: inline-block;
+    animation: tab-letter-hop 240ms both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tab-letter {
+      animation: none;
+    }
+  }
+}
+
 @layer utilities {
   /* Traditional Chinese needs more leading than Latin. 28px keeps it on the
      4px grid (1.6 would land on 25.6px and break the grid). */
