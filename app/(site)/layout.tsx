@@ -1,6 +1,7 @@
 import { Column } from "@/components/Column";
 import { Header } from "@/components/Header";
 import { Intro } from "@/components/Intro";
+import { PageSlide } from "@/components/PageSlide";
 import { TabBar } from "@/components/TabBar";
 import { getSettings } from "@/lib/content";
 
@@ -29,7 +30,9 @@ export default async function SiteLayout({
         <TabBar />
       </div>
 
-      {children}
+      {/* Only the page body moves on a tab change; everything above it is
+          layout, and stays exactly where it is. */}
+      <PageSlide>{children}</PageSlide>
     </Column>
   );
 }

@@ -172,6 +172,53 @@
 }
 
 @layer components {
+  /* Tab-to-tab page change. The incoming page slides in from the side of the
+     bar it was tapped on; the outgoing one is gone before the frame is drawn,
+     so there is nothing to animate out.
+
+     These are declared on :root rather than in @theme because Tailwind only
+     emits theme variables a utility actually uses, and these are read by the
+     keyframes below. */
+  :root {
+    --page-slide-dur: 240ms;
+    --page-slide-distance: 8px;
+    --page-blur: 2px;
+    --page-slide-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes page-slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--page-from-x));
+      filter: blur(var(--page-blur));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      filter: blur(0);
+    }
+  }
+
+  .page-slide {
+    animation: page-slide-in var(--page-slide-dur) var(--page-slide-ease) both;
+  }
+
+  .page-slide[data-direction="forward"] {
+    --page-from-x: var(--page-slide-distance);
+  }
+
+  .page-slide[data-direction="back"] {
+    --page-from-x: calc(var(--page-slide-distance) * -1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .page-slide {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
   /* Interactive examples inside a post. The square travels a fixed 160px so
      the two panes stay comparable at any column width. */
   .prose .demo {
