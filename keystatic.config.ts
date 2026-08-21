@@ -193,6 +193,38 @@ export default config({
                     { label: "Easing — linear vs ease-out", value: "easing" },
                     { label: "Duration — too slow vs right", value: "duration" },
                     { label: "Press — dead vs responsive", value: "press" },
+                    {
+                      label: "Transition — cut vs slide",
+                      value: "transition",
+                    },
+                    {
+                      label: "Squash — rigid vs deforming",
+                      value: "squash",
+                    },
+                    {
+                      label: "Anticipation — straight out vs wind-up",
+                      value: "anticipation",
+                    },
+                    {
+                      label: "Staging — everything leads vs one leads",
+                      value: "staging",
+                    },
+                    {
+                      label: "Stagger — together vs 60ms apart",
+                      value: "stagger",
+                    },
+                    {
+                      label: "Arcs — straight vs curved",
+                      value: "arc",
+                    },
+                    {
+                      label: "Secondary — competing vs supporting",
+                      value: "secondary",
+                    },
+                    {
+                      label: "Exaggeration — tint vs shake",
+                      value: "shake",
+                    },
                   ],
                   defaultValue: "easing",
                 }),

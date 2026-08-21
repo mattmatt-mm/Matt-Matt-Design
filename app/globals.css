@@ -310,3 +310,286 @@
     line-height: 28px;
   }
 }
+
+@layer components {
+  /* The twelve principles, one square at a time. Every demo in that post reuses
+     the same 184px track and the same 24px block, so the only thing that
+     differs between two panes is the motion itself. */
+
+  .demo-square {
+    position: absolute;
+    top: 0;
+    left: 80px;
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-fg);
+    /* Squash reads as weight only if the block deforms against the ground. */
+    transform-origin: 50% 100%;
+  }
+
+  /* Squash and stretch */
+  @keyframes demo-fall {
+    0% {
+      /* 32px is the whole drop the 96px box has room for — any further and the
+         block starts the animation outside its own frame. */
+      translate: 0 -32px;
+      /* falling accelerates; this is the one place ease-in is honest */
+      animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    55%,
+    100% {
+      translate: 0 0;
+    }
+  }
+
+  @keyframes demo-squash {
+    0%,
+    55% {
+      scale: 1 1;
+      animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    }
+    68% {
+      scale: 1.3 0.7;
+    }
+    100% {
+      scale: 1 1;
+    }
+  }
+
+  .demo-fall {
+    animation: demo-fall 560ms both;
+  }
+
+  .demo-fall--squash {
+    animation:
+      demo-fall 560ms both,
+      demo-squash 560ms both;
+  }
+
+  /* Anticipation */
+  @keyframes demo-launch {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 160px 0;
+    }
+  }
+
+  @keyframes demo-launch-anticipated {
+    0% {
+      translate: 0 0;
+      animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+    }
+    22% {
+      translate: -6px 0;
+      animation-timing-function: cubic-bezier(0.4, 0, 0, 1);
+    }
+    100% {
+      translate: 160px 0;
+    }
+  }
+
+  .demo-launch {
+    animation: demo-launch 560ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .demo-launch--anticipated {
+    animation: demo-launch-anticipated 560ms both;
+  }
+
+  /* Staging and follow-through both work on a stack of peers. */
+  .demo-rows {
+    display: flex;
+    width: 184px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .demo-row {
+    height: 8px;
+    background-color: var(--color-line);
+  }
+
+  /* Staging — everything arriving at once, versus one thing leading. */
+  @keyframes demo-stage-hold {
+    from {
+      background-color: var(--color-line);
+    }
+    to {
+      background-color: var(--color-fg);
+    }
+  }
+
+  @keyframes demo-stage-lead {
+    from {
+      background-color: var(--color-line);
+      translate: 0 0;
+    }
+    to {
+      background-color: var(--color-fg);
+      translate: 8px 0;
+    }
+  }
+
+  .demo-row--flat {
+    animation: demo-stage-hold 400ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .demo-row--staged:nth-child(2) {
+    animation: demo-stage-lead 400ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  /* Follow through and overlapping action */
+  @keyframes demo-enter {
+    from {
+      opacity: 0;
+      translate: 0 8px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .demo-row--together {
+    animation: demo-enter 320ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .demo-row--staggered {
+    animation: demo-enter 320ms cubic-bezier(0.2, 0, 0, 1) both;
+    animation-delay: calc(var(--i) * 60ms);
+  }
+
+  /* Arcs — two axes on two curves, which is all an arc is. */
+  @keyframes demo-arc-x {
+    from {
+      translate: 0 0;
+    }
+    to {
+      translate: 160px 0;
+    }
+  }
+
+  @keyframes demo-arc-y {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-32px);
+    }
+  }
+
+  .demo-arc--straight {
+    animation:
+      demo-arc-x 640ms linear both,
+      demo-arc-y 640ms linear both;
+  }
+
+  .demo-arc--curved {
+    animation:
+      demo-arc-x 640ms linear both,
+      demo-arc-y 640ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  /* Secondary action — the supporting mark next to the primary one. */
+  @keyframes demo-bar-in {
+    from {
+      opacity: 0;
+      scale: 0.9 1;
+    }
+    to {
+      opacity: 1;
+      scale: 1 1;
+    }
+  }
+
+  @keyframes demo-mark-in {
+    from {
+      opacity: 0;
+      scale: 0.6;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+
+  .demo-mark {
+    position: absolute;
+    background-color: var(--color-fg);
+  }
+
+  .demo-mark:first-child {
+    top: 8px;
+    left: 0;
+    width: 120px;
+    height: 8px;
+    transform-origin: 0 50%;
+    animation: demo-bar-in 240ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .demo-mark--supporting:last-child {
+    top: 6px;
+    left: 132px;
+    width: 12px;
+    height: 12px;
+    animation: demo-mark-in 200ms cubic-bezier(0.2, 0, 0, 1) 160ms both;
+  }
+
+  .demo-mark--competing:last-child {
+    top: 0;
+    left: 132px;
+    width: 24px;
+    height: 24px;
+    animation: demo-mark-in 240ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  /* Exaggeration — a tint nobody notices against a shake nobody misses. */
+  @keyframes demo-tint {
+    0%,
+    100% {
+      background-color: var(--color-fg);
+    }
+    50% {
+      background-color: var(--color-muted);
+    }
+  }
+
+  @keyframes demo-shake {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    20% {
+      translate: -4px 0;
+    }
+    40% {
+      translate: 4px 0;
+    }
+    60% {
+      translate: -3px 0;
+    }
+    80% {
+      translate: 2px 0;
+    }
+  }
+
+  .demo-square--tint {
+    animation: demo-tint 400ms both;
+  }
+
+  .demo-square--shake {
+    animation: demo-shake 400ms both;
+  }
+
+  /* These demos exist to show a state being arrived at, so reduced motion snaps
+     them to the end rather than removing the animation and stranding them at
+     the start. */
+  @media (prefers-reduced-motion: reduce) {
+    .demo-anim {
+      animation-duration: 1ms !important;
+      animation-delay: 0ms !important;
+    }
+  }
+}

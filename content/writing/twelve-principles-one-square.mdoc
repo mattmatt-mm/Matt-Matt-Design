@@ -1,0 +1,132 @@
+---
+title: Twelve principles, one square
+lang: en
+label: |-
+  26
+  Summer
+publishedAt: 2026-08-22
+draft: false
+---
+The twelve principles of animation were written in the 1930s by people animating characters with faces, weight and intent. An interface has none of those. It is a grid of rectangles that never acts on its own and only ever responds.
+
+So the interesting question is not what the twelve principles are — [Raphael Salaja has already written that page](https://www.raphaelsalaja.com/library/12-principles-of-animation), and it is better than a summary of it would be. The interesting question is which ones survive the translation, which ones arrive damaged, and which two do not make the trip at all.
+
+Every demo below is the same 24px square on the same 184px track. If a principle needs a mascot to be legible, it was never an interface principle.
+
+## Squash and stretch
+
+{% demo kind="squash" /%}
+
+Deformation is how the eye reads weight. The rigid block on the left could be made of anything; the one on the right is heavy, and you know that without being told.
+
+The catch is that interfaces are mostly rectangles with words inside them, and words do not squash. Deform a container by 30% and whatever it contains gets sheared with it — the fastest way to make a considered interface look cheap.
+
+What survives is the small version: a button that dips under a press, a sheet that overshoots by a few pixels before settling, a toggle knob that stretches slightly as it crosses. Deform the container, never the contents, and keep it under about 5% anywhere text is involved.
+
+## Anticipation
+
+{% demo kind="anticipation" /%}
+
+Six pixels backwards before a hundred and sixty forwards. The wind-up tells you the movement is coming, so the eye is already travelling when the thing does.
+
+In an interface you are paying for that in latency, which changes the maths. A wind-up before a menu opens is 80ms you have added to every single use, forever. The honest version is almost always already there and free: the hover state is anticipation, the pressed state is anticipation, a delete button that turns red before you release is anticipation.
+
+Spend real milliseconds on it only where the outcome is destructive or genuinely surprising. Everywhere else, let the pointer do the work.
+
+## Staging
+
+{% demo kind="staging" /%}
+
+Three rows arrive on the left and none of them leads, because they all do. On the right one row moves and the other two stay where they are, so the eye has somewhere to go.
+
+This is the principle I reach for most and the one that is least about motion. Staging is mostly a decision about what *doesn't* animate. A dimmed backdrop, a row that holds still while its neighbours settle, a panel that arrives after the thing behind it has receded — in each case the effect comes from the restraint, not the movement.
+
+If everything on screen is animating, you have not staged anything. You have just made the page busy and left the reader to work out where to look.
+
+## Straight ahead and pose to pose
+
+No demo for this one, because it describes how you work rather than what anyone sees.
+
+Straight ahead means drawing every frame in order and finding the motion as you go. Pose to pose means fixing the key positions first and filling the gaps afterwards. CSS makes the second one the default: you declare two states, name a curve, and the browser invents everything between them.
+
+Straight ahead is what you are doing the moment you hand-write eleven keyframe percentages. Sometimes that is right — the shake further down this page is eleven hand-placed numbers, because a shake has no in-between worth interpolating. But every percentage you write is a number someone has to maintain. Two poses and a curve until that provably isn't enough.
+
+## Follow through and overlapping action
+
+{% demo kind="stagger" /%}
+
+Sixty milliseconds between three rows, and a stack that arrived as a block now arrives as a sequence. Nothing else changed.
+
+It is the cheapest sophistication available in interface motion, and the easiest to overdo, because the cost is multiplied by the number of things on screen. Sixty milliseconds across three rows is 120ms of tail. Across twenty rows it is 1.2 seconds, and the twentieth row is now arriving long after the reader has started reading the first.
+
+Cap the total, not the step. Decide the whole cascade gets 200ms and divide by however many items you have — and stop staggering entirely past a dozen, where nobody can perceive the sequence anyway.
+
+## Slow in and slow out
+
+{% demo kind="easing" /%}
+
+The one everybody already knows, and the one with the largest return. I have written about it [before](/writing/rules-that-stuck), so: nothing you have ever touched moves at a constant speed, `cubic-bezier(0.2, 0, 0, 1)` covers almost everything, and ease *in* is for things leaving.
+
+Worth adding here: this is the principle the other eleven are built on. Anticipation, follow-through and arcs are all just easing applied to more than one property at a time.
+
+## Arcs
+
+{% demo kind="arc" /%}
+
+Both squares travel the same 160px right and 32px up. The left one interpolates both axes on the same curve, which is the definition of a straight line. The right one runs the vertical axis on an ease-out and the horizontal on a linear ramp — two curves, and the path bends.
+
+That is the whole implementation. No path maths, no motion library. Any two properties on two different timing functions will describe a curve.
+
+It is also the principle with the narrowest application here. Most interface motion runs along a single axis, and a curve on an 8px slide is a curve nobody can see. Arcs earn their keep on long diagonal travel — something flying to a corner, a card returning to a stack — and nowhere else.
+
+## Secondary action
+
+{% demo kind="secondary" /%}
+
+On the left, two marks of the same size at the same moment: two primaries, no hierarchy, and the eye has to pick. On the right the second mark is smaller and 160ms late, so it reads as consequence rather than event.
+
+Secondary action is the flourish that confirms the main one — the tick after the save, the count that ticks up after the row lands. The rule is that it must be subordinate in both size and time. Something equally large and equally prompt is not a secondary action, it is a second thing happening, and two things happening at once is how a screen becomes noise.
+
+The version on this site is the sound a tab makes when you tap it. It carries nothing the letter hop does not already carry. It just makes the hop feel like it happened.
+
+## Timing
+
+{% demo kind="duration" /%}
+
+Duration is the difference between snappy and sluggish, and the numbers are smaller than instinct suggests. Small things moving short distances: 150–200ms. Larger surfaces: up to 300. Beyond that you are charging the reader for a performance they did not ask to see.
+
+The part that gets missed is consistency. Every animation of the same *class* should take the same time — every row entry, every panel, every page. Two durations for the same kind of event is not variety, it is a bug that nobody can name but everyone can feel. On this site there are three numbers, all multiples of 120, and everything is one of them.
+
+## Exaggeration
+
+{% demo kind="shake" /%}
+
+The left square changes colour. You would not notice it in a form you were filling in, and neither would anyone else. The right one moves four pixels, four times, and cannot be missed.
+
+Exaggeration is what you have left when your palette is two greys and a black. It is also the most expensive thing in this list, because it is a loan taken against the reader's attention: it works precisely as long as it is rare. A form that shakes on error is helpful. A form that shakes, bounces and pulses through every field is a form nobody trusts.
+
+One exaggerated moment per screen. If you need two, the screen is the problem.
+
+## Solid drawing
+
+No demo, because this site refuses the principle outright.
+
+Solid drawing is about volume and weight — shadows, layering, perspective, the sense that a thing has a back as well as a front. It is the principle behind every elevation scale you have ever used.
+
+Here there are no shadows, no z-axis and no perspective, because depth is a promise about layers and this is a 500px column with exactly one. Introducing a shadow would imply a hierarchy that does not exist.
+
+That is a choice, not a rule, and the cost is real: without depth there is no way to say *this floats above that*, so I have to say it with position and contrast instead. If you do use depth, the only thing that matters is that the light comes from one place and stays there.
+
+## Appeal
+
+The last one cannot be specified, which is why it is last and why it has no demo. The nearest thing to one is at the top of this page: tap a tab and the letters hop, one after another, and a small sound plays.
+
+None of that is necessary. The site would pass every test it passes now without it. It survives because appeal is the difference between something that works and something somebody made, and that difference is most of why anyone comes back to a personal site at all.
+
+It is also the first thing that should go the moment it gets in the way of reading. Appeal that costs the reader something is not appeal, it is decoration with a better name.
+
+---
+
+Ten of the twelve translate. Two — squash and solid drawing — arrive damaged for the same reason: they describe bodies, and an interface does not have one.
+
+The ones that survive intact are the least glamorous of the set. Timing, staging, follow-through. Nobody has ever complimented an interface on its staging. They just find what they were looking for slightly faster than they expected to, and never think about the page again.

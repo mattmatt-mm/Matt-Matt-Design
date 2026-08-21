@@ -1,0 +1,66 @@
+---
+title: What a transition is for
+lang: en
+label: |-
+  26
+  Summer
+publishedAt: 2026-08-21
+draft: false
+---
+A page change is the largest thing an interface does. Every pixel below the masthead is replaced at once. It is also, on most sites, the only thing nobody designed — the router does it, and whatever falls out is what the reader gets.
+
+Raphael Salaja's [12 principles of animation](https://www.raphaelsalaja.com/library/12-principles-of-animation) is the best short account I know of where these ideas come from, and it covers all twelve. This is the narrow version of one of them: what happens in the quarter second between one page and the next, and whether it is worth spending anything on at all.
+
+## A cut makes the reader start over
+
+{% demo kind="transition" /%}
+
+Switch pages on the left. The new content is simply there. Nothing tells you the page changed, or which part of it changed, so the eye goes back to the top and re-reads the column to find out.
+
+Switch pages on the right and you know within a frame. Eight pixels of travel and a fifth of a second is enough to say *this is new content in the same place* rather than *here is a document you have never seen*.
+
+That is the entire argument, and it is not an aesthetic one. Motion is the cheapest way to preserve the reader's place. Everything else about a transition — the curve, the blur, the exact millisecond — is detail work on top of that one job.
+
+## Direction is information
+
+Watch which way the right-hand box arrives. Gallery sits to the right of Experience in the bar, so it enters from the right. Going back brings the page in from the left.
+
+Eight pixels, and it maps the tab bar onto the page. The reader never articulates it, but after two or three switches they know which way the site is laid out, and a swipe back feels like it should go somewhere they have already been.
+
+Get it backwards and it is worse than nothing — the interface is now lying about where you are. A transition that carries no information is decoration. One that carries wrong information is a bug that never gets filed, because nobody can name what felt off.
+
+## Time it against the tap, not the clock
+
+The transition here runs for 240ms. Not because research settled on that number, but because everything else on the site is already timed in multiples of 120. Tapping a tab hops its letters for 240ms and finishes the word at 480, so the page lands exactly as the second letter settles. Two animations sharing a rhythm read as one event. Two that don't read as a glitch.
+
+The ceiling is set by the navigation itself. Every route is prerendered and prefetched, so the content is ready before the finger lifts — which means the entire transition is a delay I have chosen to impose. It has to be short enough that it never becomes the reason the site feels slow, and it has to survive the fiftieth tap, not just the first.
+
+## Move the page, not the furniture
+
+What stays still does more work than what moves. The name, the signature, the intro and the tab bar do not shift by a single pixel during a page change. Only the content below the rule moves.
+
+That fixed point is what makes eight pixels legible. If the whole column slid, there would be nothing to measure the movement against, and the reader would be tracking the entire screen instead of the one part that changed.
+
+It is also the thing most likely to break silently, so I check it by measuring rather than by looking: sample the masthead's bounding box every frame across a navigation and assert it never moves. Thirty-eight frames, zero movement. A screenshot would not have caught a one-pixel reflow, and a one-pixel reflow is exactly what a reader feels without being able to name.
+
+## Blur costs more than distance
+
+The recipe I started from used a 3px blur on the incoming page. On a pixel typeface at 16px that dissolves the letterforms into grey — the glyph grid is the whole point of the face, and blur is the one filter that destroys it.
+
+2px softens the arrival without breaking the letters. It also forces the browser to re-rasterise the entire page every frame, which on a gallery a few thousand pixels tall is real work for something on screen for a fifth of a second. Distance is nearly free. Blur is not, and not only to the GPU.
+
+## The exit you don't get
+
+Being honest about the mechanism: in an App Router site the outgoing page is unmounted in the same commit that mounts the new one. There is never a frame holding both. So this animates arrivals only — nothing slides out, because by the time anything could, it is gone.
+
+For a while I read that as a limitation to work around. It mostly isn't. The eye is already looking for what arrives, not grieving what left. There is a way to have both, and one day I will probably take it, but it means running a second animation system for a half of the transition the reader was never watching.
+
+## Then take it away twice
+
+Two cases get nothing at all.
+
+The first landing does not animate. There is no previous page, so there is no direction, and sliding the content in from an arbitrary side would be motion for its own sake — the exact thing this post is arguing against.
+
+And `prefers-reduced-motion` turns all of it off. For some people the transition I have just spent a thousand words on is a headache. It carries information, so I would rather it stayed; it is not important enough to make anyone ill.
+
+The test for a page transition is not whether anyone compliments it. Nobody will. It is whether taking it out makes the site feel abruptly cheaper — and it does, which is the only evidence I have that it was doing anything.
