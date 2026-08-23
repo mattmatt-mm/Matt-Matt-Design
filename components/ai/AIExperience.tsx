@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { AiDock } from "@/components/ai/AiDock";
 import { AiOverlay, type AIPhase } from "@/components/ai/AiOverlay";
 import type { ContactStatus } from "@/components/ai/AiContactForm";
@@ -21,6 +22,7 @@ async function responseError(response: Response) {
 export function AIExperience({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const composer = useRef<HTMLTextAreaElement | null>(null);
   const requestInFlight = useRef(false);
   const contactInFlight = useRef(false);
   const [open, setOpen] = useState(false);
@@ -39,6 +41,15 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   const close = useCallback(() => {
     setOpen(false);
     requestAnimationFrame(() => trigger.current?.focus());
+  }, []);
+
+  // iOS only raises the keyboard for a focus() that runs inside the tap's own
+  // call stack. Committing the overlay synchronously means the field exists
+  // before this handler returns, so the caret lands in it as the keyboard
+  // arrives instead of the keyboard covering an unfocused composer.
+  const openAi = useCallback(() => {
+    flushSync(() => setOpen(true));
+    composer.current?.focus({ preventScroll: true });
   }, []);
 
   useEffect(() => {
@@ -191,13 +202,14 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
             if (contactStatus === "error") setContactStatus("idle");
           }}
           onContactSubmit={sendContact}
+          composerRef={composer}
         />
       ) : null}
       <AiDock
         aiOpen={open}
         expression={cloudExpression}
         triggerRef={trigger}
-        onOpen={() => setOpen(true)}
+        onOpen={openAi}
         onNavigate={() => setOpen(false)}
       />
       <p className="sr-only" aria-live="polite" aria-atomic="true">
