@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { Signature } from "@/components/Signature";
 
 export function Header({
   name,
@@ -25,17 +25,9 @@ export function Header({
         </p>
         <p className="text-muted">{role}</p>
       </div>
-      {/* Optical alignment, not layout spacing: the artwork carries 3.3px of
-          internal top bearing, and 5px lands its ink on the name's x-height,
-          which is where the export places it. Exempt from the 4px grid. */}
-      <Image
-        src="/signature.svg"
-        alt=""
-        width={101}
-        height={32}
-        priority
-        className="mt-[5px] shrink-0"
-      />
+      {/* Optical alignment, not layout spacing: 5px lands the signature's
+          opening stroke on the name's x-height. Exempt from the 4px grid. */}
+      <Signature className="mt-[5px] shrink-0" />
     </header>
   );
 }

@@ -20,6 +20,25 @@ export type Settings = {
   email: string;
 };
 
+export type AIFactPolicy = "answer" | "contact_only" | "never_answer";
+
+export type AIFact = {
+  id: string;
+  topic: string;
+  aliases: string[];
+  policy: AIFactPolicy;
+  answer: string;
+  source: string;
+  lastReviewed: string;
+};
+
+export type AIKnowledge = {
+  reviewedAt: string;
+  voiceRules: string[];
+  unknownFallback: string;
+  facts: AIFact[];
+};
+
 export async function getSettings(): Promise<Settings> {
   const s = await reader.singletons.settings.read();
   return {
@@ -31,6 +50,51 @@ export async function getSettings(): Promise<Settings> {
       url: x.url ?? "",
     })),
     email: s?.email ?? "",
+  };
+}
+
+/**
+ * Only explicitly approved AI fields and already-public experience summaries
+ * cross this boundary. Article bodies, drafts, image metadata, and repository
+ * files are deliberately excluded.
+ */
+export async function getAIKnowledge(): Promise<AIKnowledge> {
+  const [knowledge, experience] = await Promise.all([
+    reader.singletons.aiKnowledge.read(),
+    reader.collections.experience.all(),
+  ]);
+
+  const configured: AIFact[] = (knowledge?.facts ?? []).map((fact) => ({
+    id: fact.id ?? "",
+    topic: fact.topic ?? "",
+    aliases: [...(fact.aliases ?? [])].filter(Boolean),
+    policy: fact.policy ?? "answer",
+    answer: fact.answer ?? "",
+    source: fact.source ?? "",
+    lastReviewed: fact.lastReviewed ?? "",
+  }));
+
+  const publicExperience: AIFact[] = experience
+    .filter((entry) => Boolean(entry.entry.summary))
+    .map((entry) => ({
+      id: `experience-${entry.slug}`,
+      topic: entry.entry.title,
+      aliases: [entry.entry.title, entry.slug.replaceAll("-", " ")],
+      policy: "answer",
+      answer: entry.entry.summary ?? "",
+      source: entry.entry.hasPage
+        ? `/work/${entry.slug}`
+        : (entry.entry.externalUrl ?? ""),
+      lastReviewed: knowledge?.reviewedAt ?? "",
+    }));
+
+  return {
+    reviewedAt: knowledge?.reviewedAt ?? "",
+    voiceRules: [...(knowledge?.voiceRules ?? [])].filter(Boolean),
+    unknownFallback:
+      knowledge?.unknownFallback ??
+      "Matt has not made that information available here. The visitor can leave an email for Matt to follow up.",
+    facts: [...configured, ...publicExperience],
   };
 }
 

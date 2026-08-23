@@ -9,6 +9,7 @@ import {
   getSettings,
   listExperienceSlugs,
 } from "@/lib/content";
+import { siteName, siteSocialImage } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,7 +30,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: entry.title,
       description: entry.summary || undefined,
-      images: entry.cover ? [entry.cover] : undefined,
+      siteName,
+      images: entry.cover ? [entry.cover] : [siteSocialImage],
     },
   };
 }

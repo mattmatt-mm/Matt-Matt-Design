@@ -1,0 +1,95 @@
+reviewedAt: 2026-08-23
+voiceRules:
+  - Speak about Matt in the third person.
+  - Match the language used by the visitor.
+  - Use only the approved fact supplied for the current response.
+  - Keep the response plain, direct, and free of promotional language.
+unknownFallback: Matt has not made that information available here. The visitor
+  can leave an email for Matt to follow up.
+facts:
+  - id: current-role
+    topic: Current role
+    aliases:
+      - what does Matt do
+      - Matt's role
+      - current role
+      - job
+      - work
+      - HKUST
+      - AIS
+      - Matt 做什麼
+      - 現在的工作
+      - 香港科技大學
+    policy: answer
+    answer: Matt currently works at HKUST AIS, where he leads the faculty's
+      brand design.
+    source: /
+    lastReviewed: 2026-08-23
+  - id: incipe-academy
+    topic: Incipe Academy
+    aliases:
+      - Incipe
+      - Incipe Academy
+      - Arduino
+      - hardware prototyping
+      - 創業
+      - 硬件原型
+    policy: answer
+    answer: Matt co-founded Incipe Academy, a plug-and-play hardware prototyping
+      platform focused on improving communication between hardware and software.
+    source: /
+    lastReviewed: 2026-08-23
+  - id: design-approach
+    topic: Design approach
+    aliases:
+      - design approach
+      - design process
+      - how does Matt work
+      - collaboration
+      - C-level
+      - 設計方法
+      - 如何合作
+    policy: answer
+    answer: Matt co-designs with founders and senior leaders to build clear
+      product and brand foundations, with an emphasis on highly polished work.
+    source: /
+    lastReviewed: 2026-08-23
+  - id: availability-and-commercial
+    topic: Availability, pricing, and new work
+    aliases:
+      - available
+      - availability
+      - hire
+      - freelance
+      - rate
+      - price
+      - budget
+      - timeline
+      - 合作
+      - 報價
+      - 預算
+      - 檔期
+    policy: contact_only
+    answer: ''
+    source: Matt decides this directly.
+    lastReviewed: 2026-08-23
+  - id: personal-and-private
+    topic: Personal and private information
+    aliases:
+      - home address
+      - phone number
+      - salary
+      - family
+      - relationship
+      - password
+      - credential
+      - 住址
+      - 電話
+      - 薪金
+      - 家人
+      - 感情
+      - 密碼
+    policy: never_answer
+    answer: ''
+    source: Private by policy.
+    lastReviewed: 2026-08-23

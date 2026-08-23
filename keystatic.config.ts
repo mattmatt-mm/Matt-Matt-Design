@@ -24,7 +24,7 @@ export default config({
     brand: { name: "mattmattdesign" },
     navigation: {
       Content: ["experience", "gallery", "writing"],
-      Site: ["settings"],
+      Site: ["settings", "aiKnowledge"],
     },
   },
 
@@ -54,6 +54,65 @@ export default config({
           },
         ),
         email: fields.text({ label: "Email" }),
+      },
+    }),
+    aiKnowledge: singleton({
+      label: "AI knowledge",
+      path: "content/ai-knowledge",
+      format: { data: "yaml" },
+      schema: {
+        reviewedAt: fields.date({
+          label: "Knowledge set reviewed",
+          description:
+            "Review the complete set on this date before publishing changes.",
+        }),
+        voiceRules: fields.array(fields.text({ label: "Rule" }), {
+          label: "Voice rules",
+          itemLabel: (props) => props.value || "Rule",
+        }),
+        unknownFallback: fields.text({
+          label: "Unknown-information fallback",
+          multiline: true,
+          description:
+            "Meaning to preserve in the visitor's language. The model may translate it but may not add facts.",
+        }),
+        facts: fields.array(
+          fields.object({
+            id: fields.text({
+              label: "Internal ID",
+              description: "Stable lowercase ID, for example current-role.",
+            }),
+            topic: fields.text({ label: "Topic" }),
+            aliases: fields.array(fields.text({ label: "Phrase" }), {
+              label: "Visitor phrases",
+              itemLabel: (props) => props.value || "Phrase",
+            }),
+            policy: fields.select({
+              label: "Policy",
+              options: [
+                { label: "Answer from approved text", value: "answer" },
+                { label: "Ask the visitor to contact Matt", value: "contact_only" },
+                { label: "Never answer", value: "never_answer" },
+              ],
+              defaultValue: "answer",
+            }),
+            answer: fields.text({
+              label: "Approved fact",
+              multiline: true,
+              description: "Required only when Policy is Answer.",
+            }),
+            source: fields.text({
+              label: "Source",
+              description: "Portfolio route or note supporting this fact.",
+            }),
+            lastReviewed: fields.date({ label: "Last reviewed" }),
+          }),
+          {
+            label: "Approved facts and policies",
+            itemLabel: (props) =>
+              props.fields.topic.value || props.fields.id.value || "Fact",
+          },
+        ),
       },
     }),
   },

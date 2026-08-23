@@ -7,6 +7,21 @@ Full build plan: `~/.claude/plans/wild-riding-tome.md`
 
 Matt is a designer, not an engineer. He edits content through a UI, never a terminal.
 
+## Feature plans
+
+Store every new feature plan as Markdown in `doc/`. Do not add new feature plans
+to the repository root or to a user-level plans directory. Existing historical
+plans outside `doc/` remain reference material only.
+
+Read `doc/taste.md` before proposing, designing, or implementing interface work.
+It records Matt's durable UI taste decisions. A newer explicit instruction from
+Matt overrides that file and should be folded back into it.
+
+Every non-circular rounded UI element uses the shared `SiteSquircle` component
+from `components/SiteSquircle.tsx` (16px radius input and 0.6 smoothing by
+default). CSS `border-radius` is fallback geometry only. Preserve true circles,
+the organic cloud silhouette, structural hairlines, and focus outlines.
+
 ---
 
 ## Stack
@@ -24,19 +39,23 @@ intro links (see Interaction).
 **Tokens live in `app/globals.css`. No hardcoded hex or px in components.**
 
 ### Color
-| Token | Value | Use |
-|---|---|---|
-| `--color-bg` | `#FDFDFC` | Page background |
-| `--color-fg` | `#000000` | Primary text, active tab |
-| `--color-muted` | `#A0A0A0` | Role line, row labels, inactive tabs, caption sub |
-| `--color-line` | `#D9D9D9` | Hairlines, dividers, image placeholder |
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--color-bg` | `#FDFDFC` | `#12110F` | Page background |
+| `--color-fg` | `#000000` | `#F3F1EC` | Primary text, active tab, cloud body |
+| `--color-muted` | `#A0A0A0` | `#96938B` | Role line, row labels, inactive tabs, caption sub |
+| `--color-line` | `#D9D9D9` | `#383631` | Hairlines, dividers, image placeholder |
+| `--color-surface` | `#FFFFFF` | `#1C1B18` | Navigation, trigger, and composer surfaces |
 
-Light mode only.
+The entire site follows the operating-system theme through
+`prefers-color-scheme`; native controls and browser chrome advertise both
+schemes. There is no separate saved preference or theme toggle. AI response and
+contact surfaces remain neutral black in both schemes as a deliberate inverse
+treatment.
 
 ### Type
-- **Geist Pixel** (`@fontsource/geist-pixel`, Latin-only, weight 400) via `next/font/local`.
-- CJK glyphs fall through per-character to `"Noto Sans TC", "PingFang TC", "Microsoft JhengHei"`. The whole chain lives in `--font-pixel`; do not add a `fallback` list in `app/fonts.ts` (next/font splices a generic `monospace` ahead of the CJK faces).
-- **16px / 21px** everywhere. 21px is Geist Pixel's own auto line height — measured off the Figma export, where cap-top to cap-top is exactly 21.0px. It is a font metric, not a spacing decision, so it is not on the 4px grid.
+- **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
+- **16px / 21px** everywhere. Keep the established line box and do not create hierarchy with off-scale type.
 - `32px / 42px` for detail-page headings — the only second size.
 - Pixel fonts must render at multiples of their design size. Never 15px, 17px, rem fractions, or `clamp()` on text.
 - Hierarchy comes from **color and position**, never scale or weight.
@@ -64,8 +83,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
 - Tapping a tab hops each letter up `2px` and back — `240ms` per letter, staggered so the whole word lands in `480ms` at any length — and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the letters are `aria-hidden` with an `sr-only` label beside them so the word is announced once.
-- The intro links (LinkedIn, Github, email) get a `sunrise` gradient sweep from
-  `gradient-shimmer`. It runs one sweep on a visitor's **first** landing — the
+- The intro links (LinkedIn, Github, email) and AI Thinking text share the same
+  sunset gradient sweep from `components/effects/SunsetShimmer.tsx`. The intro
+  links run one sweep on a visitor's **first** landing — the
   `mmd:intro-shimmer-seen` localStorage key silences it forever after; clear that
   key to see it again — and loops while the pointer rests on a link. Hovering out
   waits for the sweep in progress to finish rather than cutting a gradient off

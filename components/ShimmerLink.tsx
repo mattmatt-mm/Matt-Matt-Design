@@ -1,6 +1,6 @@
 "use client";
 
-import { GradientShimmer } from "gradient-shimmer";
+import { SunsetShimmer } from "@/components/effects/SunsetShimmer";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Set once the intro links have greeted a visitor, so they only ever do it once. */
@@ -38,7 +38,7 @@ function reducedMotion(): boolean {
 }
 
 /**
- * An intro link that a sunrise gradient sweeps across — once when a visitor
+ * An intro link that a sunset gradient sweeps across — once when a visitor
  * first lands on the site, and again for as long as the pointer rests on it.
  */
 export function ShimmerLink({
@@ -95,20 +95,11 @@ export function ShimmerLink({
       onPointerCancel={stop}
     >
       {sweeping ? (
-        <GradientShimmer
-          gradient="sunrise"
-          pauseBetween={PAUSE_BETWEEN_MS}
-          /* Either pause would stall the sweep behind our back and desync the
-             stop timing above; the intro sits at the top of a short page. */
-          pauseOnScroll={false}
-          pauseWhenOffscreen={false}
-          /* The library renders an inline-block, and a link's underline is not
-             drawn through one — the rule would blink out for the sweep. These
-             are single words that never wrap, so a plain inline box is safe. */
-          style={{ display: "inline" }}
-        >
+        /* The shared wrapper keeps the link and AI thinking palettes aligned.
+           It also renders inline so the link underline remains visible. */
+        <SunsetShimmer pauseBetween={PAUSE_BETWEEN_MS}>
           {children}
-        </GradientShimmer>
+        </SunsetShimmer>
       ) : (
         children
       )}

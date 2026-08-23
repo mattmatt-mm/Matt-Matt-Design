@@ -5,6 +5,11 @@ import { Column } from "@/components/Column";
 import { Header } from "@/components/Header";
 import { Prose } from "@/components/Prose";
 import { getSettings, getWritingEntry, listWritingSlugs } from "@/lib/content";
+import {
+  siteDescription,
+  siteName,
+  siteSocialImage,
+} from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -21,7 +26,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: entry.title,
     alternates: { canonical: `/writing/${slug}` },
-    openGraph: { title: entry.title, type: "article" },
+    openGraph: {
+      title: entry.title,
+      description: siteDescription,
+      siteName,
+      type: "article",
+      images: [siteSocialImage],
+    },
   };
 }
 
