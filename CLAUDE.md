@@ -74,6 +74,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - A label prints only on the **first row of its group**. It is absolutely positioned, so a two-line label ("26 / Spring") overhangs the rule instead of growing the row.
 - **The two-column row never stacks.** Category left, title right, at every width including mobile — the 100px label column and the inset rule are fixed, and only the title column narrows. Do not add a breakpoint that collapses it.
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 500×300 image is exactly 366px.
+- **Detail-page imagery is the one thing that leaves the column.** `.prose img` breaks out and centres on the 500px measure at `min(1200px, 100vw - 48px)`, so a case study reads at full size on a laptop and still sits inside the 24px gutters on a phone. Body copy, headings, and demos stay at 500px. Use symmetric negative margins, never a transform — the lens capture measures the real box.
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.

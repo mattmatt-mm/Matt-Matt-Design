@@ -875,10 +875,21 @@
     margin-block: 48px;
   }
 
+  /* Case-study and post imagery reads better than the 500px measure allows on
+     a laptop, so it breaks out of the column and centres on it, capped at
+     1200px and always inside the page gutters. Symmetric negative margins
+     rather than a transform: the lens capture measures the real box, and a
+     translated one would be drawn twice-shifted. */
+  .prose {
+    --prose-media-width: min(1200px, 100vw - 48px);
+  }
+
   .prose img {
     display: block;
-    width: 100%;
+    width: var(--prose-media-width);
+    max-width: none;
     height: auto;
+    margin-inline: calc((100% - var(--prose-media-width)) / 2);
   }
 
   .prose :is(code, pre) {
