@@ -24,9 +24,10 @@ const fragmentShader = /* glsl */ `
   uniform float uScrollX;
   uniform float uScroll;
   uniform vec2 uTextureTexel;
+  uniform vec2 uHalfTexel;
   uniform float uVelocity;
   uniform float uViewportWidth;
-  uniform float uViewportHeight;
+  uniform float uCanvasTop;
 
   varying vec2 vUv;
 
@@ -53,11 +54,31 @@ const fragmentShader = /* glsl */ `
   const float EASE_CURVE = float(1.0);
 
   // Chromatic split is present at rest, then grows with scroll velocity.
-  const float REST_CHROMA_X_PX = float(1.4);
-  const float VELOCITY_CHROMA_X_PX = float(3.6);
-  const float REST_CHROMA_Y_PX = float(2.5);
-  const float VELOCITY_CHROMA_Y_PX = float(5.0);
+  const float REST_CHROMA_X_PX = float(1.0);
+  const float VELOCITY_CHROMA_X_PX = float(2.4);
+  const float REST_CHROMA_Y_PX = float(1.8);
+  const float VELOCITY_CHROMA_Y_PX = float(3.6);
   const float VELOCITY_SHEAR_PX = float(8.0);
+
+  // Glass takes light apart along a spectrum rather than into two opposed
+  // channels, so the split is walked in steps and each step weighted by where
+  // it falls in that spectrum: red and orange leading, blue and violet
+  // trailing. The weights are normalised per channel, which is what keeps a
+  // flat field exactly the colour it already was — every step there samples
+  // the same pixel, so it can only sum back to itself. Colour appears on
+  // edges, where the steps genuinely disagree.
+  // Depth of field. Nothing is softened at the horizon, where the strip has to
+  // meet the page exactly; it builds only as content travels away, so the blur
+  // reads as distance rather than as a lens that cannot hold focus.
+  const float DEPTH_BLUR_PX = float(1.6);
+
+  // Residual sub-pixel trim, in document pixels, if a particular display still
+  // lands the strip a hair off the page. Negative moves the sampling left.
+  const float SAMPLE_NUDGE_X_PX = float(0.0);
+
+  const int DISPERSION_TAPS = 9;
+  const float DISPERSION_VIOLET = float(0.42);
+  const float DISPERSION_MIX = float(0.95);
 
   // Local edge displacement. These controls create liquid tendrils without
   // changing the global mirror curve above.
@@ -88,6 +109,15 @@ const fragmentShader = /* glsl */ `
   // whose sampling rate eases from rateA to rateB.
   float lensSpan(float p, float rateA, float rateB) {
     return rateA * p + (rateB - rateA) * lensEaseArea(p);
+  }
+
+  vec3 dispersionWeight(float t) {
+    float warm = smoothstep(0.70, 0.0, t);
+    float violet = smoothstep(0.52, 1.0, t);
+    float core = exp(-pow((t - 0.42) * 2.9, 2.0));
+    // Red carries a violet tail as well, so the far end reads as purple rather
+    // than a flat blue, and red over the warm core gives the orange.
+    return vec3(warm + DISPERSION_VIOLET * violet, core, violet);
   }
 
   float lensLuma(vec3 color) {
@@ -162,18 +192,25 @@ const fragmentShader = /* glsl */ `
     // Shear from scroll velocity peaks mid-canvas and falls to nothing at both
     // ends, so motion never disturbs either join.
     float profile = sin((fromTop / max(canvasHeight, 1.0)) * 3.14159265);
-    float canvasTopY = uScroll + uViewportHeight - canvasHeight;
+    float canvasTopY = uScroll + uCanvasTop;
     float documentY = canvasTopY + contentDirection * documentOffset;
     documentY += direction * velocity * profile * VELOCITY_SHEAR_PX;
 
-    float textureY = 1.0 - clamp(documentY / uDocumentHeight, 0.0, 1.0);
+    // Land on the centre of the captured pixel, not its top-left corner. Half
+    // a texel of drift is enough to read as the strip sitting a pixel off the
+    // page it continues.
+    float textureY =
+      1.0 - clamp(documentY / uDocumentHeight, 0.0, 1.0) - uHalfTexel.y;
     // Map each canvas x-position back to the same CSS pixel in the captured
     // document. The gallery uses optimized images while project pages use
     // ordinary content images, so stretching the full capture across the
     // canvas can otherwise make those routes appear to use different lenses.
     // Refraction geometry intentionally changes y only.
     float documentX = uScrollX + vUv.x * uViewportWidth;
-    float textureX = clamp(documentX / uDocumentWidth, 0.0, 1.0);
+    float textureX =
+      clamp(documentX / uDocumentWidth, 0.0, 1.0) +
+      uHalfTexel.x +
+      SAMPLE_NUDGE_X_PX * uTextureTexel.x;
     vec2 sampleUv = vec2(textureX, textureY);
 
     // Search from this pixel back toward the lens hinge. When a
@@ -258,13 +295,29 @@ const fragmentShader = /* glsl */ `
       uTextureTexel.y *
         (REST_CHROMA_Y_PX + velocity * VELOCITY_CHROMA_Y_PX) * axisWeight.y
     ) * lensAmount;
-    float red = texture2D(uPage, sampleUv + chromaOffset).r;
-    float blue = texture2D(uPage, sampleUv - chromaOffset).b;
-    vec3 refracted = vec3(red, base.g, blue);
-    // Flat fields remain unchanged because all three samples contain the same
-    // colour; edge pixels separate naturally without a mask that can suppress
-    // thin glyphs or fine hardware contours.
-    vec3 color = mix(base, refracted, 0.9 + velocity * 0.1);
+    // Four taps on a diagonal cross, widening with depth below the horizon.
+    float blurPx = DEPTH_BLUR_PX * depthProgress * depthProgress;
+    vec2 blur = uTextureTexel * blurPx;
+    vec3 softened =
+      texture2D(uPage, clamp(sampleUv + blur, vec2(0.0), vec2(1.0))).rgb +
+      texture2D(uPage, clamp(sampleUv - blur, vec2(0.0), vec2(1.0))).rgb +
+      texture2D(uPage, clamp(sampleUv + vec2(blur.x, -blur.y), vec2(0.0), vec2(1.0))).rgb +
+      texture2D(uPage, clamp(sampleUv - vec2(blur.x, -blur.y), vec2(0.0), vec2(1.0))).rgb;
+    base = mix(base, softened * 0.25, clamp(blurPx, 0.0, 1.0));
+
+    vec3 dispersed = vec3(0.0);
+    vec3 weightSum = vec3(0.0);
+    for (int i = 0; i < DISPERSION_TAPS; i++) {
+      float t = float(i) / float(DISPERSION_TAPS - 1);
+      vec3 weight = dispersionWeight(t);
+      vec2 spread = mix(-chromaOffset, chromaOffset, t);
+      dispersed +=
+        texture2D(uPage, clamp(sampleUv + spread, vec2(0.0), vec2(1.0))).rgb *
+        weight;
+      weightSum += weight;
+    }
+    dispersed /= max(weightSum, vec3(0.0001));
+    vec3 color = mix(base, dispersed, DISPERSION_MIX);
 
     // Opaque throughout. The canvas samples the page exactly where the two
     // meet, so there is nothing to fade against — and an alpha ramp here would
@@ -279,6 +332,12 @@ const fragmentShader = /* glsl */ `
 // view. html2canvas reloads every image eagerly inside its own clone, so this
 // wait is only about letting work already in flight finish.
 const IMAGE_SETTLE_MS = 1_500;
+
+// The strip has to resolve as finely as the page it continues, so both the
+// capture and the strip run at the device ratio. The area cap is what keeps a
+// nineteen-image case study from asking for a canvas the browser refuses.
+const MAX_PIXEL_RATIO = 2;
+const MAX_CAPTURE_PIXELS = 26_000_000;
 
 function waitForImages(root: HTMLElement) {
   return Promise.all(
@@ -295,48 +354,57 @@ function waitForImages(root: HTMLElement) {
   );
 }
 
-// html2canvas sizes an image from `naturalWidth`, which the browser reports
-// *after* dividing out the density descriptor of the `srcset` candidate it
-// chose, but it paints the raw bitmap it fetched from `currentSrc`. On a 2x
-// screen next/image resolves to its own `2x` candidate, so the two disagree by
-// exactly that factor and every gallery image is captured as its top-left
-// quarter blown up to full size — the lens then refracts content that never
-// matches the page joining it at the hinge. Repointing each cloned image at
-// the one bitmap the browser already picked, with no descriptor left to
-// correct for, makes the measurement and the paint agree again.
-function pinClonedImageSources(clonedRoot: HTMLElement) {
+// Rendering through the browser means the page is rasterised inside an SVG
+// <foreignObject>, and that cannot reach out to fetch anything: an <img> still
+// pointing at a URL simply renders as nothing. html2canvas' own `inlineImages`
+// only ever covers <canvas>, so fold each bitmap into the markup here.
+//
+// Drawing from the element also sidesteps a second problem. html2canvas' other
+// path sizes an image from `naturalWidth`, which the browser reports after
+// dividing out the density descriptor of the srcset candidate it chose, then
+// paints the raw bitmap — so on a 2x screen every next/image was captured as
+// its top-left quarter blown up. drawImage takes the whole source by default,
+// so the descriptor never enters into it.
+const INLINE_IMAGE_QUALITY = 0.92;
+
+function inlineClonedImages(
+  clonedRoot: HTMLElement,
+  scale: number,
+  backdrop: string,
+) {
   const clonedDocument = clonedRoot.ownerDocument;
 
-  return Promise.all(
-    Array.from(clonedRoot.querySelectorAll("img")).map((image) => {
-      const resolved = image.currentSrc || image.src;
-      if (!image.srcset || !resolved) return;
+  for (const image of Array.from(clonedRoot.querySelectorAll("img"))) {
+    if (image.src.startsWith("data:")) continue;
+    if (!image.complete || !image.naturalWidth) continue;
 
-      // A fresh element carries no previously selected density, which reusing
-      // this one would only clear on a later task.
-      const pinned = clonedDocument.createElement("img");
-      for (const { name, value } of Array.from(image.attributes)) {
-        if (name === "src" || name === "srcset" || name === "sizes") continue;
-        pinned.setAttribute(name, value);
-      }
-      pinned.src = resolved;
-      image.replaceWith(pinned);
+    const box = image.getBoundingClientRect();
+    const width = Math.round(box.width * scale);
+    const height = Math.round(box.height * scale);
+    if (width < 1 || height < 1) continue;
 
-      // The bitmap is normally still in memory, so this resolves at once.
-      // `decode()` would be the natural wait, but it can hang indefinitely
-      // inside html2canvas' hidden clone frame, which never gets painted.
-      if (pinned.complete && pinned.naturalWidth > 0) return;
-      return new Promise<void>((resolve) => {
-        const settle = () => {
-          window.clearTimeout(timer);
-          resolve();
-        };
-        const timer = window.setTimeout(settle, IMAGE_SETTLE_MS);
-        pinned.addEventListener("load", settle, { once: true });
-        pinned.addEventListener("error", settle, { once: true });
-      });
-    }),
-  );
+    const frame = clonedDocument.createElement("canvas");
+    frame.width = width;
+    frame.height = height;
+    const context = frame.getContext("2d");
+    if (!context) continue;
+
+    try {
+      // Flatten onto the page's own backdrop rather than keeping an alpha
+      // channel. It is what shows through the image on the page anyway, and it
+      // lets these encode as JPEG — a case study runs to nineteen images, and
+      // lossless ones would put tens of megabytes of base64 into one SVG.
+      context.fillStyle = backdrop;
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+      image.src = frame.toDataURL("image/jpeg", INLINE_IMAGE_QUALITY);
+      image.removeAttribute("srcset");
+      image.removeAttribute("sizes");
+    } catch {
+      // A tainted canvas leaves the image as it was; one missing picture is
+      // better than losing the whole capture.
+    }
+  }
 }
 
 export function SmoothScrollLens() {
@@ -419,9 +487,10 @@ export function SmoothScrollLens() {
         uScrollX: { value: window.scrollX },
         uScroll: { value: window.scrollY },
         uTextureTexel: { value: new THREE.Vector2(1, 1) },
+        uHalfTexel: { value: new THREE.Vector2(0, 0) },
         uVelocity: { value: 0 },
         uViewportWidth: { value: window.innerWidth },
-        uViewportHeight: { value: window.innerHeight },
+        uCanvasTop: { value: 0 },
       };
       const geometry = new THREE.PlaneGeometry(2, 2);
       const material = new THREE.ShaderMaterial({
@@ -450,7 +519,13 @@ export function SmoothScrollLens() {
       }
 
       function resizeRenderer() {
-        const canvasHeight = canvas.getBoundingClientRect().height;
+        // Every measurement comes from the canvas' own box. It is laid out in
+        // the layout viewport, so a classic scrollbar makes it narrower and
+        // shorter than window.innerWidth/innerHeight — and mapping the strip
+        // across the window instead slid the refraction sideways from the page
+        // it is supposed to continue.
+        const rect = canvas.getBoundingClientRect();
+        const canvasHeight = rect.height;
         // The canvas spans both bands. Only the part below the horizon is the
         // lens proper; the rest is the approach that eases the effect in, and
         // the shader needs to know where the two meet.
@@ -461,12 +536,12 @@ export function SmoothScrollLens() {
           ? Math.min(belowHorizon, canvasHeight)
           : canvasHeight;
 
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        renderer.setSize(window.innerWidth, canvasHeight, false);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+        renderer.setSize(rect.width, canvasHeight, false);
         uniforms.uApproachHeight.value = Math.max(canvasHeight - lensHeight, 0);
         uniforms.uLensHeight.value = lensHeight;
-        uniforms.uViewportWidth.value = window.innerWidth;
-        uniforms.uViewportHeight.value = window.innerHeight;
+        uniforms.uViewportWidth.value = rect.width;
+        uniforms.uCanvasTop.value = rect.top;
         render();
       }
 
@@ -480,26 +555,36 @@ export function SmoothScrollLens() {
         const documentWidth = Math.max(
           content.scrollWidth,
           document.documentElement.scrollWidth,
-          window.innerWidth,
+          document.documentElement.clientWidth,
         );
         const documentHeight = Math.max(
           content.scrollHeight,
           document.documentElement.scrollHeight,
-          window.innerHeight,
+          document.documentElement.clientHeight,
         );
         const maxTextureSize = renderer.capabilities.maxTextureSize;
+        // Capture at the device's own resolution. Sampling a 1.25x texture into
+        // a 2x strip is what made the refracted text read soft against the
+        // crisp page around it — the lens was showing upscaled pixels, not
+        // glass. Long pages fall back rather than asking for a canvas no
+        // browser will allocate.
+        const areaLimit = Math.sqrt(
+          MAX_CAPTURE_PIXELS / (documentWidth * documentHeight),
+        );
         const captureScale = Math.max(
-          0.5,
+          0.75,
           Math.min(
             window.devicePixelRatio,
-            1.25,
+            MAX_PIXEL_RATIO,
+            areaLimit,
             maxTextureSize / documentWidth,
             maxTextureSize / documentHeight,
           ),
         );
 
+        const backdrop = getComputedStyle(document.body).backgroundColor;
         const pageCanvas = await html2canvas(content, {
-          backgroundColor: getComputedStyle(document.body).backgroundColor,
+          backgroundColor: backdrop,
           height: documentHeight,
           scrollX: 0,
           scrollY: 0,
@@ -509,11 +594,15 @@ export function SmoothScrollLens() {
           scale: captureScale,
           logging: false,
           useCORS: true,
-          // html2canvas types this hook as returning void, but it does await
-          // whatever the hook returns — which is how the swap below gets to
-          // finish before the clone is measured.
+          // Rasterise through the browser instead of html2canvas' own CSS
+          // re-implementation. That JS path lays text out itself and put every
+          // 16px/21px line about 6px below where the page paints it, so the
+          // strip redrew a line the page had already drawn and the seam showed
+          // it twice. The browser cannot disagree with itself about where its
+          // own text sits.
+          foreignObjectRendering: true,
           onclone: (_clonedDocument, clonedRoot) =>
-            pinClonedImageSources(clonedRoot),
+            inlineClonedImages(clonedRoot, captureScale, backdrop),
         });
 
         if (cancelled) return;
@@ -530,6 +619,10 @@ export function SmoothScrollLens() {
         uniforms.uTextureTexel.value.set(
           1 / documentWidth,
           1 / documentHeight,
+        );
+        uniforms.uHalfTexel.value.set(
+          0.5 / (documentWidth * captureScale),
+          0.5 / (documentHeight * captureScale),
         );
         uniforms.uHasTexture.value = 1;
         canvas.dataset.ready = "true";
