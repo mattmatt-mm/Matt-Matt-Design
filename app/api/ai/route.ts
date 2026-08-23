@@ -23,6 +23,22 @@ function error(message: string, status: number) {
   );
 }
 
+function reportProviderFailure(cause: unknown) {
+  if (!(cause instanceof Error)) {
+    console.error("Portfolio AI request failed with an unknown provider error.");
+    return;
+  }
+
+  const statusCode =
+    "statusCode" in cause && typeof cause.statusCode === "number"
+      ? cause.statusCode
+      : undefined;
+  console.error("Portfolio AI request failed.", {
+    name: cause.name,
+    statusCode,
+  });
+}
+
 function localPreviewStream(message: string) {
   let begin: ReturnType<typeof setTimeout> | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
@@ -142,7 +158,10 @@ export async function POST(request: Request) {
         "X-AI-Outcome": decision.outcome,
       },
     });
-  } catch {
+  } catch (cause) {
+    // Keep visitor questions and provider response bodies out of logs while
+    // retaining enough metadata to distinguish configuration and uptime errors.
+    reportProviderFailure(cause);
     return error("Matt's AI is unavailable right now. Please try again later.", 503);
   }
 }

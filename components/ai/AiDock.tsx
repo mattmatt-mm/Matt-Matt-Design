@@ -68,64 +68,66 @@ export function AiDock({
         aria-hidden="true"
       />
       <div className="site-dock-row" data-ai-open={aiOpen ? "true" : "false"}>
-        <SiteSquircle asChild>
-          <nav
-            className="site-dock navigation-surface"
-            aria-label="Portfolio sections"
-          >
-            {tabs.map((tab) => {
-              const active =
-                tab.href === "/"
-                  ? pathname === "/" || pathname.startsWith("/work/")
-                  : pathname.startsWith(tab.href);
-              const Icon = tab.icon;
-              const letters = [...tab.label];
-              const step =
-                letters.length > 1
-                  ? (WORD_MS - LETTER_MS) / (letters.length - 1)
-                  : 0;
-              const hopping = tapped?.href === tab.href;
+        <div className="site-dock-shadow">
+          <SiteSquircle asChild>
+            <nav
+              className="site-dock navigation-surface"
+              aria-label="Portfolio sections"
+            >
+              {tabs.map((tab) => {
+                const active =
+                  tab.href === "/"
+                    ? pathname === "/" || pathname.startsWith("/work/")
+                    : pathname.startsWith(tab.href);
+                const Icon = tab.icon;
+                const letters = [...tab.label];
+                const step =
+                  letters.length > 1
+                    ? (WORD_MS - LETTER_MS) / (letters.length - 1)
+                    : 0;
+                const hopping = tapped?.href === tab.href;
 
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  aria-current={active ? "page" : undefined}
-                  aria-hidden={aiOpen ? "true" : undefined}
-                  tabIndex={aiOpen ? -1 : undefined}
-                  className="site-dock-tab"
-                  data-active={active ? "true" : "false"}
-                  onClick={() => tap(tab.href)}
-                >
-                  <SiteSquircle
-                    cornerRadius={12}
-                    className="site-dock-tab-surface"
-                    aria-hidden="true"
-                  />
-                  <Icon size={20} weight="regular" aria-hidden="true" />
-                  <span aria-hidden="true">
-                    {letters.map((letter, index) => (
-                      <span
-                        key={`${hopping ? tapped?.plays : 0}-${index}`}
-                        className={hopping ? "tab-letter" : undefined}
-                        style={
-                          hopping
-                            ? {
-                                animationDelay: `${Math.round(index * step)}ms`,
-                              }
-                            : undefined
-                        }
-                      >
-                        {letter}
-                      </span>
-                    ))}
-                  </span>
-                  <span className="sr-only">{tab.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </SiteSquircle>
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    aria-current={active ? "page" : undefined}
+                    aria-hidden={aiOpen ? "true" : undefined}
+                    tabIndex={aiOpen ? -1 : undefined}
+                    className="site-dock-tab"
+                    data-active={active ? "true" : "false"}
+                    onClick={() => tap(tab.href)}
+                  >
+                    <SiteSquircle
+                      cornerRadius={12}
+                      className="site-dock-tab-surface"
+                      aria-hidden="true"
+                    />
+                    <Icon size={20} weight="regular" aria-hidden="true" />
+                    <span aria-hidden="true">
+                      {letters.map((letter, index) => (
+                        <span
+                          key={`${hopping ? tapped?.plays : 0}-${index}`}
+                          className={hopping ? "tab-letter" : undefined}
+                          style={
+                            hopping
+                              ? {
+                                  animationDelay: `${Math.round(index * step)}ms`,
+                                }
+                              : undefined
+                          }
+                        >
+                          {letter}
+                        </span>
+                      ))}
+                    </span>
+                    <span className="sr-only">{tab.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </SiteSquircle>
+        </div>
         <div className="ai-trigger-shell">
           <SiteSquircle
             width={52}

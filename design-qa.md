@@ -142,6 +142,79 @@ final result: passed
 
 ---
 
+# Design QA — gallery refraction parity and visible navigation elevation
+
+- Date: 2026-08-23
+- Source visual truth: `/var/folders/30/99tph7dj13z43b18vvrr41xr0000gn/T/codex-clipboard-198e3974-3c03-492a-aacd-e7a0581f87d7.png`, together with Matt's clarification that the project-page lens is the behavioral reference and `doc/taste.md` sections 4–5 for elevation
+- Source dimensions: 1250 × 428 px; source CSS viewport and density are unknown
+- Implementation screenshot: `/private/tmp/gallery-refraction-navigation-after-full.png`
+- Implementation screenshot dimensions: 749 × 675 px, captured from the in-app browser at a 1280 × 720 CSS viewport with devicePixelRatio 2; the browser surface applied its own display scaling
+- Combined comparison input: `/private/tmp/gallery-refraction-navigation-comparison.png`
+- Density normalization: the 1250px-wide source was proportionally reduced to the implementation's 749px output width before both captures were placed in one comparison image; no conclusions were drawn from browser-density-dependent absolute scale
+- State: Gallery route, light theme, AI closed, Bowtie gallery image crossing the lower refraction band
+
+## Full-view and focused comparison evidence
+
+The combined comparison opens the supplied pre-fix Gallery capture and the
+post-fix browser capture in one image. It keeps the complete image/lens/dock
+relationship visible. A separate focused crop was not needed because the
+navigation labels, both squircle edges, the lens content, and the image's left
+and right boundaries remain readable in the combined input.
+
+## Comparison history and findings
+
+- **Earlier P1 — fixed:** Gallery could stretch its captured image across the
+  lens width, making it appear horizontally zoomed relative to project pages.
+- **Fix applied:** lens x sampling now maps each viewport CSS pixel to the same
+  document CSS pixel. The horizontal barrel displacement was removed, while
+  the existing nonlinear y profile remains responsible for elongation.
+- **PASS — post-fix lens evidence:** the Bowtie gallery image and its refracted
+  continuation retain the same 500px horizontal boundaries. Only y sampling
+  changes through the band. The canvas reached `data-ready="true"` on both
+  `/gallery` and `/work/bowtie-jp-health`.
+- **Earlier P2 — fixed:** the three-layer navigation shadow token was assigned
+  to elements that also carried the squircle clip path, so the rendered shadow
+  was absent or visually clipped.
+- **Fix applied:** the existing 1px, 4px, and 20px black-at-5% shadow token now
+  renders on unclipped outer shells; the visible inner surfaces remain the same
+  single 16px, 0.6-smoothed squircles with no decorative border.
+- **PASS — post-fix elevation evidence:** both the 236×52px navigation parent
+  and the separate 52×52px AI trigger show the full shared shadow stack. The
+  8px gap and overall 296px dock-row width are unchanged.
+- **PASS — fonts and typography:** Helvetica Neue, sizes, line heights, weights,
+  labels, and wrapping are unchanged.
+- **PASS — spacing and layout rhythm:** content width, image width, navigation
+  dimensions, squircle geometry, active-tab inset, and dock position are
+  unchanged.
+- **PASS — colors and visual tokens:** theme-aware surface colors remain intact;
+  both elevation surfaces consume the existing shared shadow token.
+- **PASS — image quality and asset fidelity:** the source gallery imagery,
+  Phosphor icons, and Bloub avatar are unchanged and remain sharp.
+- **PASS — copy and content:** no visible or accessible copy changed.
+- **PASS — interaction states:** project-to-gallery navigation works and sets
+  `aria-current="page"`; opening AI fades/blurs the dock and removes the trigger
+  shadow, while closing AI restores both shadow stacks.
+
+## Verification
+
+- **PASS** — browser checks on `/gallery` and `/work/bowtie-jp-health`.
+- **PASS** — Gallery navigation and AI open/close interaction checks.
+- **PASS** — no browser console errors; one unrelated Next.js LCP advisory was
+  present for the existing first gallery image.
+- **PASS** — React best-practices review found no new hook, rendering,
+  accessibility, bundle, or component-structure issues.
+- **PASS** — `npm run typecheck`.
+- **PASS** — `git diff --check`.
+- Build was not rerun because an existing development server is active against
+  the shared `.next` directory; this repository explicitly prohibits running
+  both concurrently.
+
+No actionable P0, P1, or P2 findings remain.
+
+final result: passed
+
+---
+
 # Design QA — simplified AI opening motion
 
 - Date: 2026-08-23
@@ -549,5 +622,28 @@ density is unknown. Live bounding boxes were used to verify the unchanged
 No actionable P0, P1, or P2 navigation differences remain. The lens proportion
 question was audited separately and its shader was intentionally left unchanged
 as requested.
+
+final result: passed
+
+---
+
+# Current Design QA result — gallery lens and dock shadow
+
+This is the latest QA result and supersedes the older note immediately above
+that left the lens shader unchanged. Matt subsequently clarified that Gallery,
+not the project page, was the route with the incorrect horizontal zoom.
+
+- Full report: “Design QA — gallery refraction parity and visible navigation
+  elevation” above
+- Source visual truth: `/var/folders/30/99tph7dj13z43b18vvrr41xr0000gn/T/codex-clipboard-198e3974-3c03-492a-aacd-e7a0581f87d7.png`, Matt's route clarification, the live project-page behavior, and `doc/taste.md` sections 4–5
+- Browser implementation evidence: `/private/tmp/gallery-refraction-navigation-after-full.png`
+- Same-input comparison: `/private/tmp/gallery-refraction-navigation-comparison.png`
+- Browser viewport/state: 1280 × 720 CSS px, devicePixelRatio 2, Gallery,
+  light theme, AI closed; implementation artifact 749 × 675 px after in-app
+  browser display scaling
+- Result: x sampling is 1:1 across Gallery and project routes, y remains the
+  only refracted geometry, both navigation surfaces render the shared unclipped
+  three-layer shadow, and navigation plus AI open/close interactions pass
+- Residual P0/P1/P2 findings: none
 
 final result: passed

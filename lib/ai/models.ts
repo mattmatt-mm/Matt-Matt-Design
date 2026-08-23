@@ -3,7 +3,7 @@ import { siteUrl } from "@/lib/site";
 
 export const FREE_MODEL_ALLOWLIST = [
   "z-ai/glm-5.2:free",
-  "nousresearch/hermes-3-llama-3.1-405b:free",
+  "openrouter/free",
 ] as const;
 
 type FreeModel = (typeof FREE_MODEL_ALLOWLIST)[number];
@@ -11,7 +11,11 @@ type FreeModel = (typeof FREE_MODEL_ALLOWLIST)[number];
 function allowedModel(value: string | undefined, fallback: FreeModel): FreeModel {
   const candidate = value ?? fallback;
   if (!FREE_MODEL_ALLOWLIST.includes(candidate as FreeModel)) {
-    throw new Error("Configured AI model is outside the free-model allowlist.");
+    // Model availability changes over time. A stale Vercel variable must not
+    // take the whole endpoint down, and it must never widen the request path
+    // to a paid model. Fall back to a currently approved free model instead.
+    console.warn("Ignoring an AI model outside the current free-model allowlist.");
+    return fallback;
   }
   return candidate as FreeModel;
 }
@@ -26,7 +30,7 @@ export function getPortfolioModel() {
   );
   const fallback = allowedModel(
     process.env.OPENROUTER_FALLBACK_MODEL,
-    "nousresearch/hermes-3-llama-3.1-405b:free",
+    "openrouter/free",
   );
 
   const openrouter = createOpenRouter({
@@ -38,10 +42,10 @@ export function getPortfolioModel() {
   });
 
   return openrouter(primary, {
+    // OpenRouter first tries the named free model, then its maintained router
+    // for currently available free models. Paid models cannot enter the path.
+    models: primary === fallback ? [] : [fallback],
     extraBody: {
-      // OpenRouter tries this exact free fallback only when the primary fails.
-      // No auto-router or paid model can enter the request path.
-      models: primary === fallback ? [] : [fallback],
       // Exclude provider endpoints that may retain or train on visitor text.
       provider: { data_collection: "deny" },
     },

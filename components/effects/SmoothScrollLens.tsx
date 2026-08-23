@@ -16,12 +16,15 @@ const fragmentShader = /* glsl */ `
   precision highp float;
 
   uniform sampler2D uPage;
+  uniform float uDocumentWidth;
   uniform float uDocumentHeight;
   uniform float uHasTexture;
   uniform float uLensHeight;
+  uniform float uScrollX;
   uniform float uScroll;
   uniform vec2 uTextureTexel;
   uniform float uVelocity;
+  uniform float uViewportWidth;
   uniform float uViewportHeight;
 
   varying vec2 vUv;
@@ -39,8 +42,8 @@ const fragmentShader = /* glsl */ `
   const float ENTRY_BLEND_DEPTH = float(0.10);
 
   // Chromatic split is present at rest, then grows with scroll velocity.
-  const float REST_CHROMA_X = float(0.0011);
-  const float VELOCITY_CHROMA_X = float(0.0028);
+  const float REST_CHROMA_X_PX = float(1.4);
+  const float VELOCITY_CHROMA_X_PX = float(3.6);
   const float REST_CHROMA_Y_PX = float(2.5);
   const float VELOCITY_CHROMA_Y_PX = float(5.0);
   const float VELOCITY_SHEAR_PX = float(8.0);
@@ -117,9 +120,14 @@ const fragmentShader = /* glsl */ `
       direction * velocity * profile * transition * VELOCITY_SHEAR_PX;
 
     float textureY = 1.0 - clamp(documentY / uDocumentHeight, 0.0, 1.0);
-    float barrel =
-      (vUv.x - 0.5) * profile * transition * (0.0008 + velocity * 0.0025);
-    vec2 sampleUv = vec2(clamp(vUv.x + barrel, 0.0, 1.0), textureY);
+    // Map each canvas x-position back to the same CSS pixel in the captured
+    // document. The gallery uses optimized images while project pages use
+    // ordinary content images, so stretching the full capture across the
+    // canvas can otherwise make those routes appear to use different lenses.
+    // Refraction geometry intentionally changes y only.
+    float documentX = uScrollX + vUv.x * uViewportWidth;
+    float textureX = clamp(documentX / uDocumentWidth, 0.0, 1.0);
+    vec2 sampleUv = vec2(textureX, textureY);
 
     // Search from this pixel back toward the lens hinge. When a
     // nearby high-contrast edge is found, pull that source pixel down into the
@@ -196,7 +204,8 @@ const fragmentShader = /* glsl */ `
       : vec2(0.5);
     axisWeight = mix(vec2(0.5), axisWeight, 0.74);
     vec2 chromaOffset = vec2(
-      (REST_CHROMA_X + velocity * VELOCITY_CHROMA_X) * axisWeight.x,
+      uTextureTexel.x *
+        (REST_CHROMA_X_PX + velocity * VELOCITY_CHROMA_X_PX) * axisWeight.x,
       uTextureTexel.y *
         (REST_CHROMA_Y_PX + velocity * VELOCITY_CHROMA_Y_PX) * axisWeight.y
     ) * transition;
@@ -300,12 +309,15 @@ export function SmoothScrollLens() {
 
       const uniforms = {
         uPage: { value: null as InstanceType<typeof THREE.Texture> | null },
+        uDocumentWidth: { value: 1 },
         uDocumentHeight: { value: 1 },
         uHasTexture: { value: 0 },
         uLensHeight: { value: 1 },
+        uScrollX: { value: window.scrollX },
         uScroll: { value: window.scrollY },
         uTextureTexel: { value: new THREE.Vector2(1, 1) },
         uVelocity: { value: 0 },
+        uViewportWidth: { value: window.innerWidth },
         uViewportHeight: { value: window.innerHeight },
       };
       const geometry = new THREE.PlaneGeometry(2, 2);
@@ -323,6 +335,7 @@ export function SmoothScrollLens() {
       let pageTexture: InstanceType<typeof THREE.CanvasTexture> | undefined;
 
       function render(scroll = lenis.animatedScroll, velocity = 0) {
+        uniforms.uScrollX.value = window.scrollX;
         uniforms.uScroll.value = scroll;
         uniforms.uVelocity.value = velocity;
         renderer.render(scene, camera);
@@ -333,6 +346,7 @@ export function SmoothScrollLens() {
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setSize(window.innerWidth, lensHeight, false);
         uniforms.uLensHeight.value = lensHeight;
+        uniforms.uViewportWidth.value = window.innerWidth;
         uniforms.uViewportHeight.value = window.innerHeight;
         render();
       }
@@ -344,7 +358,11 @@ export function SmoothScrollLens() {
         await waitForImages(content);
         if (cancelled) return;
 
-        const documentWidth = content.scrollWidth;
+        const documentWidth = Math.max(
+          content.scrollWidth,
+          document.documentElement.scrollWidth,
+          window.innerWidth,
+        );
         const documentHeight = Math.max(
           content.scrollHeight,
           document.documentElement.scrollHeight,
@@ -383,10 +401,11 @@ export function SmoothScrollLens() {
         pageTexture.minFilter = THREE.LinearFilter;
         pageTexture.magFilter = THREE.LinearFilter;
         uniforms.uPage.value = pageTexture;
+        uniforms.uDocumentWidth.value = documentWidth;
         uniforms.uDocumentHeight.value = documentHeight;
         uniforms.uTextureTexel.value.set(
-          1 / pageCanvas.width,
-          1 / pageCanvas.height,
+          1 / documentWidth,
+          1 / documentHeight,
         );
         uniforms.uHasTexture.value = 1;
         canvas.dataset.ready = "true";
