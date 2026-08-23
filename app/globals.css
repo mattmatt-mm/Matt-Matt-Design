@@ -93,18 +93,21 @@
     pointer-events: none;
   }
 
+  /* Sits above the page and the scroll lens so the fade covers both, but
+     below the dock — the navigation floats over this, never under it. */
   .site-content-mask {
     position: fixed;
-    z-index: 50;
+    z-index: 65;
     right: 0;
     bottom: 0;
     left: 0;
-    height: min(240px, 24dvh);
+    height: min(120px, 16dvh);
+    /* One even ramp, clear to solid. Landing the solid stop early left the
+       last third of the strip flat and read as a painted band. */
     background: linear-gradient(
       to bottom,
       var(--color-content-mask-clear) 0%,
-      var(--color-content-mask-solid) 64%,
-      var(--color-bg) 84%
+      var(--color-content-mask-solid) 100%
     );
     pointer-events: none;
   }
