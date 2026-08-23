@@ -2,7 +2,6 @@
 
 import { KeyReturn } from "@phosphor-icons/react/dist/ssr/KeyReturn";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import type { RefObject } from "react";
 import { SiteSquircle } from "@/components/SiteSquircle";
 import { MAX_QUESTION_CHARS } from "@/lib/ai/limits";
 
@@ -18,7 +17,6 @@ export function AiComposer({
   placeholder = "Ask me anything",
   compact = false,
   showDisclosure = true,
-  inputRef,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -28,14 +26,18 @@ export function AiComposer({
   placeholder?: string;
   compact?: boolean;
   showDisclosure?: boolean;
-  /** Lets the opener focus this field inside the tap's own call stack. */
-  inputRef?: RefObject<HTMLTextAreaElement | null>;
 }) {
   const input = useRef<HTMLTextAreaElement>(null);
   const composing = useRef(false);
 
   useEffect(() => {
-    if (autoFocus) input.current?.focus({ preventScroll: true });
+    if (!autoFocus) return;
+    // A touch device raises its on-screen keyboard the moment a field takes
+    // focus, which covers the surface before anyone has decided to type. There
+    // the field waits to be tapped; a pointer has no such cost, so it still
+    // opens ready to type.
+    if (window.matchMedia("(pointer: coarse)").matches) return;
+    input.current?.focus({ preventScroll: true });
   }, [autoFocus]);
 
   useLayoutEffect(() => {
@@ -65,10 +67,7 @@ export function AiComposer({
         aria-hidden="true"
       />
       <textarea
-        ref={(node) => {
-          input.current = node;
-          if (inputRef) inputRef.current = node;
-        }}
+        ref={input}
         value={value}
         maxLength={MAX_QUESTION_CHARS}
         rows={compact ? 1 : 3}

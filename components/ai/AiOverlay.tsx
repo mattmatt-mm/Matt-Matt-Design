@@ -9,7 +9,6 @@ import {
   type ContactStatus,
 } from "@/components/ai/AiContactForm";
 import { AiThinking } from "@/components/ai/AiThinking";
-import type { RefObject } from "react";
 
 export type AIPhase =
   | "ask_primary"
@@ -37,7 +36,6 @@ export function AiOverlay({
   onContactEmailChange,
   onContactNoteChange,
   onContactSubmit,
-  composerRef,
 }: {
   phase: AIPhase;
   question: string;
@@ -55,8 +53,6 @@ export function AiOverlay({
   onContactEmailChange: (value: string) => void;
   onContactNoteChange: (value: string) => void;
   onContactSubmit: (company: string) => void;
-  /** Forwarded to the opening composer so the trigger can focus it directly. */
-  composerRef?: RefObject<HTMLTextAreaElement | null>;
 }) {
   const asking = phase === "ask_primary" || phase === "ask_followup";
   const thinking = phase === "thinking_primary" || phase === "thinking_followup";
@@ -97,7 +93,6 @@ export function AiOverlay({
                   error={composerError}
                   onChange={onQuestionChange}
                   onSubmit={onQuestionSubmit}
-                  inputRef={composerRef}
                 />
               ) : null}
               {thinking ? <AiThinking /> : null}
