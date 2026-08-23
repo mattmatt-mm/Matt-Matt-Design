@@ -150,6 +150,9 @@ export async function POST(request: Request) {
         request.signal,
         AbortSignal.timeout(20_000),
       ]),
+      onError: ({ error }) => {
+        console.error("[ai] provider error", error);
+      },
     });
 
     const stream = limitTextStream(toTextStream({ stream: result.stream }));

@@ -165,12 +165,15 @@ not decorative borders and should remain where required.
 - Reduced-motion mode removes the spatial morph and content blur. The AI
   character may retain subtle gaze/expression behavior because Matt approved it
   as the character exception.
-- Nothing the scroll lens can refract may change appearance on hover. The lens
-  refracts a frozen capture of the page, so a hovered element dims live while
-  its refraction stays bright, and the strip reads as a hard seam rather than
-  glass. Gallery images therefore do not dim; the caption carries the hover on
-  its own. Apply the same restraint to any future imagery or fill that can pass
-  under the lens.
+- The scroll-lens refraction is off (`LENS_ENABLED` in
+  `components/effects/SmoothScrollLens.tsx`). It never resolved into glass: it
+  needs a raster of the page that matches the page to the pixel, and no DOM
+  rasteriser gets there. Do not switch it back on to fix an unrelated problem.
+  What separates the page from the navigation is the `.site-content-mask`
+  gradient, and Lenis smooth scrolling is independent of both.
+- Gallery images do not dim on hover; the caption carries it. That began as a
+  lens constraint and stays on its own merit — a photograph dimming under the
+  pointer reads as a state change, where a caption dimming reads as a target.
 
 ## 10. AI response completion
 

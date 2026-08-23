@@ -54,10 +54,17 @@ const fragmentShader = /* glsl */ `
   const float EASE_CURVE = float(1.0);
 
   // Chromatic split is present at rest, then grows with scroll velocity.
-  const float REST_CHROMA_X_PX = float(1.0);
-  const float VELOCITY_CHROMA_X_PX = float(2.4);
-  const float REST_CHROMA_Y_PX = float(1.8);
-  const float VELOCITY_CHROMA_Y_PX = float(3.6);
+  const float REST_CHROMA_X_PX = float(0.5);
+  const float VELOCITY_CHROMA_X_PX = float(1.3);
+  const float REST_CHROMA_Y_PX = float(0.9);
+  const float VELOCITY_CHROMA_Y_PX = float(2.0);
+
+  // Only genuine edges come apart. The gradient decided the direction of the
+  // split but never its amount, so a flat field still got the full offset and
+  // any faint texture in it turned colour — the area tinting rather than the
+  // objects in it. Below the low mark nothing separates at all.
+  const float EDGE_GATE_LOW = float(0.035);
+  const float EDGE_GATE_HIGH = float(0.24);
   const float VELOCITY_SHEAR_PX = float(8.0);
 
   // Glass takes light apart along a spectrum rather than into two opposed
@@ -289,12 +296,13 @@ const fragmentShader = /* glsl */ `
       ? gradientMagnitude / max(gradientMagnitude.x + gradientMagnitude.y, 0.0001)
       : vec2(0.5);
     axisWeight = mix(vec2(0.5), axisWeight, 0.74);
+    float edge = smoothstep(EDGE_GATE_LOW, EDGE_GATE_HIGH, gradientLength);
     vec2 chromaOffset = vec2(
       uTextureTexel.x *
         (REST_CHROMA_X_PX + velocity * VELOCITY_CHROMA_X_PX) * axisWeight.x,
       uTextureTexel.y *
         (REST_CHROMA_Y_PX + velocity * VELOCITY_CHROMA_Y_PX) * axisWeight.y
-    ) * lensAmount;
+    ) * lensAmount * edge;
     // Four taps on a diagonal cross, widening with depth below the horizon.
     float blurPx = DEPTH_BLUR_PX * depthProgress * depthProgress;
     vec2 blur = uTextureTexel * blurPx;
@@ -331,6 +339,19 @@ const fragmentShader = /* glsl */ `
 // bare await here stalls the whole capture until something scrolls it into
 // view. html2canvas reloads every image eagerly inside its own clone, so this
 // wait is only about letting work already in flight finish.
+/**
+ * The refraction is off. It never resolved into glass: it depends on a capture
+ * of the page that lines up with the page to the pixel, and no DOM rasteriser
+ * gets there — html2canvas' JS path lays text out itself and mis-set every
+ * 16px/21px baseline, and its foreignObject path renders text correctly but
+ * cannot fetch anything, so images have to be re-encoded into the markup one
+ * by one. What survives here is the smooth scrolling; the fade that separates
+ * the page from the navigation is `.site-content-mask` and is independent of
+ * this. Set this true to bring the strip back — the shader, the two-band
+ * geometry and the capture are all still here and working.
+ */
+const LENS_ENABLED = false;
+
 const IMAGE_SETTLE_MS = 1_500;
 
 // The strip has to resolve as finely as the page it continues, so both the
@@ -414,12 +435,13 @@ export function SmoothScrollLens() {
   useEffect(() => {
     if (pathname.startsWith("/keystatic")) return;
 
-    const canvasElement = canvasRef.current;
     const contentElement =
       document.querySelector<HTMLElement>("[data-lens-content]");
-    if (!canvasElement || !contentElement) return;
+    if (!contentElement) return;
 
-    const canvas: HTMLCanvasElement = canvasElement;
+    // The canvas only exists while the strip is on. Smooth scrolling does not
+    // depend on it, so it must not be a precondition for setting Lenis up.
+    const canvas = canvasRef.current;
     const content: HTMLElement = contentElement;
 
     let cancelled = false;
@@ -428,13 +450,9 @@ export function SmoothScrollLens() {
     let cleanup: (() => void) | undefined;
 
     async function start() {
-      const [{ default: Lenis }, THREE, { default: html2canvas }] =
-        await Promise.all([
-          import("lenis"),
-          import("three"),
-          import("html2canvas"),
-        ]);
-
+      // three and html2canvas are only pulled in when the strip is on, so
+      // turning it off also takes their weight off every page.
+      const { default: Lenis } = await import("lenis");
       if (cancelled) return;
 
       const lenis = new Lenis({
@@ -448,15 +466,28 @@ export function SmoothScrollLens() {
         prevent: (node) => Boolean(node.closest("[data-lenis-prevent]")),
       });
 
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (
+        !LENS_ENABLED ||
+        !canvas ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches
+      ) {
         cleanup = () => lenis.destroy();
         return;
       }
 
+      // Narrowed once here so the render path below can rely on it.
+      const lensCanvas: HTMLCanvasElement = canvas;
+
+      const [THREE, { default: html2canvas }] = await Promise.all([
+        import("three"),
+        import("html2canvas"),
+      ]);
+      if (cancelled) return;
+
       let renderer: InstanceType<typeof THREE.WebGLRenderer>;
       try {
         renderer = new THREE.WebGLRenderer({
-          canvas,
+          canvas: lensCanvas,
           alpha: true,
           antialias: false,
           premultipliedAlpha: false,
@@ -524,13 +555,13 @@ export function SmoothScrollLens() {
         // shorter than window.innerWidth/innerHeight — and mapping the strip
         // across the window instead slid the refraction sideways from the page
         // it is supposed to continue.
-        const rect = canvas.getBoundingClientRect();
+        const rect = lensCanvas.getBoundingClientRect();
         const canvasHeight = rect.height;
         // The canvas spans both bands. Only the part below the horizon is the
         // lens proper; the rest is the approach that eases the effect in, and
         // the shader needs to know where the two meet.
         const belowHorizon = Number.parseFloat(
-          getComputedStyle(canvas).getPropertyValue("--scroll-lens-height"),
+          getComputedStyle(lensCanvas).getPropertyValue("--scroll-lens-height"),
         );
         const lensHeight = Number.isFinite(belowHorizon)
           ? Math.min(belowHorizon, canvasHeight)
@@ -546,7 +577,7 @@ export function SmoothScrollLens() {
       }
 
       async function capturePage() {
-        canvas.dataset.ready = "false";
+        lensCanvas.dataset.ready = "false";
 
         await document.fonts.ready;
         await waitForImages(content);
@@ -625,7 +656,7 @@ export function SmoothScrollLens() {
           0.5 / (documentHeight * captureScale),
         );
         uniforms.uHasTexture.value = 1;
-        canvas.dataset.ready = "true";
+        lensCanvas.dataset.ready = "true";
         render();
       }
 
@@ -695,11 +726,11 @@ export function SmoothScrollLens() {
       window.clearTimeout(captureTimer);
       removeLenisListener?.();
       cleanup?.();
-      delete canvas.dataset.ready;
+      if (canvas) delete canvas.dataset.ready;
     };
   }, [pathname]);
 
-  if (pathname.startsWith("/keystatic")) return null;
+  if (!LENS_ENABLED || pathname.startsWith("/keystatic")) return null;
 
   return (
     <canvas
