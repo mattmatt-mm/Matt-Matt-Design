@@ -20,3 +20,7 @@ public/_design/
 
 # source exports — 50MB of originals; the optimised copies live in public/images
 raw/Notion Export/
+
+# Source CV. It carries a phone number Matt keeps off the site, and this repo
+# is public — the facts from it live in content/ai-knowledge.yaml instead.
+raw/*.pdf

@@ -1,8 +1,11 @@
-reviewedAt: 2026-08-23
+reviewedAt: 2026-08-24
 voiceRules:
   - Speak about Matt in the third person.
   - Match the language used by the visitor.
-  - Use only the approved fact supplied for the current response.
+  - Stay on Matt and his design work; every answer should be about him, what he
+    makes, or how he works.
+  - Explain the approved fact in your own words rather than reciting it, but
+    never claim anything it does not support.
   - Keep the response plain, direct, and free of promotional language.
 unknownFallback: Matt has not made that information available here. The visitor
   can leave an email for Matt to follow up.
@@ -35,10 +38,13 @@ facts:
       - 創業
       - 硬件原型
     policy: answer
-    answer: Matt co-founded Incipe Academy, a plug-and-play hardware prototyping
-      platform focused on improving communication between hardware and software.
+    answer: Matt co-founded Incipe Academy in 2023 and works there as a design
+      engineer, building the Incipe Workspace software and leading its UIUX, web
+      development and brand identity. It reaches markets in the US, Japan and
+      India, and has been recognised by PolyU and HKSTP and won the IET Young
+      Professional Exhibition Competition.
     source: /
-    lastReviewed: 2026-08-23
+    lastReviewed: 2026-08-24
   - id: design-approach
     topic: Design approach
     aliases:
@@ -78,18 +84,173 @@ facts:
     aliases:
       - home address
       - phone number
+      - how tall
+      - friends
+      - instagram
+      - childhood
+      - personal life
       - salary
       - family
-      - relationship
       - password
       - credential
       - 住址
       - 電話
+      - 身高
+      - 朋友
+      - 私生活
+      - 童年
       - 薪金
       - 家人
-      - 感情
       - 密碼
     policy: never_answer
     answer: ''
     source: Private by policy.
-    lastReviewed: 2026-08-23
+    lastReviewed: 2026-08-24
+  - id: girlfriend
+    topic: Girlfriend
+    aliases:
+      - girlfriend
+      - partner
+      - relationship
+      - seeing anyone
+      - Vivi
+      - 女朋友
+      - 伴侶
+      - 感情狀況
+    policy: answer
+    answer: Matt's girlfriend is Vivi.
+    source: Matt approved sharing this.
+    lastReviewed: 2026-08-24
+  - id: education
+    topic: Education
+    aliases:
+      - education
+      - study
+      - studied
+      - degree
+      - university
+      - HKUST
+      - computer science
+      - 學歷
+      - 大學
+      - 讀書
+    policy: answer
+    answer: Matt studied at the Hong Kong University of Science and Technology,
+      taking a BSc in Integrative Systems and Design under Computer Science. His
+      strongest results were in branding, interaction design, product management
+      and graphics design.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: skills-and-tools
+    topic: Skills and tools
+    aliases:
+      - skills
+      - tools
+      - software
+      - what can Matt do
+      - Figma
+      - Blender
+      - prototyping
+      - 技能
+      - 工具
+    policy: answer
+    answer: Matt works across frontend development, UIUX design and AI-assisted
+      prototyping, alongside AI transformation, multidisciplinary project
+      management, 3D design and user research. He designs in Figma, Illustrator
+      and Jitter, and models in Shapr3D and Blender.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: ocat-robotics
+    topic: Ocat Robotics
+    aliases:
+      - Ocat
+      - Ocat Robotics
+      - robotics
+      - robot
+      - penguin
+      - Ocean Park
+      - 機械人
+      - 海洋公園
+    policy: answer
+    answer: At Ocat Robotics Matt was the designer engineer behind a biomimicry
+      robotic penguin now deployed in Ocean Park. He crafted its hardware
+      appearance in Shapr3D and Fusion 360, with Raspberry Pi and Jetson Orin
+      handling penguin detection, and presented the work at IEEE RoboSoft.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: project-melo
+    topic: Project Melo
+    aliases:
+      - Melo
+      - Project Melo
+      - design system
+      - Obsidian
+      - AI agents
+      - 設計系統
+    policy: answer
+    answer: For Project Melo Matt built an atomic design system in Obsidian
+      paired with AI agents, letting marketing teams generate brand-compliant web
+      sections instantly and saving about five hours a day. He also designed a
+      membership app and admin portal for event bidding.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: kedonia
+    topic: Kedonia
+    aliases:
+      - Kedonia
+      - plush
+      - manufacturing
+      - 毛公仔
+    policy: answer
+    answer: At Kedonia Matt is a forward deployed engineer working on plush
+      manufacturing, taking products from 2D sketch through to 3D mockup to make
+      the process faster to iterate on.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: neardeal
+    topic: Neardeal
+    aliases:
+      - Neardeal
+      - beauty
+      - booking app
+      - 美容
+    policy: answer
+    answer: Matt was chief designer at Neardeal, a beauty service app, where he
+      developed a multi-stakeholder booking flow and an AI marketing platform.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: awards
+    topic: Awards and recognition
+    aliases:
+      - award
+      - awards
+      - scholarship
+      - competition
+      - recognition
+      - 獎項
+      - 獎學金
+    policy: answer
+    answer: Matt holds an HKSAR Talent Development Scholarship and was a
+      shortlisted presenter at the IEEE International Conference on Soft
+      Robotics. His ventures were top performer in HKSTP Incubation, awarded a
+      PolyU and HKSTP Micro Fund, second runner up in HK Challenge Plus, and
+      champion of the IET Young Professional Exhibition Competition.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
+  - id: clients
+    topic: Clients
+    aliases:
+      - clients
+      - who has Matt worked with
+      - 2-Sigma
+      - HSBC
+      - PayMe
+      - ToyZeroPlus
+      - 客戶
+    policy: answer
+    answer: Matt co-designs digital experiences for senior leaders on their
+      private ventures, including a 2-Sigma CEO, an HSBC PayMe finance manager
+      and a ToyZeroPlus CFO. He prefers working in teams and leading a vision
+      through to product.
+    source: Matt's CV, August 2026.
+    lastReviewed: 2026-08-24
