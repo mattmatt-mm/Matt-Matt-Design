@@ -1,23 +1,40 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { siteUrl } from "@/lib/site";
 
-export const FREE_MODEL_ALLOWLIST = [
+/**
+ * Models this endpoint is allowed to reach. The list is the cost control: a
+ * stale or mistyped variable falls back rather than taking the endpoint down,
+ * and nothing outside the list can enter the request path. Add a model here
+ * deliberately, having checked what it costs.
+ *
+ * `z-ai/glm-5.2` is the paid GLM, billed against the OpenRouter key. The
+ * `:free` variants share a rate-limited pool and return empty completions when
+ * that pool is saturated, which is why the paid one is the primary.
+ */
+export const MODEL_ALLOWLIST = [
+  "z-ai/glm-5.2",
   "z-ai/glm-5.2:free",
   "openrouter/free",
 ] as const;
 
-type FreeModel = (typeof FREE_MODEL_ALLOWLIST)[number];
+type AllowedModel = (typeof MODEL_ALLOWLIST)[number];
 
-function allowedModel(value: string | undefined, fallback: FreeModel): FreeModel {
+function allowedModel(
+  value: string | undefined,
+  fallback: AllowedModel,
+): AllowedModel {
   const candidate = value ?? fallback;
-  if (!FREE_MODEL_ALLOWLIST.includes(candidate as FreeModel)) {
-    // Model availability changes over time. A stale Vercel variable must not
-    // take the whole endpoint down, and it must never widen the request path
-    // to a paid model. Fall back to a currently approved free model instead.
-    console.warn("Ignoring an AI model outside the current free-model allowlist.");
+  if (!MODEL_ALLOWLIST.includes(candidate as AllowedModel)) {
+    // Name it. Failing silently here is how a variable ends up set to a model
+    // that never gets used — the endpoint keeps working on the fallback and
+    // nothing says the setting was ignored.
+    console.warn(
+      `Ignoring AI model "${candidate}": not in the allowlist. ` +
+        `Using "${fallback}" instead.`,
+    );
     return fallback;
   }
-  return candidate as FreeModel;
+  return candidate as AllowedModel;
 }
 
 export function getPortfolioModel() {
@@ -26,7 +43,7 @@ export function getPortfolioModel() {
 
   const primary = allowedModel(
     process.env.OPENROUTER_PRIMARY_MODEL,
-    "z-ai/glm-5.2:free",
+    "z-ai/glm-5.2",
   );
   const fallback = allowedModel(
     process.env.OPENROUTER_FALLBACK_MODEL,
@@ -42,8 +59,8 @@ export function getPortfolioModel() {
   });
 
   return openrouter(primary, {
-    // OpenRouter first tries the named free model, then its maintained router
-    // for currently available free models. Paid models cannot enter the path.
+    // OpenRouter tries the named model first, then falls through to the second
+    // one if it is unavailable.
     models: primary === fallback ? [] : [fallback],
     extraBody: {
       // Exclude provider endpoints that may retain or train on visitor text.

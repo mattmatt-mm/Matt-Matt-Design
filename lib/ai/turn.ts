@@ -9,10 +9,21 @@ type TurnState = {
 const COOKIE_NAME = "mmd_ai_turn";
 const TURN_TTL_SECONDS = 60 * 60;
 
+let warnedAboutLocalSecret = false;
+
 function secret() {
   const configured = process.env.AI_TURN_SECRET;
   if (configured) return configured;
   if (process.env.NODE_ENV !== "production") {
+    // Say so once. Falling back silently is what let a deployment ship with
+    // this unset: locally every answer works, and only production throws.
+    if (!warnedAboutLocalSecret) {
+      warnedAboutLocalSecret = true;
+      console.warn(
+        "AI_TURN_SECRET is not set — using the local development value. " +
+          "Production requires the real one or /api/ai returns 503.",
+      );
+    }
     return "matt-ai-local-development-only";
   }
   throw new Error("AI_TURN_SECRET is not configured.");
