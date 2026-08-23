@@ -30,16 +30,20 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
 
   // Lens tuning ------------------------------------------------------------
-  // Set this to true to reflect content across the lens entry. With false,
-  // content keeps travelling in the page's original scrolling direction.
+  // The strip sits entirely below the horizon, so it renders the positive
+  // half of the effect: content keeps travelling in the page's own scrolling
+  // direction. Setting this true reflects it across the entry instead, which
+  // is the mirrored half and is not the treatment in use.
   const bool MIRROR_EFFECT = false;
 
-  // Depth is a polynomial: 1:1 at the border, then progressively stretched
-  // toward the viewport edge so letterforms can change shape with depth.
-  const float MIRROR_LINEAR = float(0.72);
-  const float MIRROR_QUADRATIC = float(0.16);
-  const float MIRROR_CUBIC = float(0.4);
-  const float ENTRY_BLEND_DEPTH = float(0.10);
+  // Vertical sampling rate at the horizon and at the far edge, in document
+  // pixels per screen pixel. Below 1 the content is stretched, above 1 it is
+  // squeezed. The rate ramps linearly between the two, so a letterform enters
+  // the strip elongated and compresses the further down it travels. Their mean
+  // is normalised to 1, so only the ratio matters and the strip always spans
+  // exactly one lens height of document however the ends are tuned.
+  const float ENTRY_RATE = float(0.62);
+  const float EXIT_RATE = float(1.38);
 
   // Chromatic split is present at rest, then grows with scroll velocity.
   const float REST_CHROMA_X_PX = float(1.4);
@@ -52,6 +56,9 @@ const fragmentShader = /* glsl */ `
   // changing the global mirror curve above.
   const float GOO_STRENGTH_PX = float(5.0);
   const float GOO_RADIUS_PX = float(5.5);
+  // How fast the goo thins out with depth. Above 1 it concentrates at the
+  // horizon; 1 would spread it evenly down the strip.
+  const float GOO_FALLOFF = float(1.4);
   const float GOO_THRESHOLD = float(0.20);
   const float GOO_SOFTNESS = float(0.05);
   const float GOO_VELOCITY_GAIN = float(0.45);
@@ -104,14 +111,17 @@ const fragmentShader = /* glsl */ `
     // lets the underlying page continue through the strip unchanged.
     float depth = 1.0 - vUv.y;
     float transition = smoothstep(0.0, 0.30, depth);
+    // One monotonic ramp from elongated to compressed. A curve that eases back
+    // toward 1:1 partway down puts a second inflection inside the strip, which
+    // reads as another lens edge rather than one continuous depth.
+    float rateSpan = 0.5 * (ENTRY_RATE + EXIT_RATE);
     float shapedDepth =
-      MIRROR_LINEAR * depth -
-      MIRROR_QUADRATIC * depth * depth +
-      MIRROR_CUBIC * depth * depth * depth;
+      (ENTRY_RATE * depth +
+        0.5 * (EXIT_RATE - ENTRY_RATE) * depth * depth) / rateSpan;
     float contentDirection = MIRROR_EFFECT ? -1.0 : 1.0;
 
-    // The changing derivative makes letterforms swell as they travel through
-    // the lens instead of preserving one uniformly scaled silhouette.
+    // Shear from scroll velocity peaks mid-strip and falls to nothing at both
+    // ends, so motion never disturbs the join at the horizon or the far edge.
     float profile = sin(depth * 3.14159265);
     float boundaryY = uScroll + uViewportHeight - uLensHeight;
     float documentY =
@@ -170,7 +180,11 @@ const fragmentShader = /* glsl */ `
       gooTap3 * 0.25 +
       gooTap4 * 0.37;
     gooPull = pow(clamp(gooPull, 0.0, 1.0), 1.35);
-    float gooEnvelope = pow(max(profile, 0.0), 0.72) * transition;
+    // Goo is heaviest where the lens meets the page and thins with depth, so
+    // the liquid reads as clinging to the horizon rather than pooling in the
+    // middle of the strip. The entry alpha fade covers the first tenth, which
+    // keeps the join itself clean.
+    float gooEnvelope = pow(clamp(1.0 - depth, 0.0, 1.0), GOO_FALLOFF);
     sampleUv.y +=
       contentDirection *
       uTextureTexel.y *
@@ -217,10 +231,14 @@ const fragmentShader = /* glsl */ `
     // thin glyphs or fine hardware contours.
     vec3 color = mix(base, refracted, 0.9 + velocity * 0.1);
 
-    // A very short entry fade hides raster rounding while preserving the exact
-    // lens hinge. Keeping this narrow prevents a visible blended band.
-    float alpha = smoothstep(0.0, ENTRY_BLEND_DEPTH, depth);
-    gl_FragColor = vec4(color, alpha);
+    // The strip is opaque all the way to the horizon. Fading it in over the
+    // first tenth of its depth left the page's own copy of a line and the
+    // refracted copy both visible at once, and because the entry is elongated
+    // the two never sit on top of each other — the pair read as a pale masked
+    // band across the content instead of glass. The sampled document position
+    // is already exact at zero depth, so an opaque strip joins the page by
+    // itself and the lens carries the whole transition.
+    gl_FragColor = vec4(color, 1.0);
   }
 `;
 
