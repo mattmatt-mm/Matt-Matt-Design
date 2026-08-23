@@ -224,15 +224,67 @@ const fragmentShader = /* glsl */ `
   }
 `;
 
+// An image the viewport has not reached yet never settles `decode()`, so a
+// bare await here stalls the whole capture until something scrolls it into
+// view. html2canvas reloads every image eagerly inside its own clone, so this
+// wait is only about letting work already in flight finish.
+const IMAGE_SETTLE_MS = 1_500;
+
 function waitForImages(root: HTMLElement) {
   return Promise.all(
-    Array.from(root.querySelectorAll("img")).map(async (image) => {
+    Array.from(root.querySelectorAll("img")).map((image) => {
       if (image.complete) return;
-      try {
-        await image.decode();
-      } catch {
+      return Promise.race([
         // A failed decorative image should not prevent the lens from starting.
+        image.decode().catch(() => undefined),
+        new Promise<void>((resolve) => {
+          window.setTimeout(resolve, IMAGE_SETTLE_MS);
+        }),
+      ]);
+    }),
+  );
+}
+
+// html2canvas sizes an image from `naturalWidth`, which the browser reports
+// *after* dividing out the density descriptor of the `srcset` candidate it
+// chose, but it paints the raw bitmap it fetched from `currentSrc`. On a 2x
+// screen next/image resolves to its own `2x` candidate, so the two disagree by
+// exactly that factor and every gallery image is captured as its top-left
+// quarter blown up to full size — the lens then refracts content that never
+// matches the page joining it at the hinge. Repointing each cloned image at
+// the one bitmap the browser already picked, with no descriptor left to
+// correct for, makes the measurement and the paint agree again.
+function pinClonedImageSources(clonedRoot: HTMLElement) {
+  const clonedDocument = clonedRoot.ownerDocument;
+
+  return Promise.all(
+    Array.from(clonedRoot.querySelectorAll("img")).map((image) => {
+      const resolved = image.currentSrc || image.src;
+      if (!image.srcset || !resolved) return;
+
+      // A fresh element carries no previously selected density, which reusing
+      // this one would only clear on a later task.
+      const pinned = clonedDocument.createElement("img");
+      for (const { name, value } of Array.from(image.attributes)) {
+        if (name === "src" || name === "srcset" || name === "sizes") continue;
+        pinned.setAttribute(name, value);
       }
+      pinned.src = resolved;
+      image.replaceWith(pinned);
+
+      // The bitmap is normally still in memory, so this resolves at once.
+      // `decode()` would be the natural wait, but it can hang indefinitely
+      // inside html2canvas' hidden clone frame, which never gets painted.
+      if (pinned.complete && pinned.naturalWidth > 0) return;
+      return new Promise<void>((resolve) => {
+        const settle = () => {
+          window.clearTimeout(timer);
+          resolve();
+        };
+        const timer = window.setTimeout(settle, IMAGE_SETTLE_MS);
+        pinned.addEventListener("load", settle, { once: true });
+        pinned.addEventListener("error", settle, { once: true });
+      });
     }),
   );
 }
@@ -334,9 +386,14 @@ export function SmoothScrollLens() {
 
       let pageTexture: InstanceType<typeof THREE.CanvasTexture> | undefined;
 
-      function render(scroll = lenis.animatedScroll, velocity = 0) {
+      function render(velocity = 0) {
         uniforms.uScrollX.value = window.scrollX;
-        uniforms.uScroll.value = scroll;
+        // The lens entry must sample the exact document pixel currently
+        // touching the viewport edge. Lenis' animatedScroll can temporarily
+        // describe a different position from the browser's painted scroll,
+        // which makes image details repeat inside the lens instead of joining
+        // continuously at its hinge.
+        uniforms.uScroll.value = window.scrollY;
         uniforms.uVelocity.value = velocity;
         renderer.render(scene, camera);
       }
@@ -390,6 +447,11 @@ export function SmoothScrollLens() {
           scale: captureScale,
           logging: false,
           useCORS: true,
+          // html2canvas types this hook as returning void, but it does await
+          // whatever the hook returns — which is how the swap below gets to
+          // finish before the clone is measured.
+          onclone: (_clonedDocument, clonedRoot) =>
+            pinClonedImageSources(clonedRoot),
         });
 
         if (cancelled) return;
@@ -431,8 +493,13 @@ export function SmoothScrollLens() {
 
       resizeRenderer();
       removeLenisListener = lenis.on("scroll", (event) => {
-        render(event.scroll, event.velocity);
+        render(event.velocity);
       });
+      // Next.js and the browser can restore or reset scroll without going
+      // through Lenis (same-route navigation, back/forward cache, scrollbar
+      // dragging). Keep the texture origin synchronized for those paths too.
+      const onNativeScroll = () => render(uniforms.uVelocity.value);
+      window.addEventListener("scroll", onNativeScroll, { passive: true });
 
       const onResize = () => {
         resizeRenderer();
@@ -454,6 +521,7 @@ export function SmoothScrollLens() {
 
       cleanup = () => {
         window.clearTimeout(captureTimer);
+        window.removeEventListener("scroll", onNativeScroll);
         window.removeEventListener("resize", onResize);
         colorScheme.removeEventListener("change", onColorSchemeChange);
         removeLenisListener?.();
