@@ -80,7 +80,10 @@ export async function POST(request: Request) {
     !takeRateLimit("ai-short", ip, 5, 10 * 60 * 1000) ||
     !takeRateLimit("ai-day", ip, 20, 24 * 60 * 60 * 1000)
   ) {
-    return error("Matt's AI is unavailable right now. Please try again later.", 429);
+    return error(
+      "That is a lot of questions in a short window. Try again in a few minutes.",
+      429,
+    );
   }
 
   let body: AIRequest;

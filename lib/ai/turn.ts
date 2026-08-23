@@ -60,7 +60,12 @@ export function validateTurn(
   firstQuestion: string | undefined,
 ) {
   const state = parseCookie(request);
-  if (turn === 1) return !state;
+  // A first question always stands on its own. Refusing it while any cookie
+  // survived meant one finished conversation locked the AI for the rest of the
+  // hour, and it reported that as the AI being unavailable. What this cookie
+  // is actually for is stopping a follow-up that never had a first turn; the
+  // per-visitor rate limits are what bound how much anyone can ask.
+  if (turn === 1) return true;
   return Boolean(
     state?.used === 1 &&
       firstQuestion &&
