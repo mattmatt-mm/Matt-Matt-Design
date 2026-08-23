@@ -165,6 +165,12 @@ not decorative borders and should remain where required.
 - Reduced-motion mode removes the spatial morph and content blur. The AI
   character may retain subtle gaze/expression behavior because Matt approved it
   as the character exception.
+- Nothing the scroll lens can refract may change appearance on hover. The lens
+  refracts a frozen capture of the page, so a hovered element dims live while
+  its refraction stays bright, and the strip reads as a hard seam rather than
+  glass. Gallery images therefore do not dim; the caption carries the hover on
+  its own. Apply the same restraint to any future imagery or fill that can pass
+  under the lens.
 
 ## 10. AI response completion
 
@@ -195,6 +201,8 @@ not decorative borders and should remain where required.
 ## 12. Review checklist
 
 - [ ] Latest written instruction and latest `raw/` source were checked first.
+- [ ] No hover state changes the appearance of anything the scroll lens
+      refracts.
 - [ ] Every non-circular rounded element uses `SiteSquircle` continuous corners;
       plain `border-radius` appears only as a fallback.
 - [ ] Elevated surfaces use a 16px radius input, 0.6 smoothing, and no hard

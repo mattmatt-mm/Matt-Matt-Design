@@ -26,7 +26,10 @@ function Figure({ entry }: { entry: GalleryEntry }) {
       ) : (
         <div className="bg-line aspect-[5/3] w-full" />
       )}
-      <figcaption className="pt-3">
+      {/* Only the caption dims. The lens refracts a frozen capture of the
+          page, so an image that changes opacity under the pointer stops
+          matching its own refraction and the strip reads as a seam. */}
+      <figcaption className="pt-3 group-hover:opacity-60">
         <span className="block">{entry.caption}</span>
         <span className="text-muted block">{entry.projectName}</span>
       </figcaption>
@@ -40,12 +43,9 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
       {entries.map((entry, i) => (
         <figure key={`${entry.caption}-${i}`}>
           {entry.href ? (
-            // the image and its caption are one target, dimming together on
-            // hover — the same restraint as a list row
-            <Link
-              href={entry.href}
-              className="block no-underline hover:opacity-60"
-            >
+            // the image and its caption are one target; the caption carries
+            // the hover on its own — the same restraint as a list row
+            <Link href={entry.href} className="group block no-underline">
               <Figure entry={entry} />
             </Link>
           ) : (
