@@ -742,8 +742,13 @@
 }
 
 @layer components {
+  /* Two bands. `height` is the lens proper, below the horizon; `approach` is
+     the run above it where the refraction eases in from nothing, so content
+     is already elongated by the time it reaches the horizon instead of
+     changing state on one scanline. */
   .scroll-lens {
     --scroll-lens-height: 100px;
+    --scroll-lens-approach: 100px;
 
     position: fixed;
     z-index: 16;
@@ -752,7 +757,7 @@
     left: 0;
     display: block;
     width: 100%;
-    height: var(--scroll-lens-height);
+    height: calc(var(--scroll-lens-height) + var(--scroll-lens-approach));
     opacity: 0;
     pointer-events: none;
     transition: opacity 180ms ease-out;
@@ -765,6 +770,7 @@
   @media (max-width: 639px) {
     .scroll-lens {
       --scroll-lens-height: 28px;
+      --scroll-lens-approach: 40px;
     }
   }
 

@@ -19,6 +19,7 @@ const fragmentShader = /* glsl */ `
   uniform float uDocumentWidth;
   uniform float uDocumentHeight;
   uniform float uHasTexture;
+  uniform float uApproachHeight;
   uniform float uLensHeight;
   uniform float uScrollX;
   uniform float uScroll;
@@ -30,20 +31,26 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
 
   // Lens tuning ------------------------------------------------------------
-  // The strip sits entirely below the horizon, so it renders the positive
-  // half of the effect: content keeps travelling in the page's own scrolling
-  // direction. Setting this true reflects it across the entry instead, which
-  // is the mirrored half and is not the treatment in use.
+  // Setting this true reflects content across the horizon instead of letting
+  // it travel in the page's own scrolling direction.
   const bool MIRROR_EFFECT = false;
 
-  // Vertical sampling rate at the horizon and at the far edge, in document
-  // pixels per screen pixel. Below 1 the content is stretched, above 1 it is
-  // squeezed. The rate ramps linearly between the two, so a letterform enters
-  // the strip elongated and compresses the further down it travels. Their mean
-  // is normalised to 1, so only the ratio matters and the strip always spans
-  // exactly one lens height of document however the ends are tuned.
+  // The lens is two bands meeting at the horizon, and a letterform passes
+  // through both. Above the horizon it runs from untouched to elongated; below
+  // it, from elongated on to compressed. These are vertical sampling rates in
+  // document pixels per screen pixel: below 1 the content is stretched, above
+  // 1 it is squeezed. Starting the approach band at exactly 1 is what lets the
+  // canvas meet the page with nothing happening at all, so there is no edge at
+  // which the effect switches on.
+  const float NORMAL_RATE = float(1.0);
   const float ENTRY_RATE = float(0.62);
   const float EXIT_RATE = float(1.38);
+
+  // How each band eases between its two rates. At 0 the change is spread
+  // linearly across the band; at 1 it is a full S-curve that both leaves and
+  // arrives flat, so the effect never starts or stops on a single scanline and
+  // the two bands meet with matching slope at the horizon.
+  const float EASE_CURVE = float(1.0);
 
   // Chromatic split is present at rest, then grows with scroll velocity.
   const float REST_CHROMA_X_PX = float(1.4);
@@ -56,12 +63,32 @@ const fragmentShader = /* glsl */ `
   // changing the global mirror curve above.
   const float GOO_STRENGTH_PX = float(5.0);
   const float GOO_RADIUS_PX = float(5.5);
-  // How fast the goo thins out with depth. Above 1 it concentrates at the
-  // horizon; 1 would spread it evenly down the strip.
+  // Shapes the goo on top of the shared envelope. Above 1 it pulls the liquid
+  // in tighter around the horizon.
   const float GOO_FALLOFF = float(1.4);
   const float GOO_THRESHOLD = float(0.20);
   const float GOO_SOFTNESS = float(0.05);
   const float GOO_VELOCITY_GAIN = float(0.45);
+
+  // Eased progress through a band, and the area under that easing. The area is
+  // what turns a rate curve into a position: integrating it in closed form is
+  // what keeps the two bands one continuous piece of geometry rather than two
+  // strips that happen to touch.
+  float lensEase(float p) {
+    return mix(p, p * p * (3.0 - 2.0 * p), EASE_CURVE);
+  }
+
+  float lensEaseArea(float p) {
+    float linearArea = 0.5 * p * p;
+    float easedArea = p * p * p - 0.5 * p * p * p * p;
+    return mix(linearArea, easedArea, EASE_CURVE);
+  }
+
+  // Document pixels covered after travelling p of the way through a band
+  // whose sampling rate eases from rateA to rateB.
+  float lensSpan(float p, float rateA, float rateB) {
+    return rateA * p + (rateB - rateA) * lensEaseArea(p);
+  }
 
   float lensLuma(vec3 color) {
     return dot(color, vec3(0.2126, 0.7152, 0.0722));
@@ -106,28 +133,38 @@ const fragmentShader = /* glsl */ `
     float velocity = clamp(abs(uVelocity) * 0.03, 0.0, 1.0);
     float direction = sign(uVelocity);
 
-    // Depth runs from zero at the lens entry to one at the viewport edge.
-    // The direction toggle either reflects source pixels across the entry or
-    // lets the underlying page continue through the strip unchanged.
-    float depth = 1.0 - vUv.y;
-    float transition = smoothstep(0.0, 0.30, depth);
-    // One monotonic ramp from elongated to compressed. A curve that eases back
-    // toward 1:1 partway down puts a second inflection inside the strip, which
-    // reads as another lens edge rather than one continuous depth.
-    float rateSpan = 0.5 * (ENTRY_RATE + EXIT_RATE);
-    float shapedDepth =
-      (ENTRY_RATE * depth +
-        0.5 * (EXIT_RATE - ENTRY_RATE) * depth * depth) / rateSpan;
+    // Distance travelled down the canvas, in screen pixels. The approach band
+    // occupies the first uApproachHeight of it and the horizon is where the
+    // two bands meet.
+    float canvasHeight = uApproachHeight + uLensHeight;
+    float fromTop = (1.0 - vUv.y) * canvasHeight;
+    float approach = clamp(uApproachHeight, 0.0, canvasHeight);
+    float approachProgress =
+      approach > 0.0 ? clamp(fromTop / approach, 0.0, 1.0) : 1.0;
+    float depthProgress = uLensHeight > 0.0
+      ? clamp((fromTop - approach) / uLensHeight, 0.0, 1.0)
+      : 0.0;
     float contentDirection = MIRROR_EFFECT ? -1.0 : 1.0;
 
-    // Shear from scroll velocity peaks mid-strip and falls to nothing at both
-    // ends, so motion never disturbs the join at the horizon or the far edge.
-    float profile = sin(depth * 3.14159265);
-    float boundaryY = uScroll + uViewportHeight - uLensHeight;
-    float documentY =
-      boundaryY + contentDirection * shapedDepth * uLensHeight;
-    documentY +=
-      direction * velocity * profile * transition * VELOCITY_SHEAR_PX;
+    // Both bands accumulate into one offset, so a letterform crossing the
+    // horizon carries its own stretch through rather than restarting.
+    float documentOffset =
+      approach * lensSpan(approachProgress, NORMAL_RATE, ENTRY_RATE) +
+      uLensHeight * lensSpan(depthProgress, ENTRY_RATE, EXIT_RATE);
+
+    // How much lens is acting here: nothing where the canvas meets the
+    // untouched page, everything at the horizon, easing away again toward the
+    // screen edge. Multiplying the two eased bands gives that in one
+    // expression, because each sits at 1 while the other is doing the work.
+    float lensAmount =
+      lensEase(approachProgress) * (1.0 - lensEase(depthProgress));
+
+    // Shear from scroll velocity peaks mid-canvas and falls to nothing at both
+    // ends, so motion never disturbs either join.
+    float profile = sin((fromTop / max(canvasHeight, 1.0)) * 3.14159265);
+    float canvasTopY = uScroll + uViewportHeight - canvasHeight;
+    float documentY = canvasTopY + contentDirection * documentOffset;
+    documentY += direction * velocity * profile * VELOCITY_SHEAR_PX;
 
     float textureY = 1.0 - clamp(documentY / uDocumentHeight, 0.0, 1.0);
     // Map each canvas x-position back to the same CSS pixel in the captured
@@ -180,11 +217,9 @@ const fragmentShader = /* glsl */ `
       gooTap3 * 0.25 +
       gooTap4 * 0.37;
     gooPull = pow(clamp(gooPull, 0.0, 1.0), 1.35);
-    // Goo is heaviest where the lens meets the page and thins with depth, so
-    // the liquid reads as clinging to the horizon rather than pooling in the
-    // middle of the strip. The entry alpha fade covers the first tenth, which
-    // keeps the join itself clean.
-    float gooEnvelope = pow(clamp(1.0 - depth, 0.0, 1.0), GOO_FALLOFF);
+    // Goo follows the same envelope: it builds through the approach band, is
+    // heaviest at the horizon, and thins out below it.
+    float gooEnvelope = pow(clamp(lensAmount, 0.0, 1.0), GOO_FALLOFF);
     sampleUv.y +=
       contentDirection *
       uTextureTexel.y *
@@ -222,7 +257,7 @@ const fragmentShader = /* glsl */ `
         (REST_CHROMA_X_PX + velocity * VELOCITY_CHROMA_X_PX) * axisWeight.x,
       uTextureTexel.y *
         (REST_CHROMA_Y_PX + velocity * VELOCITY_CHROMA_Y_PX) * axisWeight.y
-    ) * transition;
+    ) * lensAmount;
     float red = texture2D(uPage, sampleUv + chromaOffset).r;
     float blue = texture2D(uPage, sampleUv - chromaOffset).b;
     vec3 refracted = vec3(red, base.g, blue);
@@ -231,13 +266,10 @@ const fragmentShader = /* glsl */ `
     // thin glyphs or fine hardware contours.
     vec3 color = mix(base, refracted, 0.9 + velocity * 0.1);
 
-    // The strip is opaque all the way to the horizon. Fading it in over the
-    // first tenth of its depth left the page's own copy of a line and the
-    // refracted copy both visible at once, and because the entry is elongated
-    // the two never sit on top of each other — the pair read as a pale masked
-    // band across the content instead of glass. The sampled document position
-    // is already exact at zero depth, so an opaque strip joins the page by
-    // itself and the lens carries the whole transition.
+    // Opaque throughout. The canvas samples the page exactly where the two
+    // meet, so there is nothing to fade against — and an alpha ramp here would
+    // show the page's own copy of a line under the displaced one, which is the
+    // pale doubled band this replaced.
     gl_FragColor = vec4(color, 1.0);
   }
 `;
@@ -382,6 +414,7 @@ export function SmoothScrollLens() {
         uDocumentWidth: { value: 1 },
         uDocumentHeight: { value: 1 },
         uHasTexture: { value: 0 },
+        uApproachHeight: { value: 0 },
         uLensHeight: { value: 1 },
         uScrollX: { value: window.scrollX },
         uScroll: { value: window.scrollY },
@@ -417,9 +450,20 @@ export function SmoothScrollLens() {
       }
 
       function resizeRenderer() {
-        const lensHeight = canvas.getBoundingClientRect().height;
+        const canvasHeight = canvas.getBoundingClientRect().height;
+        // The canvas spans both bands. Only the part below the horizon is the
+        // lens proper; the rest is the approach that eases the effect in, and
+        // the shader needs to know where the two meet.
+        const belowHorizon = Number.parseFloat(
+          getComputedStyle(canvas).getPropertyValue("--scroll-lens-height"),
+        );
+        const lensHeight = Number.isFinite(belowHorizon)
+          ? Math.min(belowHorizon, canvasHeight)
+          : canvasHeight;
+
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-        renderer.setSize(window.innerWidth, lensHeight, false);
+        renderer.setSize(window.innerWidth, canvasHeight, false);
+        uniforms.uApproachHeight.value = Math.max(canvasHeight - lensHeight, 0);
         uniforms.uLensHeight.value = lensHeight;
         uniforms.uViewportWidth.value = window.innerWidth;
         uniforms.uViewportHeight.value = window.innerHeight;
