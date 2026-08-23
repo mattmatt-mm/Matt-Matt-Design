@@ -80,7 +80,7 @@ export function AiContactForm({
                 name="note"
                 value={note}
                 maxLength={MAX_NOTE_CHARS}
-                rows={2}
+                rows={3}
                 placeholder={
                   "• How should Matt call you?\n• What is your enquiry?"
                 }

@@ -558,7 +558,9 @@
   .ai-contact-fields {
     position: relative;
     display: flex;
-    height: 122px;
+    /* A floor, not a fixed height. The notes field decides the real one, so
+       three lines of it are never cut off. */
+    min-height: 122px;
     flex-direction: column;
     gap: 0;
     padding: 8px 16px;
@@ -566,10 +568,12 @@
     color: var(--color-on-ai-response);
   }
 
+  /* Sized to their contents rather than half the box each: an even split gave
+     the notes field 53px for a 61px stack and cropped the third line. */
   .ai-contact-fields label:not(.ai-honeypot) {
     display: flex;
     min-height: 53px;
-    flex: 1 1 50%;
+    flex: 0 0 auto;
     flex-direction: column;
     justify-content: center;
     gap: 1px;
@@ -600,9 +604,13 @@
     color: var(--color-ai-form-muted);
   }
 
+  /* Three lines, then it scrolls inside itself. The surface floats over the
+     page, so letting it keep growing would walk it off the top. */
   .ai-contact-fields textarea {
+    height: 48px;
     padding-block: 0;
     line-height: 16px;
+    overflow-y: auto;
   }
 
   .ai-contact-status {
