@@ -32,6 +32,9 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   // the conversation rather than restarting one.
   const [chatPhase, setChatPhase] = useState<AIPhase>("answer_primary");
   const [leaving, setLeaving] = useState(false);
+  const [crossDirection, setCrossDirection] = useState<
+    "to-email" | "to-chat" | null
+  >(null);
   const crossing = useRef(false);
   const crossTimer = useRef<number | undefined>(undefined);
   const [question, setQuestion] = useState("");
@@ -151,6 +154,10 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   const toggleContact = useCallback(() => {
     if (crossing.current) return;
     crossing.current = true;
+    // The side being left goes the way it came from: the form off to the left,
+    // the follow-up off to the right, and whichever arrives comes in from the
+    // opposite edge so the pair reads as one shift rather than two fades.
+    setCrossDirection(phase === "contact" ? "to-chat" : "to-email");
     setLeaving(true);
     setContactStatusMessage(undefined);
     crossTimer.current = window.setTimeout(() => {
@@ -158,7 +165,7 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
       setLeaving(false);
       crossing.current = false;
     }, CROSS_MS);
-  }, [chatPhase]);
+  }, [chatPhase, phase]);
 
   async function sendContact(company: string) {
     if (contactInFlight.current) return;
@@ -218,6 +225,7 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
           onClose={close}
           onToggleContact={toggleContact}
           leaving={leaving}
+          crossDirection={crossDirection}
           onContactEmailChange={(value) => {
             setContactEmail(value);
             if (contactStatus === "error") setContactStatus("idle");

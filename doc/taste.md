@@ -198,10 +198,16 @@ not decorative borders and should remain where required.
   between them, level with the back arrow and the cloud. Its icon is the side
   you are not on: an envelope while chatting, a speech bubble while on the
   form. 24px, `--color-muted`, same as the back arrow.
-- Crossing runs the opening handoff sideways: the side being left dismisses on
-  the spot, down by `--ai-travel` into `--ai-blur`, and the side arriving plays
-  its own entrance once the phase flips. The phase change waits for the exit —
-  unmounting on the same tick would cut it.
+- The answer is rendered once and stays mounted across the crossing, with only
+  the half beneath it exchanged. That is what lets it travel to its new
+  position instead of disappearing and reappearing somewhere else, and it is
+  why it hugs its text in both states: two different heights leave nothing
+  continuous to carry across.
+- Crossing is a sideways exchange, `--ai-cross-travel`. The form leaves to the
+  left and the follow-up arrives from the right; toggling back reverses both.
+  The phase change waits out the exit, since unmounting on the same tick gives
+  the outgoing half nothing to leave with, and the answer moves from where it
+  was to where it now is over the standard 300ms.
 - Unknown, private, and contact-only facts offer an email handoff.
 - Keep 8px between the black response and form.
 - Fields follow the latest `4.2` and `4.2.1` exports.

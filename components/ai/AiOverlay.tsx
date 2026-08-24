@@ -11,6 +11,7 @@ import {
   type ContactStatus,
 } from "@/components/ai/AiContactForm";
 import { AiThinking } from "@/components/ai/AiThinking";
+import { useLayoutEffect, useRef } from "react";
 
 export type AIPhase =
   | "ask_primary"
@@ -37,6 +38,7 @@ export function AiOverlay({
   onClose,
   onToggleContact,
   leaving,
+  crossDirection,
   onContactEmailChange,
   onContactNoteChange,
   onContactSubmit,
@@ -56,6 +58,7 @@ export function AiOverlay({
   onClose: () => void;
   onToggleContact: () => void;
   leaving: boolean;
+  crossDirection: "to-email" | "to-chat" | null;
   onContactEmailChange: (value: string) => void;
   onContactNoteChange: (value: string) => void;
   onContactSubmit: (company: string) => void;
@@ -67,23 +70,91 @@ export function AiOverlay({
   // interrupting while one is still arriving.
   const canToggleContact =
     (phase === "contact" || answering) && responseComplete;
+  // Once an answer has finished, both sides of the handoff render from the
+  // single exchange surface below rather than from the morphing one.
+  const settled = responseComplete && (answering || phase === "contact");
+
+  // The answer keeps its place across the crossing by moving from where it
+  // was to where it now is. Nothing else can do this: a torn-down element has
+  // no previous position to come from.
+  const answerRef = useRef<HTMLDivElement>(null);
+  const lastAnswerTop = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    const node = answerRef.current;
+    if (!node) {
+      lastAnswerTop.current = null;
+      return;
+    }
+    const top = node.getBoundingClientRect().top;
+    const previous = lastAnswerTop.current;
+    lastAnswerTop.current = top;
+    if (previous === null || Math.abs(previous - top) < 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    node.animate(
+      [
+        { transform: `translateY(${previous - top}px)` },
+        { transform: "translateY(0)" },
+      ],
+      { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" },
+    );
+  }, [phase, answer, settled]);
 
   return (
     <div className="ai-layer" data-open="true">
       <div className="ai-gradient-mask" aria-hidden="true" />
       <div className="ai-viewport">
-        {phase === "contact" ? (
-          <AiContactForm
-            leaving={leaving}
-            message={answer}
-            email={contactEmail}
-            note={contactNote}
-            status={contactStatus}
-            statusMessage={contactStatusMessage}
-            onEmailChange={onContactEmailChange}
-            onNoteChange={onContactNoteChange}
-            onSubmit={onContactSubmit}
-          />
+        {settled ? (
+          // One surface for both sides of the handoff. The answer is mounted
+          // once here and never torn down, so when the thing beneath it
+          // changes size it travels to its new position rather than vanishing
+          // and reappearing somewhere else.
+          <div className="ai-exchange">
+            <div ref={answerRef} className="ai-exchange-answer">
+              <SiteSquircle className="ai-response-squircle elevated-surface">
+                <BorderBeam
+                  size="line"
+                  colorVariant="sunset"
+                  theme="dark"
+                  borderRadius={16}
+                  className="ai-response-beam"
+                >
+                  <div className="ai-response">
+                    <p>{answer}</p>
+                  </div>
+                </BorderBeam>
+              </SiteSquircle>
+            </div>
+
+            <div
+              key={phase === "contact" ? "email" : "chat"}
+              className="ai-exchange-swap"
+              data-dir={crossDirection ?? undefined}
+              data-leaving={leaving ? "true" : "false"}
+            >
+              {phase === "contact" ? (
+                <AiContactForm
+                  email={contactEmail}
+                  note={contactNote}
+                  status={contactStatus}
+                  statusMessage={contactStatusMessage}
+                  onEmailChange={onContactEmailChange}
+                  onNoteChange={onContactNoteChange}
+                  onSubmit={onContactSubmit}
+                />
+              ) : phase === "answer_primary" ? (
+                <AiComposer
+                  value={question}
+                  compact
+                  showDisclosure={false}
+                  autoFocus={false}
+                  placeholder="Follow Up?"
+                  onChange={onQuestionChange}
+                  onSubmit={onFollowUpSubmit}
+                />
+              ) : null}
+            </div>
+          </div>
         ) : (
           <div
             className="ai-morph-surface"
@@ -109,42 +180,11 @@ export function AiOverlay({
               ) : null}
               {thinking ? <AiThinking /> : null}
               {answering ? (
-                responseComplete ? (
-                  <div className="ai-answer-stack">
-                    <SiteSquircle
-                      className="ai-response-squircle elevated-surface"
-                    >
-                      <BorderBeam
-                        size="line"
-                        colorVariant="sunset"
-                        theme="dark"
-                        borderRadius={16}
-                        className="ai-response-beam"
-                      >
-                        <div className="ai-response">
-                          <p>{answer}</p>
-                        </div>
-                      </BorderBeam>
-                    </SiteSquircle>
-                    {phase === "answer_primary" ? (
-                      <AiComposer
-                        value={question}
-                        compact
-                        showDisclosure={false}
-                        autoFocus={false}
-                        placeholder="Follow Up?"
-                        onChange={onQuestionChange}
-                        onSubmit={onFollowUpSubmit}
-                      />
-                    ) : null}
+                <SiteSquircle asChild>
+                  <div className="ai-response elevated-surface">
+                    <p>{answer}</p>
                   </div>
-                ) : (
-                  <SiteSquircle asChild>
-                    <div className="ai-response elevated-surface">
-                      <p>{answer}</p>
-                    </div>
-                  </SiteSquircle>
-                )
+                </SiteSquircle>
               ) : null}
             </div>
           </div>

@@ -60,6 +60,9 @@
     --ai-close-dur: 240ms;
     --ai-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --ai-travel: 8px;
+    /* Wider than ordinary content travel: this is a sideways exchange, and 8px
+       reads as a wobble rather than a move. */
+    --ai-cross-travel: 24px;
     --ai-blur: 3px;
     --ai-radius: 16px;
     --ai-control-bottom: max(24px, calc(env(safe-area-inset-bottom) + 8px));
@@ -446,7 +449,7 @@
 
   .ai-response-squircle {
     width: 100%;
-    min-height: 117px;
+    min-height: 66px;
     height: auto;
     background: var(--color-ai-response);
     pointer-events: auto;
@@ -482,6 +485,14 @@
     min-height: 117px;
   }
 
+  /* In the exchange the answer hugs its own text: it has to be one height in
+     both states, or there is nothing continuous to carry across. */
+  .ai-exchange .ai-response,
+  .ai-exchange .ai-response-beam {
+    min-height: 66px;
+    height: auto;
+  }
+
   /* 52px to match the dock the cloud sits in, so all three controls share one
      centre line rather than the row being 4px shy of it. */
   .ai-control-row {
@@ -514,7 +525,11 @@
     inset: 0 0 0 auto;
   }
 
-  .ai-contact-stack {
+  /* One surface holds both sides of the handoff. The answer sits at the top of
+     it and stays mounted; only what is below is exchanged. Bottom-anchored, so
+     when that lower half changes height the answer is carried to a new
+     position — which is the movement worth animating. */
+  .ai-exchange {
     position: absolute;
     inset: auto auto var(--ai-contact-bottom) 50%;
     display: flex;
@@ -526,42 +541,72 @@
     pointer-events: auto;
   }
 
-  /* Crossing between the conversation and the email form. The side being left
-     dismisses on the spot — down, out, and into blur — and the side arriving
-     plays its own entrance once the phase flips, which is the same handoff the
-     panel opens with. Only the outgoing half needs describing here; the
-     entrances already exist. */
-  .ai-contact-stack[data-leaving="true"] {
-    animation: ai-cross-leave-centred var(--ai-close-dur) var(--ai-ease) both;
+  .ai-exchange-answer {
+    width: 100%;
   }
 
-  .ai-morph-surface[data-leaving="true"] {
-    animation: ai-cross-leave var(--ai-close-dur) var(--ai-ease) both;
+  .ai-exchange-swap {
+    width: 100%;
   }
 
-  @keyframes ai-cross-leave-centred {
-    from {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      filter: blur(0);
-    }
+  /* The exchange itself: the outgoing half leaves towards its own side and the
+     incoming half arrives from the other, so the two read as one shift across
+     rather than a pair of unrelated fades. */
+  .ai-exchange-swap[data-leaving="true"][data-dir="to-chat"] {
+    animation: ai-swap-out-left var(--ai-close-dur) var(--ai-ease) both;
+  }
+
+  .ai-exchange-swap[data-leaving="true"][data-dir="to-email"] {
+    animation: ai-swap-out-right var(--ai-close-dur) var(--ai-ease) both;
+  }
+
+  .ai-exchange-swap[data-dir="to-chat"][data-leaving="false"] {
+    animation: ai-swap-in-right var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  .ai-exchange-swap[data-dir="to-email"][data-leaving="false"] {
+    animation: ai-swap-in-left var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  @keyframes ai-swap-out-left {
     to {
       opacity: 0;
-      transform: translateX(-50%) translateY(var(--ai-travel));
+      transform: translateX(calc(-1 * var(--ai-cross-travel)));
       filter: blur(var(--ai-blur));
     }
   }
 
-  @keyframes ai-cross-leave {
-    from {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-      filter: blur(0);
-    }
+  @keyframes ai-swap-out-right {
     to {
       opacity: 0;
-      transform: translateX(-50%) translateY(var(--ai-travel));
+      transform: translateX(var(--ai-cross-travel));
       filter: blur(var(--ai-blur));
+    }
+  }
+
+  @keyframes ai-swap-in-right {
+    from {
+      opacity: 0;
+      transform: translateX(var(--ai-cross-travel));
+      filter: blur(var(--ai-blur));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes ai-swap-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(calc(-1 * var(--ai-cross-travel)));
+      filter: blur(var(--ai-blur));
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+      filter: blur(0);
     }
   }
 
@@ -597,24 +642,6 @@
       transform: translateX(-50%) scale(1);
       filter: blur(0);
     }
-  }
-
-  .ai-contact-response {
-    min-height: 66px;
-    height: auto;
-  }
-
-  .ai-contact-response-beam {
-    min-height: 66px;
-    height: auto;
-  }
-
-  .ai-contact-response-squircle {
-    width: 100%;
-    min-height: 66px;
-    height: auto;
-    background: var(--color-ai-response);
-    pointer-events: auto;
   }
 
   .ai-contact-form {
@@ -735,7 +762,7 @@
     .ai-morph-surface[data-kind="answer"],
     .ai-morph-surface[data-kind="answer-followup"],
     .ai-control-row,
-    .ai-contact-stack,
+    .ai-exchange,
     .ai-contact-submit-shell {
       width: calc(100vw - 56px);
     }
@@ -751,7 +778,8 @@
     }
 
     .ai-content-enter,
-    .ai-contact-stack {
+    .ai-exchange,
+    .ai-exchange-swap {
       animation: none;
     }
   }
