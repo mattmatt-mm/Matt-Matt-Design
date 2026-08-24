@@ -8,6 +8,7 @@ import { MAX_EMAIL_CHARS, MAX_NOTE_CHARS } from "@/lib/ai/limits";
 export type ContactStatus = "idle" | "sending" | "sent" | "error";
 
 export function AiContactForm({
+  leaving,
   message,
   email,
   note,
@@ -17,6 +18,7 @@ export function AiContactForm({
   onNoteChange,
   onSubmit,
 }: {
+  leaving?: boolean;
   message: string;
   email: string;
   note: string;
@@ -42,7 +44,10 @@ export function AiContactForm({
           : "Send to Matt";
 
   return (
-    <div className="ai-contact-stack">
+    <div
+      className="ai-contact-stack"
+      data-leaving={leaving ? "true" : "false"}
+    >
       <SiteSquircle className="ai-contact-response-squircle elevated-surface">
         <BorderBeam
           size="line"

@@ -482,27 +482,36 @@
     min-height: 117px;
   }
 
+  /* 52px to match the dock the cloud sits in, so all three controls share one
+     centre line rather than the row being 4px shy of it. */
   .ai-control-row {
     position: absolute;
     bottom: var(--ai-control-bottom);
     left: 50%;
     width: 345px;
-    height: 44px;
+    height: 52px;
     transform: translateX(-50%);
     pointer-events: auto;
   }
 
-  .ai-back {
+  .ai-control {
     position: absolute;
-    inset: 0 auto 0 0;
     display: grid;
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
     place-items: center;
     border: 0;
     background: transparent;
     color: var(--color-muted);
     cursor: pointer;
+  }
+
+  .ai-control[data-side="left"] {
+    inset: 0 auto 0 0;
+  }
+
+  .ai-control[data-side="right"] {
+    inset: 0 0 0 auto;
   }
 
   .ai-contact-stack {
@@ -515,6 +524,66 @@
     transform: translateX(-50%);
     animation: ai-contact-enter var(--ai-open-dur) var(--ai-ease) both;
     pointer-events: auto;
+  }
+
+  /* Crossing between the conversation and the email form. The side being left
+     dismisses on the spot — down, out, and into blur — and the side arriving
+     plays its own entrance once the phase flips, which is the same handoff the
+     panel opens with. Only the outgoing half needs describing here; the
+     entrances already exist. */
+  .ai-contact-stack[data-leaving="true"] {
+    animation: ai-cross-leave-centred var(--ai-close-dur) var(--ai-ease) both;
+  }
+
+  .ai-morph-surface[data-leaving="true"] {
+    animation: ai-cross-leave var(--ai-close-dur) var(--ai-ease) both;
+  }
+
+  @keyframes ai-cross-leave-centred {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      filter: blur(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(var(--ai-travel));
+      filter: blur(var(--ai-blur));
+    }
+  }
+
+  @keyframes ai-cross-leave {
+    from {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+      filter: blur(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-50%) translateY(var(--ai-travel));
+      filter: blur(var(--ai-blur));
+    }
+  }
+
+  /* The icon changes meaning as the surfaces swap, so it resolves in place
+     rather than cutting to the other glyph. */
+  .ai-control-icon {
+    display: grid;
+    place-items: center;
+    animation: ai-control-icon-in var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  @keyframes ai-control-icon-in {
+    from {
+      opacity: 0;
+      transform: scale(0.86);
+      filter: blur(2px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+      filter: blur(0);
+    }
   }
 
   @keyframes ai-contact-enter {

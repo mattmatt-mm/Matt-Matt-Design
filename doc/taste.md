@@ -193,6 +193,15 @@ not decorative borders and should remain where required.
 
 ## 11. AI contact handoff
 
+- The handoff never ends the conversation. The email form and the chat are two
+  sides of one surface, and a control on the right of the bottom row crosses
+  between them, level with the back arrow and the cloud. Its icon is the side
+  you are not on: an envelope while chatting, a speech bubble while on the
+  form. 24px, `--color-muted`, same as the back arrow.
+- Crossing runs the opening handoff sideways: the side being left dismisses on
+  the spot, down by `--ai-travel` into `--ai-blur`, and the side arriving plays
+  its own entrance once the phase flips. The phase change waits for the exit —
+  unmounting on the same tick would cut it.
 - Unknown, private, and contact-only facts offer an email handoff.
 - Keep 8px between the black response and form.
 - Fields follow the latest `4.2` and `4.2.1` exports.

@@ -9,6 +9,9 @@ import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 
 type Exchange = { question: string; answer: string };
 
+/** Matches --ai-close-dur, so the exit finishes exactly as the phase flips. */
+const CROSS_MS = 240;
+
 async function responseError(response: Response) {
   try {
     const body = (await response.json()) as { error?: string };
@@ -25,6 +28,12 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   const contactInFlight = useRef(false);
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<AIPhase>("ask_primary");
+  // Which answer the contact form is layered over, so leaving it returns to
+  // the conversation rather than restarting one.
+  const [chatPhase, setChatPhase] = useState<AIPhase>("answer_primary");
+  const [leaving, setLeaving] = useState(false);
+  const crossing = useRef(false);
+  const crossTimer = useRef<number | undefined>(undefined);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
@@ -45,6 +54,13 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(crossTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -114,6 +130,7 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
       setAnswer(exchange.answer);
       setQuestion("");
       setAnnouncement("Answer ready");
+      setChatPhase(answeringPhase);
       setPhase(outcome === "contact" ? "contact" : answeringPhase);
       setResponseComplete(true);
     } catch (error) {
@@ -126,6 +143,22 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
       requestInFlight.current = false;
     }
   }
+
+  // The outgoing surface has to survive long enough to leave. React would
+  // unmount it on the same tick as the phase change, so hold the change for
+  // the length of the exit and let the incoming side play its own entrance
+  // after — the same handoff the panel opens with, run sideways.
+  const toggleContact = useCallback(() => {
+    if (crossing.current) return;
+    crossing.current = true;
+    setLeaving(true);
+    setContactStatusMessage(undefined);
+    crossTimer.current = window.setTimeout(() => {
+      setPhase((current) => (current === "contact" ? chatPhase : "contact"));
+      setLeaving(false);
+      crossing.current = false;
+    }, CROSS_MS);
+  }, [chatPhase]);
 
   async function sendContact(company: string) {
     if (contactInFlight.current) return;
@@ -183,6 +216,8 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
           onQuestionSubmit={() => ask()}
           onFollowUpSubmit={() => ask(2)}
           onClose={close}
+          onToggleContact={toggleContact}
+          leaving={leaving}
           onContactEmailChange={(value) => {
             setContactEmail(value);
             if (contactStatus === "error") setContactStatus("idle");

@@ -1,6 +1,8 @@
 "use client";
 
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
+import { ChatCircle } from "@phosphor-icons/react/dist/ssr/ChatCircle";
+import { Envelope } from "@phosphor-icons/react/dist/ssr/Envelope";
 import { BorderBeam } from "border-beam";
 import { SiteSquircle } from "@/components/SiteSquircle";
 import { AiComposer } from "@/components/ai/AiComposer";
@@ -33,6 +35,8 @@ export function AiOverlay({
   onQuestionSubmit,
   onFollowUpSubmit,
   onClose,
+  onToggleContact,
+  leaving,
   onContactEmailChange,
   onContactNoteChange,
   onContactSubmit,
@@ -50,6 +54,8 @@ export function AiOverlay({
   onQuestionSubmit: () => void;
   onFollowUpSubmit: () => void;
   onClose: () => void;
+  onToggleContact: () => void;
+  leaving: boolean;
   onContactEmailChange: (value: string) => void;
   onContactNoteChange: (value: string) => void;
   onContactSubmit: (company: string) => void;
@@ -57,6 +63,10 @@ export function AiOverlay({
   const asking = phase === "ask_primary" || phase === "ask_followup";
   const thinking = phase === "thinking_primary" || phase === "thinking_followup";
   const answering = phase === "answer_primary" || phase === "answer_final";
+  // Nothing to swap between until an answer exists, and nothing worth
+  // interrupting while one is still arriving.
+  const canToggleContact =
+    (phase === "contact" || answering) && responseComplete;
 
   return (
     <div className="ai-layer" data-open="true">
@@ -64,6 +74,7 @@ export function AiOverlay({
       <div className="ai-viewport">
         {phase === "contact" ? (
           <AiContactForm
+            leaving={leaving}
             message={answer}
             email={contactEmail}
             note={contactNote}
@@ -76,6 +87,7 @@ export function AiOverlay({
         ) : (
           <div
             className="ai-morph-surface"
+            data-leaving={leaving ? "true" : "false"}
             data-kind={
               asking
                 ? "ask"
@@ -141,12 +153,39 @@ export function AiOverlay({
         <div className="ai-control-row">
           <button
             type="button"
-            className="ai-back"
+            className="ai-control"
+            data-side="left"
             aria-label="Close Matt's AI"
             onClick={onClose}
           >
-            <ArrowLeft size={16} weight="regular" />
+            <ArrowLeft size={24} weight="regular" />
           </button>
+
+          {/* Handing someone a form used to end the conversation: the contact
+              phase replaced the answer and its follow-up outright, with no way
+              back. The two are now sides of one thing, and this crosses
+              between them. The icon is the side you are not on. */}
+          {canToggleContact ? (
+            <button
+              type="button"
+              className="ai-control"
+              data-side="right"
+              aria-label={
+                phase === "contact"
+                  ? "Back to the conversation"
+                  : "Leave an email for Matt instead"
+              }
+              onClick={onToggleContact}
+            >
+              <span key={phase === "contact" ? "chat" : "mail"} className="ai-control-icon">
+                {phase === "contact" ? (
+                  <ChatCircle size={24} weight="regular" />
+                ) : (
+                  <Envelope size={24} weight="regular" />
+                )}
+              </span>
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
