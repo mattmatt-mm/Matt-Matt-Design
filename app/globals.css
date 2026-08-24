@@ -659,20 +659,25 @@
     min-height: 122px;
     flex-direction: column;
     gap: 0;
-    padding: 8px 16px;
+    /* No vertical padding of its own — each row carries its own, so the inset
+       above a label is the same whether the edge above it is the box or the
+       divider. */
+    padding: 0 16px;
     background: var(--color-ai-form);
     color: var(--color-on-ai-response);
   }
 
   /* Sized to their contents rather than half the box each: an even split gave
-     the notes field 53px for a 61px stack and cropped the third line. */
+     the notes field 53px for a 61px stack and cropped the third line.
+     The padding is what makes the two labels sit the same distance from the
+     edge above them — centring inside a minimum height gave the first one
+     slack the second had already used up, so they read 16px and 3.5px. */
   .ai-contact-fields label:not(.ai-honeypot) {
     display: flex;
-    min-height: 53px;
     flex: 0 0 auto;
     flex-direction: column;
-    justify-content: center;
     gap: 1px;
+    padding-block: 16px;
   }
 
   .ai-contact-fields label:not(.ai-honeypot):first-child {
