@@ -10,24 +10,28 @@ voiceRules:
 unknownFallback: Matt has not made that information available here. The visitor
   can leave an email for Matt to follow up.
 facts:
-  - id: current-role
-    topic: Current role
+  - id: hkust-ais
+    topic: HKUST AIS
     aliases:
       - what does Matt do
       - Matt's role
       - current role
       - job
       - work
+      - branding
+      - brand design
       - HKUST
       - AIS
       - Matt 做什麼
       - 現在的工作
+      - 品牌設計
       - 香港科技大學
     policy: answer
-    answer: Matt currently works at HKUST AIS, where he leads the faculty's
-      brand design.
+    answer: Matt has just finished leading the brand design for HKUST AIS,
+      developing the school's brand assets and its office interior. His ongoing
+      work is Incipe Academy, which he co-founded.
     source: /
-    lastReviewed: 2026-08-23
+    lastReviewed: 2026-08-24
   - id: incipe-academy
     topic: Incipe Academy
     aliases:
