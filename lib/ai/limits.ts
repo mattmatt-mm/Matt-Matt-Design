@@ -3,6 +3,9 @@ export const MAX_EMAIL_CHARS = 254;
 export const MAX_NOTE_CHARS = 600;
 export const MAX_AI_WORDS = 100;
 
+/** Questions one visitor may ask before the conversation hands off to email. */
+export const MAX_AI_TURNS = 10;
+
 const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
 
 function truncateWords(value: string, maximum: number) {

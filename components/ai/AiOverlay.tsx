@@ -11,6 +11,7 @@ import {
   type ContactStatus,
 } from "@/components/ai/AiContactForm";
 import { AiThinking } from "@/components/ai/AiThinking";
+import { MAX_AI_TURNS } from "@/lib/ai/limits";
 import { useLayoutEffect, useRef } from "react";
 
 export type AIPhase =
@@ -39,6 +40,7 @@ export function AiOverlay({
   onToggleContact,
   leaving,
   crossDirection,
+  turnsLeft,
   onContactEmailChange,
   onContactNoteChange,
   onContactSubmit,
@@ -59,6 +61,7 @@ export function AiOverlay({
   onToggleContact: () => void;
   leaving: boolean;
   crossDirection: "to-email" | "to-chat" | null;
+  turnsLeft: number;
   onContactEmailChange: (value: string) => void;
   onContactNoteChange: (value: string) => void;
   onContactSubmit: (company: string) => void;
@@ -142,7 +145,7 @@ export function AiOverlay({
                   onNoteChange={onContactNoteChange}
                   onSubmit={onContactSubmit}
                 />
-              ) : phase === "answer_primary" ? (
+              ) : turnsLeft > 0 ? (
                 <AiComposer
                   value={question}
                   compact
@@ -152,7 +155,18 @@ export function AiOverlay({
                   onChange={onQuestionChange}
                   onSubmit={onFollowUpSubmit}
                 />
-              ) : null}
+              ) : (
+                // The conversation is spent. Say so where the next prompt
+                // would have been, and make the sentence the way out rather
+                // than a dead end beside one.
+                <button
+                  type="button"
+                  className="ai-turns-spent"
+                  onClick={onToggleContact}
+                >
+                  That is all {MAX_AI_TURNS} questions. Email Matt for more.
+                </button>
+              )}
             </div>
           </div>
         ) : (

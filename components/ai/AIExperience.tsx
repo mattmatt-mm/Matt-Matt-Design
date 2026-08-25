@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MAX_AI_TURNS } from "@/lib/ai/limits";
 import { AiDock } from "@/components/ai/AiDock";
 import { AiOverlay, type AIPhase } from "@/components/ai/AiOverlay";
 import type { ContactStatus } from "@/components/ai/AiContactForm";
@@ -40,6 +41,7 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
+  const [turnsUsed, setTurnsUsed] = useState(0);
   const [composerError, setComposerError] = useState<string>();
   const [contactEmail, setContactEmail] = useState("");
   const [contactNote, setContactNote] = useState("");
@@ -74,14 +76,18 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", escape);
   }, [close, open]);
 
-  async function ask(turnOverride?: 1 | 2) {
+  async function ask() {
     if (requestInFlight.current) return;
     const cleanQuestion = question.trim();
     if (!cleanQuestion) return;
+    if (turnsUsed >= MAX_AI_TURNS) return;
     requestInFlight.current = true;
-    const turn = turnOverride ?? (phase === "ask_followup" ? 2 : 1);
+    const turn = turnsUsed + 1;
     const thinkingPhase = turn === 1 ? "thinking_primary" : "thinking_followup";
-    const answeringPhase = turn === 1 ? "answer_primary" : "answer_final";
+    // The last allowed answer is the one that closes the conversation, so it
+    // is the only one that arrives without another prompt beneath it.
+    const answeringPhase =
+      turn >= MAX_AI_TURNS ? "answer_final" : "answer_primary";
     const firstQuestion = exchanges[0]?.question;
 
     setComposerError(undefined);
@@ -128,8 +134,9 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
 
       const exchange = { question: cleanQuestion, answer: complete.trim() };
       setExchanges((previous) =>
-        turn === 1 ? [exchange] : [previous[0], exchange].filter(Boolean),
+        turn === 1 ? [exchange] : [...previous, exchange],
       );
+      setTurnsUsed(turn);
       setAnswer(exchange.answer);
       setQuestion("");
       setAnnouncement("Answer ready");
@@ -221,11 +228,12 @@ export function AIExperience({ children }: { children: React.ReactNode }) {
           contactStatusMessage={contactStatusMessage}
           onQuestionChange={setQuestion}
           onQuestionSubmit={() => ask()}
-          onFollowUpSubmit={() => ask(2)}
+          onFollowUpSubmit={() => ask()}
           onClose={close}
           onToggleContact={toggleContact}
           leaving={leaving}
           crossDirection={crossDirection}
+          turnsLeft={Math.max(MAX_AI_TURNS - turnsUsed, 0)}
           onContactEmailChange={(value) => {
             setContactEmail(value);
             if (contactStatus === "error") setContactStatus("idle");

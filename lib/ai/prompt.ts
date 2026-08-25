@@ -36,7 +36,7 @@ export function buildPrompt({
 }) {
   if (!firstQuestion) return `Visitor question:\n${question}`;
   return [
-    `Earlier visitor question:\n${firstQuestion}`,
-    `Single allowed follow-up:\n${question}`,
+    `The visitor opened with:\n${firstQuestion}`,
+    `They are now asking:\n${question}`,
   ].join("\n\n");
 }

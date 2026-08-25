@@ -1,6 +1,10 @@
 import { createTextStreamResponse, streamText, toTextStream } from "ai";
 import { getAIKnowledge } from "@/lib/content";
-import { limitTextStream, MAX_QUESTION_CHARS } from "@/lib/ai/limits";
+import {
+  limitTextStream,
+  MAX_AI_TURNS,
+  MAX_QUESTION_CHARS,
+} from "@/lib/ai/limits";
 import { getPortfolioModel } from "@/lib/ai/models";
 import { decideKnowledge } from "@/lib/ai/policy";
 import { buildInstructions, buildPrompt } from "@/lib/ai/prompt";
@@ -76,9 +80,11 @@ export async function POST(request: Request) {
   if (contentLength > 2_000) return error("Question is too large.", 413);
 
   const ip = requestIp(request);
+  // A whole session has to fit inside the short window, or the ceiling meant
+  // to bound abuse would cut an ordinary conversation short instead.
   if (
-    !takeRateLimit("ai-short", ip, 5, 10 * 60 * 1000) ||
-    !takeRateLimit("ai-day", ip, 20, 24 * 60 * 60 * 1000)
+    !takeRateLimit("ai-short", ip, MAX_AI_TURNS + 2, 10 * 60 * 1000) ||
+    !takeRateLimit("ai-day", ip, MAX_AI_TURNS * 4, 24 * 60 * 60 * 1000)
   ) {
     return error(
       "That is a lot of questions in a short window. Try again in a few minutes.",
@@ -96,13 +102,27 @@ export async function POST(request: Request) {
   const question = typeof body.question === "string" ? body.question.trim() : "";
   const firstQuestion =
     typeof body.firstQuestion === "string" ? body.firstQuestion.trim() : undefined;
-  const turn = body.turn === 2 ? 2 : body.turn === 1 ? 1 : null;
+  const turn =
+    typeof body.turn === "number" &&
+    Number.isInteger(body.turn) &&
+    body.turn >= 1 &&
+    body.turn <= MAX_AI_TURNS
+      ? body.turn
+      : null;
 
-  if (!question || question.length > MAX_QUESTION_CHARS || !turn) {
+  if (!question || question.length > MAX_QUESTION_CHARS) {
     return error("Enter a shorter question.", 400);
   }
+  // Separate from the question check so a conversation that has run its length
+  // is told that, rather than being asked to shorten something.
+  if (!turn) {
+    return error(
+      `This conversation is limited to ${MAX_AI_TURNS} questions. Leave an email and Matt can follow up.`,
+      429,
+    );
+  }
   if (
-    (turn === 2 && (!firstQuestion || firstQuestion.length > MAX_QUESTION_CHARS)) ||
+    (turn > 1 && (!firstQuestion || firstQuestion.length > MAX_QUESTION_CHARS)) ||
     !validateTurn(request, turn, firstQuestion)
   ) {
     return error("Matt's AI is unavailable right now. Please try again later.", 429);

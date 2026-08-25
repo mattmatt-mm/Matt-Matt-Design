@@ -1,7 +1,8 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { MAX_AI_TURNS } from "@/lib/ai/limits";
 
 type TurnState = {
-  used: 1 | 2;
+  used: number;
   firstQuestionHash: string;
   expiresAt: number;
 };
@@ -67,25 +68,25 @@ function parseCookie(request: Request) {
 
 export function validateTurn(
   request: Request,
-  turn: 1 | 2,
+  turn: number,
   firstQuestion: string | undefined,
 ) {
   const state = parseCookie(request);
   // A first question always stands on its own. Refusing it while any cookie
   // survived meant one finished conversation locked the AI for the rest of the
   // hour, and it reported that as the AI being unavailable. What this cookie
-  // is actually for is stopping a follow-up that never had a first turn; the
-  // per-visitor rate limits are what bound how much anyone can ask.
+  // is actually for is keeping a conversation honest about its own length:
+  // each question must be the next one in a session that really started, so
+  // the count cannot be skipped past or replayed to buy extra turns.
   if (turn === 1) return true;
-  return Boolean(
-    state?.used === 1 &&
-      firstQuestion &&
-      state.firstQuestionHash === digest(firstQuestion),
-  );
+  if (turn > MAX_AI_TURNS) return false;
+  if (!state || !firstQuestion) return false;
+  if (state.firstQuestionHash !== digest(firstQuestion)) return false;
+  return turn === state.used + 1;
 }
 
 export function turnCookie(
-  turn: 1 | 2,
+  turn: number,
   question: string,
   firstQuestion: string | undefined,
 ) {

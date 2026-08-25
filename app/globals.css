@@ -549,6 +549,28 @@
     width: 100%;
   }
 
+  /* Sits where the next prompt would have been, and reads as the sentence it
+     is rather than as another control. */
+  .ai-turns-spent {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-muted);
+    font: inherit;
+    text-align: left;
+    text-decoration: underline;
+    text-decoration-color: var(--color-line);
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: color 120ms ease-out;
+  }
+
+  .ai-turns-spent:hover {
+    color: var(--color-fg);
+  }
+
   /* The exchange itself: the outgoing half leaves towards its own side and the
      incoming half arrives from the other, so the two read as one shift across
      rather than a pair of unrelated fades. */

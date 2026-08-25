@@ -189,7 +189,10 @@ not decorative borders and should remain where required.
 - The beam is a completion cue, not a general card treatment.
 - The first completed answer reveals one full-width compact `Follow Up?`
   composer 8px beneath it. It grows from one to three 21px text lines, then
-  scrolls vertically inside the field. The final answer has no third prompt.
+  scrolls vertically inside the field. A conversation runs to `MAX_AI_TURNS`
+  questions. The last answer arrives without another prompt beneath it, and
+  in that place a single line says the conversation is spent and offers the
+  email handoff — the line is the way out, not a note beside one.
 
 ## 11. AI contact handoff
 
