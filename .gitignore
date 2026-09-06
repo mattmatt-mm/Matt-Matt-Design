@@ -18,9 +18,9 @@ next-env.d.ts
 # local design-diff harness (not shipped)
 public/_design/
 
-# source exports — 50MB of originals; the optimised copies live in public/images
-raw/Notion Export/
-
-# Source CV. It carries a phone number Matt keeps off the site, and this repo
-# is public — the facts from it live in content/ai-knowledge.yaml instead.
-raw/*.pdf
+# Matt's source drop: design exports, case-study markdown, image originals and
+# his CV. Handed to Claude, never served. It is large, and the CV carries a
+# phone number Matt keeps off the site while this repo is public — so none of it
+# is tracked. What ships is the converted copy: optimised images in
+# public/images, and the CV's facts in content/ai-knowledge.yaml.
+raw/
