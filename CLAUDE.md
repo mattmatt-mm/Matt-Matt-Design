@@ -20,7 +20,10 @@ Matt overrides that file and should be folded back into it.
 Every non-circular rounded UI element uses the shared `SiteSquircle` component
 from `components/SiteSquircle.tsx` (16px radius input and 0.6 smoothing by
 default). CSS `border-radius` is fallback geometry only. Preserve true circles,
-the organic cloud silhouette, structural hairlines, and focus outlines.
+capsules, the organic cloud silhouette, structural hairlines, and focus
+outlines. A capsule, a circle, or any surface carrying an inset shadow owns its
+geometry as `border-radius` alone — there is no corner left to smooth, and a
+clip path would disagree with the radius the inset shadow is drawn against.
 
 ---
 
@@ -83,7 +86,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
-- Tapping a tab hops each letter up `2px` and back — `240ms` per letter, staggered so the whole word lands in `480ms` at any length — and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the letters are `aria-hidden` with an `sr-only` label beside them so the word is announced once.
+- The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `188×48`, capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
+- The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
+- Tapping a tab hops the icon up `2px` and back over `240ms` and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the icon is `aria-hidden` with an `sr-only` label beside it so the tab is announced once.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
   sunset gradient sweep from `components/effects/SunsetShimmer.tsx`. The intro
   links run one sweep on a visitor's **first** landing — the

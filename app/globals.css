@@ -39,10 +39,19 @@
      filter drop shadow so it remains visible beyond the clipped geometry. */
   --shadow-floating: inset 0 0 1px 0 rgb(0 0 0 / 25%);
   --filter-elevated: drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
-  --filter-elevated-control:
-    drop-shadow(0 0 1px rgb(0 0 0 / 5%))
-    drop-shadow(0 0 4px rgb(0 0 0 / 5%))
-    drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
+
+  /* Navigation dock. Each stack is the Figma effect list read top down, which
+     is also CSS box-shadow order — the first layer paints over the rest.
+     The two white layers are the bevel: a bright ledge under the top edge and
+     a softer bounce off the bottom, so the active tab reads as pressed in
+     rather than filled. */
+  --shadow-navigation:
+    inset 0 0 1px 0 rgb(0 0 0 / 25%);
+  --shadow-navigation-active:
+    inset 0 1px 10px 0 rgb(0 0 0 / 12%),
+    inset 0 3px 2px 0 rgb(255 255 255 / 100%),
+    inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
+  --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
 
   /* Type — 16/21 everywhere; 32/42 is the only second size. */
   --text-base: 16px;
@@ -65,9 +74,25 @@
     --ai-cross-travel: 24px;
     --ai-blur: 3px;
     --ai-radius: 16px;
+    /* Slightly quicker than the AI handoff: the pill crosses a 76px column, not
+       the width of the screen. Same curve, so the two read as one system. */
+    --dock-slide-dur: 250ms;
+    --dock-slide-ease: var(--ai-ease);
+    /* Dock geometry. Every dock and AI-control measurement derives from these,
+       so the bar, the trigger, and the AI back row keep one centre line. */
+    --dock-pad: 4px;
+    --dock-tab-w: 60px;
+    --dock-tab-h: 40px;
+    --dock-gap: 8px;
+    --dock-h: calc(var(--dock-tab-h) + 2 * var(--dock-pad));
+    --dock-trigger: 48px;
+    /* Capsules: half the height, so each end is a semicircle. */
+    --dock-radius: calc(var(--dock-h) / 2);
+    --dock-tab-radius: calc(var(--dock-tab-h) / 2);
+
     --ai-control-bottom: max(24px, calc(env(safe-area-inset-bottom) + 8px));
-    --ai-surface-bottom: calc(var(--ai-control-bottom) + 53px);
-    --ai-contact-bottom: calc(var(--ai-control-bottom) + 53px);
+    --ai-surface-bottom: calc(var(--ai-control-bottom) + var(--dock-h) + 1px);
+    --ai-contact-bottom: calc(var(--ai-control-bottom) + var(--dock-h) + 1px);
   }
 
   .elevated-surface {
@@ -77,21 +102,30 @@
     filter: var(--filter-elevated);
   }
 
+  /* Radius is set per surface — the bar is a capsule, the trigger a circle. */
   .navigation-surface {
     border: 0;
-    border-radius: var(--ai-radius);
     background: var(--color-surface);
+    /* The hairline is an inset shadow, not a border, so it stays a hairline at
+       the capsule ends instead of thickening around the curve. */
+    box-shadow: var(--shadow-navigation);
   }
 
   .site-dock-row {
+    /* Tabs are a fixed 60px, so the row is sized by its contents rather than
+       stretched to a round number. --dock-count comes from the component. */
+    --dock-w: calc(
+      var(--dock-count) * var(--dock-tab-w) + 2 * var(--dock-pad)
+    );
+    --dock-row-w: calc(var(--dock-w) + var(--dock-gap) + var(--dock-trigger));
     position: fixed;
     z-index: 70;
     bottom: var(--ai-control-bottom);
     left: 50%;
     display: flex;
-    width: min(296px, calc(100vw - 48px));
-    height: 52px;
-    gap: 8px;
+    width: min(var(--dock-row-w), calc(100vw - 48px));
+    height: var(--dock-h);
+    gap: var(--dock-gap);
     transform: translateX(-50%);
     pointer-events: none;
   }
@@ -121,19 +155,21 @@
 
   .site-dock-shadow {
     display: flex;
-    flex: 1 1 236px;
+    flex: 1 1 var(--dock-w);
     min-width: 0;
-    height: 52px;
-    filter: var(--filter-elevated-control);
+    height: var(--dock-h);
+    filter: var(--filter-navigation);
     pointer-events: auto;
   }
 
   .site-dock {
+    position: relative;
     display: grid;
     width: 100%;
     height: 100%;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    padding: 4px;
+    grid-template-columns: repeat(var(--dock-count), minmax(0, 1fr));
+    padding: var(--dock-pad);
+    border-radius: var(--dock-radius);
     pointer-events: auto;
     transition:
       opacity var(--ai-open-dur) var(--ai-ease),
@@ -154,27 +190,22 @@
 
   .site-dock-tab {
     position: relative;
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1px;
-    color: var(--color-muted);
-    font-size: 8px;
-    line-height: 10px;
-    text-decoration: none;
-  }
-
-  .site-dock-tab > :not(.site-dock-tab-surface) {
-    position: relative;
+    /* Above the pill, so the icon reads over the recess. */
     z-index: 1;
+    display: grid;
+    min-width: 0;
+    height: var(--dock-tab-h);
+    place-items: center;
+    color: var(--color-muted);
+    text-decoration: none;
+    /* Paced with the pill, so the icon arrives at full contrast as the recess
+       does rather than snapping ahead of it. */
+    transition: color var(--dock-slide-dur) var(--dock-slide-ease);
   }
 
-  .site-dock-tab-surface {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
+  .site-dock-icon {
+    display: grid;
+    place-items: center;
   }
 
   .site-dock-tab:hover {
@@ -185,18 +216,40 @@
     color: var(--color-fg);
   }
 
-  .site-dock-tab[data-active="true"] .site-dock-tab-surface {
+  /* The columns are equal and the grid has no gap, so the pill is exactly one
+     column wide and one column width is exactly one step. Travelling in
+     multiples of its own size keeps its box constant, so the bevel below never
+     stretches and only the compositable transform animates. */
+  .site-dock-pill {
+    position: absolute;
+    z-index: 0;
+    top: var(--dock-pad);
+    bottom: var(--dock-pad);
+    left: var(--dock-pad);
+    /* 100% here is the padding box, so the two paddings come back off. */
+    width: calc((100% - 2 * var(--dock-pad)) / var(--dock-count));
+    border-radius: var(--dock-tab-radius);
     background: var(--color-surface-active);
+    box-shadow: var(--shadow-navigation-active);
+    transform: translateX(calc(var(--dock-active) * 100%));
+    pointer-events: none;
+    transition: transform var(--dock-slide-dur) var(--dock-slide-ease);
+  }
+
+  /* Off-dock routes park the pill under the first column rather than leaving it
+     lit on a section the visitor is not in. */
+  .site-dock[data-has-active="false"] .site-dock-pill {
+    opacity: 0;
   }
 
   .ai-trigger-shell {
     position: relative;
     display: grid;
-    width: 52px;
-    height: 52px;
-    flex: 0 0 52px;
+    width: var(--dock-trigger);
+    height: var(--dock-trigger);
+    flex: 0 0 var(--dock-trigger);
     place-items: center;
-    filter: var(--filter-elevated-control);
+    filter: var(--filter-navigation);
     pointer-events: auto;
     transition:
       transform var(--ai-open-dur) var(--ai-ease),
@@ -206,6 +259,7 @@
   .ai-trigger-surface {
     position: absolute;
     inset: 0;
+    border-radius: 50%;
     pointer-events: none;
     transition: opacity var(--ai-open-dur) var(--ai-ease);
   }
@@ -214,8 +268,8 @@
     position: relative;
     z-index: 1;
     display: grid;
-    width: 52px;
-    height: 52px;
+    width: var(--dock-trigger);
+    height: var(--dock-trigger);
     place-items: center;
     border: 0;
     background: transparent;
@@ -227,9 +281,14 @@
     opacity: 1;
   }
 
+  /* The trigger sits at the right end of the row, so carrying its centre to the
+     viewport centre is half the trigger minus half the row. */
   .site-dock-row[data-ai-open="true"] .ai-trigger-shell {
     transform: translateX(
-      calc(26px - min(148px, calc((100vw - 48px) / 2)))
+      calc(
+        var(--dock-trigger) / 2 -
+          min(var(--dock-row-w), calc(100vw - 48px)) / 2
+      )
     );
     filter: none;
     pointer-events: none;
@@ -493,14 +552,14 @@
     height: auto;
   }
 
-  /* 52px to match the dock the cloud sits in, so all three controls share one
-     centre line rather than the row being 4px shy of it. */
+  /* Matches the dock height so the cloud, the back arrow, and the bar all share
+     one centre line rather than the row sitting shy of it. */
   .ai-control-row {
     position: absolute;
     bottom: var(--ai-control-bottom);
     left: 50%;
     width: 345px;
-    height: 52px;
+    height: var(--dock-h);
     transform: translateX(-50%);
     pointer-events: auto;
   }
@@ -508,8 +567,8 @@
   .ai-control {
     position: absolute;
     display: grid;
-    width: 52px;
-    height: 52px;
+    width: var(--dock-trigger);
+    height: var(--dock-trigger);
     place-items: center;
     border: 0;
     background: transparent;
@@ -799,6 +858,8 @@
   @media (prefers-reduced-motion: reduce) {
     .ai-morph-surface,
     .site-dock,
+    .site-dock-pill,
+    .site-dock-tab,
     .ai-trigger-shell,
     .ai-trigger-surface {
       transition: none;
@@ -832,6 +893,17 @@
       --color-ai-form-divider: rgb(255 255 255 / 12%);
       --shadow-floating: inset 0 0 1px 0 rgb(255 255 255 / 20%);
       --filter-elevated: drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
+      /* Same three-layer bevel, inverted for a dark surface: the hairline and
+         the two highlights come off the light foreground instead of black and
+         white, and the well deepens because a 12% black recess is invisible on
+         #1c1b18. A literal 100% white ledge here would read as a lit strip. */
+      --shadow-navigation:
+        inset 0 0 1px 0 rgb(255 255 255 / 20%);
+      --shadow-navigation-active:
+        inset 0 1px 10px 0 rgb(0 0 0 / 45%),
+        inset 0 3px 2px 0 rgb(243 241 236 / 10%),
+        inset 0 -2px 4px 0 rgb(243 241 236 / 10%);
+      --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 30%));
     }
   }
 
@@ -1067,8 +1139,14 @@
     animation: tab-letter-hop 240ms both;
   }
 
+  /* Same hop, one element: the dock icon stands in for the label's letters. */
+  .tab-hop {
+    animation: tab-letter-hop 240ms both;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .tab-letter {
+    .tab-letter,
+    .tab-hop {
       animation: none;
     }
   }

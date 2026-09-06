@@ -39,46 +39,42 @@ The interface should feel quiet, exact, warm, and intentional.
   site. The shared implementation is `SiteSquircle`, backed by
   [`@squircle-js/react`](https://github.com/bring-shrubbery/squircle-js).
 - Use a 16px corner-radius input and `0.6` corner smoothing for elevated control
-  surfaces. This includes the navigation shell, AI trigger, AI composer,
-  response, contact form, and `Send to Matt` button.
-- Nested selection fills may use a smaller approved radius, but they still use
-  the same continuous-corner geometry. The current dock tabs use 12px.
+  surfaces. This includes the AI composer, response, contact form, and
+  `Send to Matt` button.
+- The bottom navigation is the exception: the bar and its active tab are
+  capsules, and the AI trigger is a true circle. See section 5 for the radii.
 - Plain CSS `border-radius` is only the no-JavaScript/first-render fallback. It
-  must not be the final rendered geometry for a rounded surface.
-- True circles, the organic Bloub cloud silhouette, structural dividers, and
-  accessibility focus outlines are deliberate exceptions.
+  must not be the final rendered geometry for a rounded surface. The exception
+  is a surface carrying an inset shadow, which is drawn against `border-radius`
+  rather than the clip path and so needs a matching radius declared.
+- True circles, capsules, the organic Bloub cloud silhouette, structural
+  dividers, and accessibility focus outlines are deliberate exceptions. At
+  radius = half the height there is no corner left to smooth, so a capsule or
+  circle takes plain `border-radius` and skips `SiteSquircle`.
 - A corner treatment defines geometry; it is not permission to add a solid
-  border. Avoid turning every control into a capsule.
+  border. Capsules belong to the navigation dock; do not spread them to
+  buttons, fields, or content surfaces.
 
 ## 4. Elevation, not borders
 
 Buttons and filled elements have no hard decorative border. Do not use a solid
-stroke, inset edge, or wrapper layer that reads as an outline. When a filled
-surface needs elevation, use this three-layer black shadow stack at 5% opacity:
+stroke or wrapper layer that reads as an outline. When a floating surface needs
+elevation, use a soft downward drop shadow:
 
 ```css
---filter-elevated-control:
-  drop-shadow(0 0 1px rgb(0 0 0 / 5%))
-  drop-shadow(0 0 4px rgb(0 0 0 / 5%))
-  drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
+--filter-elevated: drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
 ```
 
-The 1px blur is the tight contact shadow. The 4px blur softens the immediate
-edge without becoming a border. The 20px blur is the supporting natural shadow;
-its 4px downward offset supplies the quiet lift. All three remain `#000000` at
-5% opacity. Use shared tokens; do not repeat these values in individual
-components.
+The 20px blur with a 4px downward offset supplies the quiet lift. Use shared
+tokens; do not repeat these values in individual components.
 
-Squircle clip paths clip ordinary outer `box-shadow`, so render this stack with
-`filter: drop-shadow(...)` on the squircle surface. Do not replace the shadows
-with an inset stroke or a second squircle acting as a border.
+Squircle clip paths clip ordinary outer `box-shadow`, so render outer elevation
+with `filter: drop-shadow(...)` on the squircle surface, never as a wrapper
+element drawn to look like a border.
 
-Apply this treatment to:
-
-- the bottom-navigation parent;
-- its separate AI trigger surface;
-- floating composer and form surfaces; and
-- contained floating buttons, including the full-width email action.
+Apply this treatment to floating composer and form surfaces and to contained
+floating buttons, including the full-width email action. The navigation dock has
+its own stack — see section 5.
 
 Do not apply it to inline links, list dividers, field separators, the bare back
 arrow, or static editorial content. Structural hairlines and focus outlines are
@@ -91,10 +87,57 @@ not decorative borders and should remain where required.
 - Icon-only buttons need an accessible label and a minimum 44×44px hit area.
 - The AI back control is a 16px muted-gray Phosphor arrow inside a 44×44px hit
   target, with no drawn container.
-- The bottom navigation is one 16px-radius parent surface. Internal tabs do not
-  receive their own outline or shadow.
-- The AI trigger remains a separate 52×52px sibling with an 8px dock gap.
-- Active navigation uses fill and foreground color, never a heavier border.
+- The bottom navigation is icon-only. Each tab is 60×40px inside one parent
+  surface with a uniform 4px padding, making the bar 48px tall and
+  `count × 60 + 8` wide. No visible caption sits under the icon; the label lives
+  in an `sr-only` span so the tab still announces itself.
+- Bar and active tab are capsules — radius is half the height, 24px and 20px.
+  The AI trigger is a 48×48px circle, a separate sibling with an 8px dock gap.
+- Every dock measurement derives from `--dock-tab-w`, `--dock-tab-h`,
+  `--dock-pad`, `--dock-gap`, and `--dock-trigger`. The AI back row and the
+  cloud's open-state travel read the same tokens, so the bar, the trigger, and
+  the back arrow keep one centre line and one resize cannot drift them apart.
+- The dock and the trigger share one shadow stack: a single soft drop shadow for
+  lift, plus a 1px inner rim that draws the edge without a stroke.
+
+  ```css
+  --shadow-navigation: inset 0 0 1px 0 rgb(0 0 0 / 25%);
+  --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
+  ```
+
+- The recess is one pill for the whole bar, not a surface per tab, and it slides
+  between columns over 250ms on the shared `--ai-ease` curve. The icon color
+  transitions on the same clock so it arrives with the pill.
+- The pill travels by `translateX` in multiples of its own width. The dock is a
+  gapless equal-column grid, so one column width is exactly one step: the pill's
+  box never changes, so only the compositable transform animates, and the active
+  column is known during render — the server sends it already in place, so there
+  is no measure-and-snap on first paint and no JavaScript in the path at all.
+- Never animate a squircle surface's width or height. Clip-path regenerates on
+  every frame and the corners crawl. Move it instead.
+- A tap hops the icon 2px and back over 240ms and plays `tap.wav`. This replaced
+  the per-letter hop across the old caption; with the caption gone the icon
+  carries the same gesture.
+- The active tab is the one internal element that carries its own shadow, and it
+  is a recess, not a raised chip. Three inner layers, in paint order:
+
+  ```css
+  --shadow-navigation-active:
+    inset 0 1px 10px 0 rgb(0 0 0 / 12%),
+    inset 0 3px 2px 0 rgb(255 255 255 / 100%),
+    inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
+  ```
+
+  The black layer is the well. The two white layers are the bevel — a bright
+  ledge under the top edge and a softer bounce off the bottom — so the tab reads
+  as pressed into the bar rather than laid on top of it.
+
+- Inset shadows are drawn against `border-radius`, never a clip path. A surface
+  carrying one must own its geometry as `border-radius` alone — pairing an inset
+  shadow with a squircle clip gives the same edge two slightly different shapes
+  and the rim thins unevenly around the corner.
+- Active navigation uses fill, foreground color, and this recess — never a
+  heavier border.
 - Keep a pointer-transparent gradient mask fixed behind the bottom navigation
   and above page content. It uses the same theme-aware fade colors as the AI
   overlay but a shorter `min(240px, 35dvh)` footprint so content stays legible
@@ -224,14 +267,19 @@ not decorative borders and should remain where required.
 - [ ] Latest written instruction and latest `raw/` source were checked first.
 - [ ] No hover state changes the appearance of anything the scroll lens
       refracts.
-- [ ] Every non-circular rounded element uses `SiteSquircle` continuous corners;
-      plain `border-radius` appears only as a fallback.
+- [ ] Every non-circular, non-capsule rounded element uses `SiteSquircle`
+      continuous corners; plain `border-radius` appears only as a fallback, or
+      as the sole geometry on a capsule, a circle, or an inset-shadowed surface.
 - [ ] Elevated surfaces use a 16px radius input, 0.6 smoothing, and no hard
       decorative border.
-- [ ] Buttons and filled elements have no hard border, inset edge, or wrapper
-      stroke.
-- [ ] Elevated controls use the shared 1px, 4px, and 20px black-at-5% outer
-      `drop-shadow` stack.
+- [ ] Buttons and filled elements have no hard border or wrapper stroke.
+- [ ] Floating surfaces use the shared 20px black-at-5% outer `drop-shadow`; the
+      navigation dock uses its own rim, lift, and active-recess stack.
+- [ ] The active-tab recess is a single pill that slides between columns by
+      transform, correct on first paint without JavaScript measurement.
+- [ ] Dock tabs are 60×40px inside 4px padding, the bar and pill are capsules,
+      and the AI trigger is a 48px circle.
+- [ ] Icon-only dock tabs still carry an `sr-only` label.
 - [ ] Structural hairlines and focus states remain intact.
 - [ ] General interface icons come from Phosphor.
 - [ ] `Send to Matt` is full width, text only, and icon-free.
