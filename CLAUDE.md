@@ -105,7 +105,7 @@ One breakpoint: `640px`, and it only governs the page gutters — `24px` inline 
 ```
 app/
   layout.tsx                            fonts, metadata defaults
-  (site)/layout.tsx                     Header + Intro + TabBar — shared, must not remount
+  (site)/layout.tsx                     Header + Intro — shared, must not remount
   (site)/page.tsx                       /          Experience list
   (site)/gallery/page.tsx               /gallery
   (site)/writing/page.tsx               /writing
@@ -114,7 +114,9 @@ app/
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
   sitemap.ts · robots.ts · feed.xml/route.ts
-components/  Header Intro TabBar ListRow GalleryItem Prose BackLink
+components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo
+             ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
+             effects/
 lib/content.ts                          the ONLY module that reads content
 content/     experience/ gallery/ writing/ settings.yaml
 public/images/
@@ -122,7 +124,7 @@ keystatic.config.ts
 ```
 
 Rules:
-- Intro + TabBar block is byte-identical across all three tabs and **must not shift** when switching.
+- The Header + Intro block is byte-identical across all three tabs and **must not shift** when switching.
 - Everything statically generated; `generateStaticParams` on both detail routes.
 - Server components unless interactivity demands otherwise.
 - Drafts hidden when `VERCEL_ENV === 'production'`, visible on previews.
