@@ -5,8 +5,7 @@ import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type Ref, useEffect, useRef, useState } from "react";
-import { SiteSquircle } from "@/components/SiteSquircle";
+import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react";
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 
@@ -16,9 +15,8 @@ const tabs = [
   { href: "/writing", label: "Writing", icon: PenNib },
 ];
 
-const WORD_MS = 480;
-const LETTER_MS = 240;
 const TAP_VOLUME = 0.5;
+
 
 export function AiDock({
   aiOpen,
@@ -36,6 +34,15 @@ export function AiDock({
   const pathname = usePathname();
   const [tapped, setTapped] = useState<{ href: string; plays: number } | null>(null);
   const tapSound = useRef<HTMLAudioElement | null>(null);
+
+  const isActive = (href: string) =>
+    href === "/"
+      ? pathname === "/" || pathname.startsWith("/work/")
+      : pathname.startsWith(href);
+
+  // The pill slides to this column. Resolved during render, so the server sends
+  // it already in place — there is no first-paint snap to suppress.
+  const activeIndex = tabs.findIndex((tab) => isActive(tab.href));
 
   useEffect(() => {
     const audio = new Audio("/sounds/tap.wav");
@@ -67,74 +74,65 @@ export function AiDock({
         data-ai-open={aiOpen ? "true" : "false"}
         aria-hidden="true"
       />
-      <div className="site-dock-row" data-ai-open={aiOpen ? "true" : "false"}>
+      <div
+        className="site-dock-row"
+        data-ai-open={aiOpen ? "true" : "false"}
+        style={
+          {
+            "--dock-count": tabs.length,
+            "--dock-active": Math.max(activeIndex, 0),
+          } as CSSProperties
+        }
+      >
         <div className="site-dock-shadow">
-          <SiteSquircle asChild>
-            <nav
-              className="site-dock navigation-surface"
-              aria-label="Portfolio sections"
-            >
-              {tabs.map((tab) => {
-                const active =
-                  tab.href === "/"
-                    ? pathname === "/" || pathname.startsWith("/work/")
-                    : pathname.startsWith(tab.href);
-                const Icon = tab.icon;
-                const letters = [...tab.label];
-                const step =
-                  letters.length > 1
-                    ? (WORD_MS - LETTER_MS) / (letters.length - 1)
-                    : 0;
-                const hopping = tapped?.href === tab.href;
+          {/* Capsules, so no squircle: at radius = half the height there is no
+              corner left to smooth, and a clip path would disagree with the
+              border-radius the inset rim and bevel are drawn against. */}
+          <nav
+            className="site-dock navigation-surface"
+            aria-label="Portfolio sections"
+            data-has-active={activeIndex === -1 ? "false" : "true"}
+          >
+            {/* One pill for the whole bar, not a surface per tab: it travels
+                between columns so the recess slides rather than jumps. */}
+            <div className="site-dock-pill" aria-hidden="true" />
+            {tabs.map((tab) => {
+              const active = isActive(tab.href);
+              const Icon = tab.icon;
+              const hopping = tapped?.href === tab.href;
 
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    aria-current={active ? "page" : undefined}
-                    aria-hidden={aiOpen ? "true" : undefined}
-                    tabIndex={aiOpen ? -1 : undefined}
-                    className="site-dock-tab"
-                    data-active={active ? "true" : "false"}
-                    onClick={() => tap(tab.href)}
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  aria-current={active ? "page" : undefined}
+                  aria-hidden={aiOpen ? "true" : undefined}
+                  tabIndex={aiOpen ? -1 : undefined}
+                  className="site-dock-tab"
+                  data-active={active ? "true" : "false"}
+                  onClick={() => tap(tab.href)}
+                >
+                  {/* The tap hop used to run letter by letter across the label.
+                      With the label gone the icon carries it, so a tap still
+                      answers in the same voice. Remounting on `plays` restarts
+                      the animation for repeated taps. */}
+                  <span
+                    key={hopping ? tapped?.plays : 0}
+                    className={hopping ? "site-dock-icon tab-hop" : "site-dock-icon"}
+                    aria-hidden="true"
                   >
-                    <SiteSquircle
-                      cornerRadius={12}
-                      className="site-dock-tab-surface"
-                      aria-hidden="true"
-                    />
-                    <Icon size={20} weight="regular" aria-hidden="true" />
-                    <span aria-hidden="true">
-                      {letters.map((letter, index) => (
-                        <span
-                          key={`${hopping ? tapped?.plays : 0}-${index}`}
-                          className={hopping ? "tab-letter" : undefined}
-                          style={
-                            hopping
-                              ? {
-                                  animationDelay: `${Math.round(index * step)}ms`,
-                                }
-                              : undefined
-                          }
-                        >
-                          {letter}
-                        </span>
-                      ))}
-                    </span>
-                    <span className="sr-only">{tab.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </SiteSquircle>
+                    <Icon size={20} weight="regular" />
+                  </span>
+                  <span className="sr-only">{tab.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
         <div className="ai-trigger-shell">
-          <SiteSquircle
-            width={52}
-            height={52}
-            className="ai-trigger-surface navigation-surface"
-            aria-hidden="true"
-          />
+          {/* A true circle, so no squircle: at radius = half the width there is
+              no corner left to smooth. */}
+          <div className="ai-trigger-surface navigation-surface" aria-hidden="true" />
           <button
             ref={triggerRef}
             type="button"
