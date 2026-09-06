@@ -1,4 +1,4 @@
-reviewedAt: 2026-08-24
+reviewedAt: 2026-09-06
 voiceRules:
   - Speak about Matt in the third person.
   - Match the language used by the visitor.
@@ -143,8 +143,8 @@ facts:
       taking a BSc in Integrative Systems and Design under Computer Science. His
       strongest results were in branding, interaction design, product management
       and graphics design.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: skills-and-tools
     topic: Skills and tools
     aliases:
@@ -158,12 +158,13 @@ facts:
       - 技能
       - 工具
     policy: answer
-    answer: Matt works across frontend development, UIUX design and AI-assisted
-      prototyping, alongside AI transformation, multidisciplinary project
-      management, 3D design and user research. He designs in Figma, Illustrator
-      and Jitter, and models in Shapr3D and Blender.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    answer: Matt works across frontend engineering, UIUX design and full-stack
+      development, alongside AI transformation and multidisciplinary project
+      management. He designs in Figma, models in Shapr3D and Blender, and
+      writes in Obsidian. He builds on Cloudflare, Supabase, Vercel and VPS,
+      wiring up LangChain, OpenRouter, Stripe and Resend.
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: ocat-robotics
     topic: Ocat Robotics
     aliases:
@@ -176,12 +177,13 @@ facts:
       - 機械人
       - 海洋公園
     policy: answer
-    answer: At Ocat Robotics Matt was the designer engineer behind a biomimicry
-      robotic penguin now deployed in Ocean Park. He crafted its hardware
-      appearance in Shapr3D and Fusion 360, with Raspberry Pi and Jetson Orin
-      handling penguin detection, and presented the work at IEEE RoboSoft.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    answer: At Ocat Robotics Matt was the designer engineer behind a
+      biomimicry robotic penguin now deployed in Ocean Park. He crafted its
+      hardware appearance in Shapr3D and Fusion 360, trained a YOLOv8 model
+      with Roboflow for penguin detection and obstacle avoidance and deployed
+      it on a Jetson Orin, and presented the work at IEEE RoboSoft.
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: project-melo
     topic: Project Melo
     aliases:
@@ -194,10 +196,10 @@ facts:
     policy: answer
     answer: For Project Melo Matt built an atomic design system in Obsidian
       paired with AI agents, letting marketing teams generate brand-compliant web
-      sections instantly and saving about five hours a day. He also designed a
+      sections instantly and saving about three hours a day. He also designed a
       membership app and admin portal for event bidding.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: kedonia
     topic: Kedonia
     aliases:
@@ -209,8 +211,8 @@ facts:
     answer: At Kedonia Matt is a forward deployed engineer working on plush
       manufacturing, taking products from 2D sketch through to 3D mockup to make
       the process faster to iterate on.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: neardeal
     topic: Neardeal
     aliases:
@@ -221,8 +223,8 @@ facts:
     policy: answer
     answer: Matt was chief designer at Neardeal, a beauty service app, where he
       developed a multi-stakeholder booking flow and an AI marketing platform.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: awards
     topic: Awards and recognition
     aliases:
@@ -239,8 +241,8 @@ facts:
       Robotics. His ventures were top performer in HKSTP Incubation, awarded a
       PolyU and HKSTP Micro Fund, second runner up in HK Challenge Plus, and
       champion of the IET Young Professional Exhibition Competition.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
   - id: clients
     topic: Clients
     aliases:
@@ -256,5 +258,5 @@ facts:
       private ventures, including a 2-Sigma CEO, an HSBC PayMe finance manager
       and a ToyZeroPlus CFO. He prefers working in teams and leading a vision
       through to product.
-    source: Matt's CV, August 2026.
-    lastReviewed: 2026-08-24
+    source: Matt's CV, September 2026.
+    lastReviewed: 2026-09-06
