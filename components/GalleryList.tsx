@@ -44,8 +44,13 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
         <figure key={`${entry.caption}-${i}`}>
           {entry.href ? (
             // the image and its caption are one target; the caption carries
-            // the hover on its own — the same restraint as a list row
-            <Link href={entry.href} className="group block no-underline">
+            // the hover on its own — the same restraint as a list row. Only
+            // this linked branch presses: an entry with no case study behind
+            // it is not a target, so it must not answer a tap like one.
+            <Link
+              href={entry.href}
+              className="press-shrink group block no-underline"
+            >
               <Figure entry={entry} />
             </Link>
           ) : (

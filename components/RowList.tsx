@@ -15,11 +15,17 @@ function Title({ row }: { row: Row }) {
 
   if (!row.href) return <>{row.title}</>;
 
+  // `inline-block` is what makes the press visible at all — a transform has no
+  // effect on a non-replaced inline box. It is safe for the 46px row pitch
+  // because the box inherits the same 21px line box it sits in, so its baseline
+  // lands where the inline text's did; long titles still wrap inside it.
+  const className = "press-shrink inline-block no-underline hover:opacity-60";
+
   if (external) {
     return (
       <a
         href={row.href}
-        className="no-underline hover:opacity-60"
+        className={className}
         rel="noopener noreferrer"
         target="_blank"
       >
@@ -29,7 +35,7 @@ function Title({ row }: { row: Row }) {
   }
 
   return (
-    <Link href={row.href} className="no-underline hover:opacity-60">
+    <Link href={row.href} className={className}>
       {row.title}
     </Link>
   );

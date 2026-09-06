@@ -108,7 +108,7 @@ export function AiDock({
                   aria-current={active ? "page" : undefined}
                   aria-hidden={aiOpen ? "true" : undefined}
                   tabIndex={aiOpen ? -1 : undefined}
-                  className="site-dock-tab"
+                  className="site-dock-tab press-shrink"
                   data-active={active ? "true" : "false"}
                   onClick={() => tap(tab.href)}
                 >

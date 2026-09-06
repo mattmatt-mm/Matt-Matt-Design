@@ -64,6 +64,35 @@
 }
 
 @layer components {
+  /* The site-wide press affordance: a tappable object settles to 0.98 while
+     held and springs back. It lives on :active because a press is a moment,
+     not a state the object rests in — hover keeps carrying "this is a target".
+
+     The transition repeats the base link properties rather than only naming
+     transform, because this is a class on links and a bare `transition:
+     transform` shorthand would reset the colour and opacity transitions those
+     links inherit. Anything with its own transition (the dock tab) must be
+     declared after this block and list transform itself. */
+  .press-shrink {
+    transition:
+      color 120ms ease-out,
+      text-decoration-color 120ms ease-out,
+      opacity 120ms ease-out,
+      transform 120ms ease-out;
+  }
+
+  .press-shrink:active {
+    transform: scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .press-shrink:active {
+      transform: none;
+    }
+  }
+}
+
+@layer components {
   :root {
     --ai-open-dur: 300ms;
     --ai-close-dur: 240ms;
@@ -199,8 +228,11 @@
     color: var(--color-muted);
     text-decoration: none;
     /* Paced with the pill, so the icon arrives at full contrast as the recess
-       does rather than snapping ahead of it. */
-    transition: color var(--dock-slide-dur) var(--dock-slide-ease);
+       does rather than snapping ahead of it. The press is not paced with it —
+       a tap should answer immediately, so transform keeps its own 120ms. */
+    transition:
+      color var(--dock-slide-dur) var(--dock-slide-ease),
+      transform 120ms ease-out;
   }
 
   .site-dock-icon {

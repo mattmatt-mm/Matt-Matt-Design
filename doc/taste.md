@@ -217,6 +217,22 @@ not decorative borders and should remain where required.
 - Gallery images do not dim on hover; the caption carries it. That began as a
   lens constraint and stays on its own merit — a photograph dimming under the
   pointer reads as a state change, where a caption dimming reads as a target.
+- Tappable objects press. A target scales to 0.98 while held and springs back
+  over 120ms ease-out, via the shared `.press-shrink` class: gallery items,
+  dock tabs, and experience rows all answer a tap the same way. Matt asked for
+  this on 2026-09-06, and it does not reopen the rule above — a hover dim is a
+  state the object sits in, where a press is a momentary acknowledgement that
+  ends when the finger lifts.
+- What presses is the whole target, never a part of it. A gallery item scales
+  the link so picture and caption never separate; a dock tab scales the tab, not
+  the sliding recess pill, which belongs to the bar rather than the tap. Only
+  something that actually goes somewhere presses: a gallery entry with no case
+  study behind it must not answer a tap like a target.
+- The press stacks with what a target already does rather than replacing it. The
+  dock tab keeps its icon hop and its colour paced to the pill, and keeps that
+  pacing by declaring its own transition after `.press-shrink`; a row link keeps
+  its hover dim. A row link is `inline-block` only so the transform applies at
+  all. Removed under reduced motion.
 
 ## 10. AI response completion
 
@@ -267,6 +283,9 @@ not decorative borders and should remain where required.
 - [ ] Latest written instruction and latest `raw/` source were checked first.
 - [ ] No hover state changes the appearance of anything the scroll lens
       refracts.
+- [ ] Gallery items, dock tabs, and experience rows press to 0.98 on `:active`
+      via `.press-shrink`, on linked targets only, never under reduced motion,
+      and without flattening the dock's paced colour or a row's hover dim.
 - [ ] Every non-circular, non-capsule rounded element uses `SiteSquircle`
       continuous corners; plain `border-radius` appears only as a fallback, or
       as the sole geometry on a capsule, a circle, or an inset-shadowed surface.
