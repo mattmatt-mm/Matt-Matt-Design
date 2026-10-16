@@ -2,8 +2,119 @@
 title: Incipe Workspace
 label: Hobby
 order: 90
-hasPage: false
-externalUrl: 'https://site.incipeacademy.com'
-summary: ''
-cover: ''
+start: Aug 2022
+end: Aug 2026
+role: Design Engineer
+hasPage: true
+externalUrl: ''
+summary: "How do you get a beginner from an idea to working hardware? Getting one sensor working takes six steps of setup; Incipe Board cuts it to two. Incipe Workspace is the desktop app around it: describe what your hardware should do, and an AI agent plans the board, writes the firmware and shows every live connection in 3D. I designed and built the app, and wrote down every rule that kept it from feeling machine-made."
+cover: '/images/experience/incipe-workspace/cover.webp'
 ---
+[Visit Incipe Academy](https://site.incipeacademy.com)
+
+![](/images/experience/incipe-workspace/image.webp)
+
+#### Overview
+
+## How do you get a beginner from an idea to working hardware?
+
+Incipe Academy teaches hardware to beginners. Incipe Workspace is its desktop app: describe what your hardware should do, and an AI agent plans the board, writes the firmware and shows every live connection in 3D. I designed and built it.
+
+#### Problem
+
+## One sensor took six steps before you could build anything.
+
+Most beginners give up somewhere in this list, long before they reach their idea. And both paths still end in the same place: the application logic is the part they actually came to write.
+
+{% flows outcome="Integrate, deploy & test" note="Application logic is needed either way." %}
+{% flow title="Traditional setup" steps="Read datasheets & register maps | Wire & power the sensor | Install & integrate drivers | Write configuration & reading code | Calibrate & debug readings | Build data logging" /%}
+
+{% flow title="Incipe" steps="Snap in the sensor | Read it with one line of code" /%}
+{% /flows %}
+
+#### Solution
+
+## Incipe cuts it to two.
+
+Snap the sensor into Incipe Board, then read it with one line of code using the Incipe libraries. Incipe Workspace mirrors every live connection on screen, so learners see the effect of each change the moment they make it.
+
+{% stats %}
+{% stat value="US$48K" label="revenue in the first three months" /%}
+
+{% stat value="80K" label="social media views in three months" /%}
+
+{% stat value="Top Performer" label="HKSTP Incubation 2025" /%}
+{% /stats %}
+
+#### Craft
+
+## Every default I caught became a rule.
+
+When AI writes most of the code, the interface drifts toward defaults: a card inside a card, three dots at the end of every label, a coloured stripe down the side of a box. None of it is a decision. It is what you get when nobody decides.
+
+So I kept a running log. Every time I caught a default, it became a written rule, and most rules became a test that fails the build if the slop comes back. A few of them:
+
+- One thing gets one surface. A field that is already a card does not get another card around it.
+- Text that runs out of room fades out. It never ends in three dots.
+- Status is never a hard 100% outline. Tinted edges sit at 35% colour.
+- No accent stripe down the edge of a box. It is decoration pretending to be information.
+- A row of controls is one object: one 24px height, 4px between controls in a group, 8px between groups.
+
+#### Panels
+
+## Panels open and close with a pull.
+
+The side panels open and close by dragging their edge. Pull 200px past the panel's minimum width and the collapse is armed: the panel leans 20px toward its exit and fades to half. It only commits when you let go, so pulling back cancels it.
+
+From a closed edge, a 4px pull opens the panel right under your pointer, and a click docks it at the width you last left it. There is no seam line. The grip is a 3px pill that grows from 24px to 40px while you drag.
+
+#### Press
+
+## Everything you can press, presses the same way.
+
+Every pressable thing in the app shares one press: it dips to 98% over 0.2s and dims slightly. The press is a dip, not a drop, and nothing lifts on hover.
+
+List rows return on the only easing curve in the app that overshoots, so letting go feels like a small spring. Menus open on press and select on release. Coming in is instant; going out is a 90ms fade.
+
+#### Sensor snap
+
+## A plugged-in sensor arrives on screen with a click.
+
+When a module is plugged into the real board, the 3D board shows it arriving. It falls in for 440ms, accelerating, and lands exactly where the seated model sits. On contact it dips and springs back like a click, 28 copper particles burst outward over 0.55s, and the module's light comes up.
+
+The sound is synthesised live rather than played from a file: a short noise click, a low body sliding from 210Hz to 150Hz, and a soft tick. All of it is kept below the harsh 2–4kHz band, so it feels tactile rather than shrill.
+
+#### Board connect
+
+## The board lands in the header as a wave of dots.
+
+When the board itself connects, its 3D model spins into view, then flies onto the Board button in the header in 460ms. As it lands, a ring of dots sweeps across the button over 760ms. This replaced a copper outline flash, which was exactly the kind of hard outline the slop log rules out.
+
+The wave is a mask, not a scale. The dot grid stays still and a growing ring reveals it, so the dots appear in place instead of zooming toward you. The mascot plays the same wave.
+
+#### Corners
+
+## Every corner is a continuous curve.
+
+The whole app is set to a superellipse matched to Figma's 60% corner smoothing, wherever the rendering engine supports it, and falls back to ordinary round corners where it does not. There is one radius, 6px, for everything.
+
+Where the curve matters most, I drew it by hand. The blinking caret in onboarding is a true squircle, and the shader that takes over from it draws the identical curve, so the handover is seamless. The mascot's body is a superellipse too, morphing from squarer to rounder as it shrinks into the composer.
+
+#### Motion
+
+## Blur, fade and morph keep it one moving thing.
+
+A few motion rules held the app together:
+
+- **Blur sells continuity.** A plain opacity fade reads as a pop. When the mascot changes seats, it cross-fades with a 3px blur and a 95% scale over 0.28s, so it reads as one thing moving rather than two things swapping.
+- **State words swap in 150ms.** "Thinking" rises, blurs 2px and fades out while "Done" rises from below, out of the blur.
+- **Shapes morph instead of cutting.** The mascot's outline interpolates between shapes rather than jumping.
+- **Exits carry the motion.** Entrances are instant or opacity only, because a travelling entrance is time between asking and getting.
+- **Stagger only when it tells a story.** Onboarding content arrives 40ms apart, rising 12px out of a 3px blur over 500ms. Panels never stagger.
+- **Reduced motion keeps the result.** It drops the movement, never the content.
+
+#### Built with
+
+## Electron, React and a 3D board.
+
+Electron, React and TypeScript, with React Three Fiber for the 3D board, a LangChain and LangGraph agent, and Supabase. The dot-matrix wave was adapted from the sekei-xyz reference, and the mascot from the open-source Bloub.

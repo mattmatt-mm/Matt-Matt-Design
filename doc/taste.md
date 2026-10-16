@@ -2,7 +2,7 @@
 
 - Status: authoritative design guidance
 - Owner: Matt
-- Updated: 2026-10-16
+- Updated: 2026-10-17
 
 This file records Matt's reusable interface rules. Read it before proposing or
 building UI. It complements the measured tokens in `CLAUDE.md`.
@@ -303,7 +303,34 @@ not decorative borders and should remain where required.
 - Email and note are submitted through the dedicated contact form, never through
   the model.
 
-## 12. Review checklist
+## 12. Reading width, section rail, view cursor and stats
+
+Matt asked for these on 2026-10-17, taking the structure of a reference
+portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
+
+- The column is 640px on every page. Hierarchy still comes from colour and
+  position; the wider measure is not permission for larger type.
+- A case study opens with a thumbnail up to 840px (whatever sits before the
+  first section heading); imagery inside a section stays at the text's 640px.
+- Motion exported from Matt's own tools (Lottie) plays as he made it, in his
+  order, inside the site's frame — no added chrome around it.
+- Detail pages carry a text-only section rail on the screen's left edge: muted
+  sections, the current one in fg, no markers or boxes. It steps aside (3px
+  blur fade) while breakout imagery passes beneath it rather than printing over
+  a picture.
+- The normal cursor stays. Only project targets turn it into a dot with a
+  floating label on the elevated squircle surface: "View project" for a case
+  study, "View website" for a link off the site, "Zoom" over a case-study
+  image and "Close" over the zoomed view. Never on touch, never on ordinary
+  links.
+- Image zoom moves the image itself from the page to the window centre and
+  back; it never cross-fades a second copy in.
+- Explainers are drawn in the site's own type, tokens and hairlines, not
+  pasted in as illustrated images. Matt rejected an orange flow-diagram image
+  because it did not fit the portfolio's identity. The Stats block is the first
+  of these: figure in fg, label muted beneath, 16/21 only.
+
+## 13. Review checklist
 
 - [ ] Latest written instruction and latest `raw/` source were checked first.
 - [ ] No hover state changes the appearance of anything the scroll lens

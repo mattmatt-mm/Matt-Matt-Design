@@ -1,5 +1,128 @@
 import { config, fields, collection, singleton } from "@keystatic/core";
-import { block } from "@keystatic/core/content-components";
+import { block, repeating } from "@keystatic/core/content-components";
+
+/**
+ * A row of figures for a case study or post. `stats` holds two to four `stat`
+ * blocks; components/Stats.tsx renders them.
+ */
+/**
+ * Lottie clips that play one after another and loop: `lottie` holds the
+ * `clip` blocks in order; components/LottieSequence.tsx plays them.
+ */
+const lottieComponents = {
+  lottie: repeating({
+    label: "Lottie sequence",
+    description: "Lottie animations that play one after another, then loop.",
+    children: ["clip"],
+    validation: { children: { min: 1, max: 8 } },
+    schema: {
+      title: fields.text({
+        label: "Description",
+        description: "What the animation shows, for screen readers.",
+      }),
+    },
+  }),
+  clip: block({
+    label: "Lottie clip",
+    description: "One Lottie file (.json) inside a Lottie sequence.",
+    schema: {
+      src: fields.file({
+        label: "Lottie file (.json)",
+        directory: "public/lottie",
+        publicPath: "/lottie/",
+        validation: { isRequired: true },
+      }),
+    },
+  }),
+};
+
+/**
+ * Short points in equal columns (`points` of `point`), and a problem drawn as
+ * two step lists meeting in one outcome (`flows` of `flow`).
+ * components/Points.tsx and components/Flows.tsx render them.
+ */
+const explainerComponents = {
+  points: repeating({
+    label: "Points",
+    description:
+      "Two to four short points side by side: a process, principles, insights or lessons.",
+    children: ["point"],
+    validation: { children: { min: 2, max: 4 } },
+    schema: {},
+  }),
+  point: block({
+    label: "Point",
+    description: "One point inside Points.",
+    schema: {
+      title: fields.text({
+        label: "Title",
+        description: "Two to four words, in black. e.g. Think in systems",
+        validation: { isRequired: true },
+      }),
+      text: fields.text({
+        label: "Line",
+        description: "One sentence, in grey, under the title.",
+      }),
+    },
+  }),
+  flows: repeating({
+    label: "Step comparison",
+    description:
+      "Two lists of steps side by side that end in one shared step, e.g. the old way against yours.",
+    children: ["flow"],
+    validation: { children: { min: 2, max: 2 } },
+    schema: {
+      outcome: fields.text({
+        label: "Shared last step",
+        description: "Where both lists end up. e.g. Integrate, deploy & test",
+      }),
+      note: fields.text({
+        label: "Note",
+        description: "Grey line under the shared step.",
+      }),
+    },
+  }),
+  flow: block({
+    label: "Step list",
+    description: "One side of a Step comparison.",
+    schema: {
+      title: fields.text({
+        label: "Title",
+        validation: { isRequired: true },
+      }),
+      steps: fields.text({
+        label: "Steps",
+        description: "Separate the steps with a | e.g. Wire the sensor | Install drivers",
+        validation: { isRequired: true },
+      }),
+    },
+  }),
+};
+
+const statsComponents = {
+  stats: repeating({
+    label: "Stats",
+    description: "Two to four figures in a row, e.g. revenue or users.",
+    children: ["stat"],
+    validation: { children: { min: 2, max: 4 } },
+    schema: {},
+  }),
+  stat: block({
+    label: "Stat",
+    description: "One figure inside Stats.",
+    schema: {
+      value: fields.text({
+        label: "Figure",
+        description: "The number, in black. e.g. US$48K",
+        validation: { isRequired: true },
+      }),
+      label: fields.text({
+        label: "Caption",
+        description: "The grey line under it. e.g. revenue in three months",
+      }),
+    },
+  }),
+};
 
 /**
  * GitHub storage everywhere, so /keystatic behaves the same locally and live.
@@ -143,6 +266,23 @@ export default config({
           defaultValue: 0,
           description: "Higher numbers appear higher up the list.",
         }),
+        start: fields.text({
+          label: "Start",
+          description:
+            "When the project began, shown under the title on its page. e.g. Sep 2025",
+        }),
+        end: fields.text({
+          label: "End",
+          description: "When it ended, e.g. Feb 2026, or Present.",
+        }),
+        role: fields.text({
+          label: "Role",
+          description: "What you did, shown under the title. e.g. Product, UI/UX, Website",
+        }),
+        team: fields.text({
+          label: "Team",
+          description: "Who you worked with, e.g. 10 people",
+        }),
         hasPage: fields.checkbox({
           label: "Give this entry its own page",
           defaultValue: true,
@@ -161,6 +301,9 @@ export default config({
         body: fields.markdoc({
           label: "Body",
           components: {
+            ...statsComponents,
+            ...explainerComponents,
+            ...lottieComponents,
             // Registered so the editor offers it and keeps the tag on save.
             video: block({
               label: "Video",
@@ -237,7 +380,7 @@ export default config({
       path: "content/writing/*",
       slugField: "title",
       format: { contentField: "body" },
-      columns: ["title", "label"],
+      columns: ["title", "publishedAt"],
       schema: {
         title: fields.slug({
           name: { label: "Title" },
@@ -255,14 +398,10 @@ export default config({
           ],
           defaultValue: "en",
         }),
-        label: fields.text({
-          label: "Label",
-          multiline: true,
-          description:
-            "The grey text on the left, e.g. 26 and Spring on two lines. Posts sharing a label are grouped.",
-        }),
         publishedAt: fields.date({
           label: "Published",
+          description:
+            "Also sets the grey month on the left of the Writing list, e.g. 26 Aug. Posts from the same month are grouped.",
           validation: { isRequired: true },
         }),
         draft: fields.checkbox({
@@ -273,6 +412,8 @@ export default config({
         body: fields.markdoc({
           label: "Body",
           components: {
+            ...statsComponents,
+            ...explainerComponents,
             // Registered here too, so the editor keeps the tag intact on save
             // rather than treating it as unknown markup.
             demo: block({

@@ -6,6 +6,7 @@ import { Column } from "@/components/Column";
 import { DetailChain } from "@/components/DetailChain";
 import { Header } from "@/components/Header";
 import { Prose } from "@/components/Prose";
+import { SectionRail } from "@/components/SectionRail";
 import {
   getSettings,
   getWritingEntry,
@@ -56,6 +57,7 @@ export default async function WritingPost({ params }: Props) {
   return (
     <Column>
       <Header name={settings.name} role={settings.role} href="/" />
+      <SectionRail />
 
       {/* The other posts follow, newest first as on the list, so reaching
           the end keeps scrolling into the next one through its gate while the
@@ -80,7 +82,7 @@ export default async function WritingPost({ params }: Props) {
 
               {/* `label` groups rows in the list only — it is not shown here. */}
               <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
-                <Prose node={post.body} lang={post.lang} />
+                <Prose node={post.body} lang={post.lang} idPrefix={post.slug} />
               </div>
             </article>
           );

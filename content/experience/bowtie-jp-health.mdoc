@@ -2,9 +2,10 @@
 title: "Bowtie & JP Health"
 label: "2026"
 order: 70
+role: Booking UX analysis
 hasPage: true
 externalUrl: ''
-summary: "Booking sites usually are not accessed through the user’s default browser directly when clicking a referral link, or “link in bio”. Traditional login and save booking credentials will drive users away. This project aims to keep user attention on the website without jumping into different screens for human and account authentication."
+summary: "Most people reach a booking page from a link in bio, inside Instagram's own browser, where logins and saved details do not follow them. This booking UX analysis for Bowtie & JP Health asks how to keep their attention on the booking instead of sending them off to verify who they are."
 cover: '/images/experience/bowtie-jp-health/cover.webp'
 ---
 [Present Slides](https://drive.google.com/file/d/1GWSV6-P6jrWrufcG5mnlEkgsxKwVmw6r/view?usp=sharing)
@@ -13,44 +14,76 @@ cover: '/images/experience/bowtie-jp-health/cover.webp'
 
 ![](/images/experience/bowtie-jp-health/image.webp)
 
-## What is the problem
+#### Overview
 
-When I first encountered the task, I immediately found the disconnected branding from the booking site and the official site. It was mainly caused by using third-party software. 
+## How do you keep someone booking when they arrive from a link in bio?
+
+Booking sites are rarely opened in the visitor's default browser. They arrive from a referral link or a link in bio, inside a social app, where traditional logins and saved booking details do not follow them, and that drives people away. This analysis looks for a booking flow that holds their attention without sending them to other screens to prove they are human or to sign in.
+
+#### Problem
+
+## The booking site did not look like Bowtie & JP Health.
+
+The first thing I noticed was the gap between the booking site and the official site. The booking flow ran on third-party software, so it lost the brand the moment a visitor pressed Book.
 
 ![](/images/experience/bowtie-jp-health/image-1.webp)
 
 ![](/images/experience/bowtie-jp-health/image-2.webp)
 
-Therefore, I focus on making the experience more human and premium by improving the consistency with brand, copy-writing and user progression.
+So I focused on making the experience feel human and premium again through three things:
+
+{% points %}
+{% point title="Brand" text="Bring the booking flow back in line with the official site." /%}
+
+{% point title="Copy" text="Say less, and say it the way the brand speaks." /%}
+
+{% point title="Progression" text="Guide people one clear step at a time." /%}
+{% /points %}
 
 ![](/images/experience/bowtie-jp-health/image-3.webp)
 
 [youtu.be/xelvpnC-hPI](https://youtu.be/xelvpnC-hPI?si=ZMAgXrIvraFuFqbK)
 
-**Phase 1 and 2**
+#### Phases 1 and 2
 
-After identifying the problem, I started redesign the UIUX first with better guidance, reduce redundant information.
+## First, a clearer flow with less on each screen.
+
+With the problem named, I redesigned the flow: better guidance at each step, and no redundant information.
 
 ![](/images/experience/bowtie-jp-health/image-4.webp)
 
-**Phase 3** 
+#### Phase 3
 
-Extra exploration. We need to tackle user behaviour through social media, where they have to input the credentials all over again.
+## Then the harder question: what if they come from Instagram?
+
+A visitor arriving through social media has to type their details all over again. So I explored keeping verification inside the page, with a built-in CAPTCHA instead of a trip to another screen.
 
 ![](/images/experience/bowtie-jp-health/image-5.webp)
 
-## Video Demo
+#### Prototype
 
-Desktop version - When login required
+## The flow on desktop and on a phone.
+
+Desktop, when a login is required:
 
 {% video src="/videos/experience/bowtie-jp-health/desktop.mp4" poster="/videos/experience/bowtie-jp-health/desktop-poster.webp" title="Booking a health check on the desktop site, from choosing a date and time through to logging in" /%}
 
-Mobile version
+Mobile:
 
 {% video src="/videos/experience/bowtie-jp-health/phone.mp4" poster="/videos/experience/bowtie-jp-health/phone-poster.webp" title="Booking a health check on a phone, from choosing a service through to a date and time" /%}
 
-Final decision. We keep the login workflow as we have to validate if they are real people or spam.
+#### Trade-off
 
-## Result
+## We kept the login.
+
+Every step removed makes booking easier, but the clinic still has to know each booking comes from a real person and not spam. So the final flow keeps the login, and puts the effort into making everything around it shorter.
+
+#### Outcome
+
+## A quarter less scrolling on a phone.
+
+{% stats %}
+{% stat value="25%" label="less page scroll on mobile" /%}
+{% /stats %}
 
 ![](/images/experience/bowtie-jp-health/image-6.webp)

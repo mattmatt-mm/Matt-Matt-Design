@@ -21,6 +21,7 @@ function Figure({ entry }: { entry: GalleryEntry }) {
           alt={entry.alt ?? ""}
           width={entry.width ?? 500}
           height={entry.height ?? 300}
+          sizes="(min-width: 688px) 640px, calc(100vw - 48px)"
           className="h-auto w-full"
         />
       ) : (
@@ -51,6 +52,7 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
               <a
                 href={entry.href}
                 className="press-shrink group block no-underline"
+                data-cursor="View website"
                 rel="noopener noreferrer"
                 target="_blank"
               >
@@ -60,6 +62,7 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
               <Link
                 href={entry.href}
                 className="press-shrink group block no-underline"
+                data-cursor="View project"
               >
                 <Figure entry={entry} />
               </Link>

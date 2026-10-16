@@ -1,9 +1,6 @@
 ---
 title: Twelve principles, one square
 lang: en
-label: |-
-  26
-  Summer
 publishedAt: 2026-08-22
 draft: false
 ---
@@ -13,7 +10,9 @@ So the interesting question is not what the twelve principles are — [Raphael S
 
 Every demo below is the same 24px square on the same 184px track. If a principle needs a mascot to be legible, it was never an interface principle.
 
-## Squash and stretch
+#### Squash and stretch
+
+## Deform the container, never the words
 
 {% demo kind="squash" /%}
 
@@ -23,7 +22,9 @@ The catch is that interfaces are mostly rectangles with words inside them, and w
 
 What survives is the small version: a button that dips under a press, a sheet that overshoots by a few pixels before settling, a toggle knob that stretches slightly as it crosses. Deform the container, never the contents, and keep it under about 5% anywhere text is involved.
 
-## Anticipation
+#### Anticipation
+
+## The hover state is the wind-up you already have
 
 {% demo kind="anticipation" /%}
 
@@ -33,7 +34,9 @@ In an interface you are paying for that in latency, which changes the maths. A w
 
 Spend real milliseconds on it only where the outcome is destructive or genuinely surprising. Everywhere else, let the pointer do the work.
 
-## Staging
+#### Staging
+
+## Staging is deciding what holds still
 
 {% demo kind="staging" /%}
 
@@ -43,7 +46,9 @@ This is the principle I reach for most and the one that is least about motion. S
 
 If everything on screen is animating, you have not staged anything. You have just made the page busy and left the reader to work out where to look.
 
-## Straight ahead and pose to pose
+#### Straight ahead and pose to pose
+
+## Two poses and a curve, until that is not enough
 
 No demo for this one, because it describes how you work rather than what anyone sees.
 
@@ -51,7 +56,9 @@ Straight ahead means drawing every frame in order and finding the motion as you 
 
 Straight ahead is what you are doing the moment you hand-write eleven keyframe percentages. Sometimes that is right — the shake further down this page is eleven hand-placed numbers, because a shake has no in-between worth interpolating. But every percentage you write is a number someone has to maintain. Two poses and a curve until that provably isn't enough.
 
-## Follow through and overlapping action
+#### Follow through and overlapping action
+
+## Cap the cascade, not the step
 
 {% demo kind="stagger" /%}
 
@@ -61,7 +68,9 @@ It is the cheapest sophistication available in interface motion, and the easiest
 
 Cap the total, not the step. Decide the whole cascade gets 200ms and divide by however many items you have — and stop staggering entirely past a dozen, where nobody can perceive the sequence anyway.
 
-## Slow in and slow out
+#### Slow in and slow out
+
+## Easing is the principle the others are built on
 
 {% demo kind="easing" /%}
 
@@ -69,7 +78,9 @@ The one everybody already knows, and the one with the largest return. I have wri
 
 Worth adding here: this is the principle the other eleven are built on. Anticipation, follow-through and arcs are all just easing applied to more than one property at a time.
 
-## Arcs
+#### Arcs
+
+## Two timing curves make an arc
 
 {% demo kind="arc" /%}
 
@@ -79,7 +90,9 @@ That is the whole implementation. No path maths, no motion library. Any two prop
 
 It is also the principle with the narrowest application here. Most interface motion runs along a single axis, and a curve on an 8px slide is a curve nobody can see. Arcs earn their keep on long diagonal travel — something flying to a corner, a card returning to a stack — and nowhere else.
 
-## Secondary action
+#### Secondary action
+
+## The second thing must be smaller and later
 
 {% demo kind="secondary" /%}
 
@@ -87,17 +100,21 @@ On the left, two marks of the same size at the same moment: two primaries, no hi
 
 Secondary action is the flourish that confirms the main one — the tick after the save, the count that ticks up after the row lands. The rule is that it must be subordinate in both size and time. Something equally large and equally prompt is not a secondary action, it is a second thing happening, and two things happening at once is how a screen becomes noise.
 
-The version on this site is the sound a tab makes when you tap it. It carries nothing the letter hop does not already carry. It just makes the hop feel like it happened.
+The version on this site is the sound a tab makes when you tap it. It carries nothing the icon's hop does not already carry. It just makes the hop feel like it happened.
 
-## Timing
+#### Timing
+
+## One kind of event, one duration
 
 {% demo kind="duration" /%}
 
 Duration is the difference between snappy and sluggish, and the numbers are smaller than instinct suggests. Small things moving short distances: 150–200ms. Larger surfaces: up to 300. Beyond that you are charging the reader for a performance they did not ask to see.
 
-The part that gets missed is consistency. Every animation of the same *class* should take the same time — every row entry, every panel, every page. Two durations for the same kind of event is not variety, it is a bug that nobody can name but everyone can feel. On this site there are three numbers, all multiples of 120, and everything is one of them.
+The part that gets missed is consistency. Every animation of the same *class* should take the same time — every row entry, every panel, every page. Two durations for the same kind of event is not variety, it is a bug that nobody can name but everyone can feel. On this site a press always takes 120ms, a tab hop 240ms and a surface opening 300ms, whatever set it off.
 
-## Exaggeration
+#### Exaggeration
+
+## One exaggerated moment per screen
 
 {% demo kind="shake" /%}
 
@@ -107,26 +124,32 @@ Exaggeration is what you have left when your palette is two greys and a black. I
 
 One exaggerated moment per screen. If you need two, the screen is the problem.
 
-## Solid drawing
+#### Solid drawing
 
-No demo, because this site refuses the principle outright.
+## Depth is only for things that really float
+
+No demo, because this site uses the principle almost nowhere.
 
 Solid drawing is about volume and weight — shadows, layering, perspective, the sense that a thing has a back as well as a front. It is the principle behind every elevation scale you have ever used.
 
-Here there are no shadows, no z-axis and no perspective, because depth is a promise about layers and this is a 500px column with exactly one. Introducing a shadow would imply a hierarchy that does not exist.
+Depth is a promise about layers, and this site is a 640px column on one flat layer. So the column gets no shadows, no z-axis and no perspective: a shadow there would imply a hierarchy that does not exist. The only things that cast one are the few that genuinely float above the page — the dock, the AI composer, a zoomed image — and their shadow is a single soft 5% drop, the same everywhere.
 
-That is a choice, not a rule, and the cost is real: without depth there is no way to say *this floats above that*, so I have to say it with position and contrast instead. If you do use depth, the only thing that matters is that the light comes from one place and stays there.
+The cost is real: on the page itself there is no way to say *this sits above that*, so I say it with position and contrast instead. If you do use depth, the only thing that matters is that the light comes from one place and stays there.
 
-## Appeal
+#### Appeal
 
-The last one cannot be specified, which is why it is last and why it has no demo. The nearest thing to one is at the top of this page: tap a tab and the letters hop, one after another, and a small sound plays.
+## Appeal is the part nobody asked for
+
+The last one cannot be specified, which is why it is last and why it has no demo. The nearest thing to one is at the bottom of this page: tap a tab and its icon hops, and a small sound plays.
 
 None of that is necessary. The site would pass every test it passes now without it. It survives because appeal is the difference between something that works and something somebody made, and that difference is most of why anyone comes back to a personal site at all.
 
 It is also the first thing that should go the moment it gets in the way of reading. Appeal that costs the reader something is not appeal, it is decoration with a better name.
 
----
+#### Verdict
 
-Ten of the twelve translate. Two — squash and solid drawing — arrive damaged for the same reason: they describe bodies, and an interface does not have one.
+## Ten of the twelve translate
+
+The other two — squash and solid drawing — arrive damaged for the same reason: they describe bodies, and an interface does not have one.
 
 The ones that survive intact are the least glamorous of the set. Timing, staging, follow-through. Nobody has ever complimented an interface on its staging. They just find what they were looking for slightly faster than they expected to, and never think about the page again.

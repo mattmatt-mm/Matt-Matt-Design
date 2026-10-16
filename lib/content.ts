@@ -136,6 +136,23 @@ export async function getExperience(): Promise<Row[]> {
   );
 }
 
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+/**
+ * A post's list label is the month it was published, "26 Aug", read straight
+ * from `publishedAt` (YYYY-MM-DD) without a Date, so no timezone can move it
+ * into the neighbouring month. Posts from the same month share a label and so
+ * form one group.
+ */
+function monthLabel(publishedAt: string | null | undefined) {
+  const [year, month] = (publishedAt ?? "").split("-");
+  const name = MONTHS[Number(month) - 1];
+  return year && name ? `${year.slice(-2)} ${name}` : "";
+}
+
 export async function getWriting(): Promise<Row[]> {
   const all = await reader.collections.writing.all();
   const visible = all.filter((e) => !(hideDrafts && e.entry.draft));
@@ -145,7 +162,7 @@ export async function getWriting(): Promise<Row[]> {
 
   return toRows(
     sorted.map((e) => ({
-      label: e.entry.label ?? "",
+      label: monthLabel(e.entry.publishedAt),
       title: e.entry.title,
       href: `/writing/${e.slug}`,
       lang: e.entry.lang,
@@ -229,6 +246,10 @@ export async function getCaseStudyTour(slug: string) {
     ordered.map(async (e) => ({
       slug: e.slug,
       title: e.entry.title,
+      start: e.entry.start,
+      end: e.entry.end,
+      role: e.entry.role,
+      team: e.entry.team,
       // Keystatic bundles its own copy of Markdoc — same cast as above.
       body: (await e.entry.body()).node as unknown as MarkdocNode,
     })),

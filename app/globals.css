@@ -32,8 +32,10 @@
      12 = 48px, 16 = 64px, 24 = 96px, 32 = 128px */
   --spacing: 4px;
 
-  /* Layout */
-  --container-column: 500px;
+  /* Layout — one 640px column on every page. Gutters drop only once the
+     viewport holds the column plus 24px either side, hence 688px. */
+  --container-column: 640px;
+  --breakpoint-column: 688px;
 
   /* Squircle clip paths preserve the surface geometry. Outer elevation uses a
      filter drop shadow so it remains visible beyond the clipped geometry. */
@@ -1145,6 +1147,25 @@
     color: var(--color-muted);
   }
 
+  /* An anchor from the section rail lands its heading clear of the top. */
+  .prose :is(h2, h3)[id] {
+    scroll-margin-top: 60px;
+  }
+
+  /* Eyebrow: a muted h4 naming the kind of section ("Problem") directly above
+     the claim heading that says what it is. The pair reads as one unit. */
+  .prose > * + h4 {
+    margin-top: 48px;
+  }
+
+  .prose h4 + :is(h2, h3) {
+    margin-top: 4px;
+  }
+
+  .prose h4 + :is(h2, h3)[id] {
+    scroll-margin-top: 96px;
+  }
+
   .prose ul {
     list-style: disc;
   }
@@ -1169,27 +1190,106 @@
     margin-block: 48px;
   }
 
-  /* Case-study and post imagery reads better than the 500px measure allows on
-     a laptop, so it breaks out of the column and centres on it, capped at
-     1200px and always inside the page gutters. Symmetric negative margins
-     rather than a transform: the lens capture measures the real box, and a
+  /* Case-study and post imagery. A thumbnail — anything set before the first
+     section heading — opens the piece at up to 840px, centred on the 640px
+     measure; images, video and animation inside a section sit at the text's
+     own 640px. Matt set both on 2026-10-17. Symmetric negative margins rather
+     than a transform: the lens capture measures the real box, and a
      translated one would be drawn twice-shifted. */
   .prose {
-    --prose-media-width: min(1200px, 100vw - 48px);
+    --prose-lead-width: min(840px, 100vw - 48px);
   }
 
   .prose img {
     display: block;
-    width: var(--prose-media-width);
+    width: 100%;
     max-width: none;
     height: auto;
-    margin-inline: calc((100% - var(--prose-media-width)) / 2);
   }
 
-  /* A case-study video breaks out exactly like an image does. */
-  .prose .video-player {
-    width: var(--prose-media-width);
-    margin-inline: calc((100% - var(--prose-media-width)) / 2);
+  .prose > :not(h2 ~ *):is(p:has(> img), .video-player, .lottie-sequence) {
+    width: var(--prose-lead-width);
+    margin-inline: calc((100% - var(--prose-lead-width)) / 2);
+  }
+
+  /* Lottie clips (components/LottieSequence.tsx) draw square, one layer per
+     clip so the incoming one can draw before the outgoing one leaves. */
+  .lottie-sequence {
+    position: relative;
+    aspect-ratio: 1;
+  }
+
+  .lottie-sequence-layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Figures in a row (components/Stats.tsx). Equal columns from 640px,
+     stacked below; type stays 16/21, the label muted beneath its figure. */
+  .prose .stats {
+    margin-block: 24px;
+  }
+
+  .prose :is(.points, .flows) {
+    margin-block: 24px;
+  }
+
+  .stats,
+  .points,
+  .flows-columns {
+    display: grid;
+    gap: 16px 24px;
+  }
+
+  @media (min-width: 640px) {
+    .stats,
+    .points,
+    .flows-columns {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+    }
+  }
+
+  .prose .points,
+  .prose .flow ol {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  /* Step comparison (components/Flows.tsx): each list is a run of rows like
+     the Experience list — 12px padding, an inset hairline between rows, a
+     muted step number in its own column — and both lists end in one shared
+     row under a full-width rule. */
+  .flow-title {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .flow ol {
+    counter-reset: step;
+  }
+
+  .flow li {
+    counter-increment: step;
+    position: relative;
+    padding: 12px 0 12px 24px;
+  }
+
+  .flow li + li {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .flow li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    color: var(--color-muted);
+  }
+
+  .flows-outcome {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-fg);
   }
 
   .prose :is(code, pre) {
@@ -1811,9 +1911,9 @@
     }
   }
 
-  /* Below 640px the column is the full screen width, so the elapsed time
+  /* Below 688px the column is the full screen width, so the elapsed time
      goes and the remaining time carries the clock alone. */
-  @media (max-width: 639px) {
+  @media (max-width: 687px) {
     .video-player-time:first-of-type {
       display: none;
     }
@@ -1894,5 +1994,142 @@
       filter: none;
       transform: none;
     }
+  }
+}
+
+@layer components {
+  /* Section rail on a detail page (components/SectionRail.tsx). Text only:
+     muted sections, the one being read in the foreground colour. It sits on
+     the screen's left edge, inside the 24px page gutter, and only appears
+     where its 160px clears the 640px text by 48px, i.e. from 1104px; an 840px
+     thumbnail passing beneath it makes it step aside. */
+  .section-rail {
+    display: none;
+  }
+
+  @media (min-width: 1104px) {
+    .section-rail {
+      display: block;
+      position: fixed;
+      top: 50%;
+      left: 24px;
+      width: 160px;
+      translate: 0 -50%;
+      transition:
+        opacity 160ms ease-out,
+        filter 160ms ease-out;
+    }
+  }
+
+  /* A breakout image or video is passing beneath: step aside rather than
+     print over it. Still focusable, so keyboard users can reach it. */
+  .section-rail[data-covered] {
+    opacity: 0;
+    filter: blur(3px);
+  }
+
+  .section-rail[data-covered]:focus-within {
+    opacity: 1;
+    filter: none;
+  }
+
+  .section-rail ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .section-rail a {
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 120ms ease-out;
+  }
+
+  .section-rail a:hover,
+  .section-rail a[aria-current] {
+    color: var(--color-fg);
+  }
+}
+
+@layer components {
+  /* View cursor (components/effects/ViewCursor.tsx): over a project target the
+     system pointer gives way to a dot with a floating label. The wrapper sits
+     on the pointer; the dot centres on it and the label floats 12px to its
+     right. Enters and leaves with the site's 3px blur fade. */
+  [data-view-cursor] [data-cursor] {
+    cursor: none;
+  }
+
+  .view-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    filter: blur(3px);
+    transition:
+      opacity 160ms ease-out,
+      filter 160ms ease-out;
+  }
+
+  .view-cursor[data-visible] {
+    opacity: 1;
+    filter: blur(0);
+  }
+
+  .view-cursor-dot {
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: var(--color-fg);
+  }
+
+  .view-cursor-label {
+    margin-left: 12px;
+    padding: 4px 12px;
+    border-radius: 16px;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    white-space: nowrap;
+    filter: var(--filter-elevated);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .view-cursor {
+      transition: none;
+    }
+  }
+}
+
+@layer components {
+  /* Image zoom (components/effects/ImageZoom.tsx). The page dims behind a
+     near-opaque wash of its own background and the image rests centred, as
+     large as the window allows inside the 24px gutter. Above the dock (70),
+     below the view cursor (100). */
+  .image-zoom {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+  }
+
+  .image-zoom-backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--color-content-mask-solid);
+  }
+
+  .image-zoom-picture {
+    position: fixed;
+    max-width: none;
+    transform-origin: 0 0;
+  }
+
+  /* Touch, or before the view cursor is running: the system zoom cursor. */
+  :root:not([data-view-cursor]) .prose img[data-zoom] {
+    cursor: zoom-in;
   }
 }

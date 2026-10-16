@@ -31,9 +31,10 @@ clip path would disagree with the radius the inset shadow is drawn against.
 
 Next.js 15 (App Router, TS) · Tailwind v4 (`@theme`) · Keystatic (git storage) · `next/image` · Vercel · pnpm.
 
-Not using: databases, i18n routing, state libraries, animation libraries — the one
-exception is `gradient-shimmer`, a zero-dependency component used solely for the
-intro links (see Interaction).
+Not using: databases, i18n routing, state libraries, animation libraries — the
+exceptions are `gradient-shimmer`, a zero-dependency component used solely for the
+intro links (see Interaction), and `lottie-web` (light SVG build), loaded on demand
+only by `components/LottieSequence.tsx` to play Matt's Lottie exports.
 
 ---
 
@@ -68,16 +69,16 @@ treatment.
 Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two documented exceptions are the 21/42px line boxes and the signature's 5px optical offset.
 
 ### Layout — all values measured from `raw/*.svg`, not guessed
-- Content column **500px**, centered. `24px` inline gutters below 640px, none above.
+- Content column **640px** on every page, centered (`--container-column`). `24px` inline gutters below 688px (`--breakpoint-column`, the column plus both gutters), none above. Matt widened it from 500px on 2026-10-17.
 - Page padding: top `60`, bottom `128`.
 - Header → intro `60`. Intro paragraph gap `16`. Intro → tab bar `60`.
 - Tab bar: `12` top padding, label, `12` bottom padding, `1px` `--color-line` rule. Each tab has `4px` horizontal padding and tabs are `8px` apart; the active tab's `2px` fg marker spans the **padded** box and overlaps the hairline.
 - List row: `12` top padding, `21` line, `12` bottom padding, `1px` divider = **46px pitch**. Label column **100px**.
 - The divider is **inset to the title column** between rows of the same group and runs **full width** before a row that starts a new group. No divider after the last row.
-- A label prints only on the **first row of its group**. It is absolutely positioned, so a two-line label ("26 / Spring") overhangs the rule instead of growing the row.
+- A label prints only on the **first row of its group**. It is absolutely positioned, so a label that wraps to two lines overhangs the rule instead of growing the row.
 - **The two-column row never stacks.** Category left, title right, at every width including mobile — the 100px label column and the inset rule are fixed, and only the title column narrows. Do not add a breakpoint that collapses it.
-- Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 500×300 image is exactly 366px.
-- **Detail-page imagery is the one thing that leaves the column.** `.prose img` breaks out and centres on the 500px measure at `min(1200px, 100vw - 48px)`, so a case study reads at full size on a laptop and still sits inside the 24px gutters on a phone. Body copy, headings, and demos stay at 500px. Use symmetric negative margins, never a transform.
+- Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 5:3 image (640×384) is exactly 450px.
+- **A case study's thumbnail is the one thing that leaves the column.** Whatever sits before the first `##` heading — an image, a video or a Lottie sequence — opens the page at `min(840px, 100vw - 48px)`, centred on the 640px measure and inside the 24px gutters on a phone. Images, video and animation inside a section sit at the text's own 640px. Use symmetric negative margins, never a transform. To make an image the thumbnail, move it above the first heading.
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.
@@ -99,10 +100,15 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
   mid-word. Skipped entirely under `prefers-reduced-motion`. The shimmer span is
   forced back to `display: inline` so the link's underline is not lost.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
+- Over a project target (gallery links and Experience rows) the pointer becomes an 8px dot with a floating label on a squircle surface: "View project" for a case study, "View website" for a link that leaves the site. Fine hover-capable pointers only; touch never sees it (`components/effects/ViewCursor.tsx`, labels set by `data-cursor`).
+- Every case-study and post image zooms on click, Enter or Space (`components/effects/ImageZoom.tsx`): the image travels from its place to the centre of the window over `--ai-open-dur` on `--ai-ease`, as large as the window allows inside the 24px gutter and never past its own pixels, while the page dims behind it. Click anywhere or Escape travels it back. The cursor reads "Zoom" over an image and "Close" over the open view. Reduced motion: no travel.
+- Detail pages carry a section rail: the current entry's `##` headings pinned to the screen's left edge (24px in), muted, with the section being read in fg. It follows the detail chain and fades out while breakout imagery passes beneath it (`components/SectionRail.tsx`).
+- Case studies can play Lottie exports in order and loop them with the Lottie sequence block (`{% lottie %}{% clip src /%}…{% /lottie %}`; files in `public/lottie/`). It loads when near the screen, pauses off screen, and under reduced motion holds the last clip's final frame. Re-encode embedded PNGs to WebP before adding a file (Kedonia's went from 3.9MB to 670KB).
+- Case studies and posts can set out figures with the Stats block (`{% stats %}{% stat value label /%}{% /stats %}`): figure in fg, label muted, 16/21 only.
 - No page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
 
 ### Responsive
-One breakpoint: `640px`, and it only governs the page gutters — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout).
+The page gutters switch at `688px` — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout). Two component-level exceptions: a Stats block stacks below 640px, and the section rail only appears from 1104px, where it clears the 640px text by 48px (it steps aside while an 840px thumbnail passes beneath).
 
 ---
 
@@ -120,9 +126,9 @@ app/
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
   sitemap.ts · robots.ts · feed.xml/route.ts
-components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate
+components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
-             effects/
+             effects/ — includes ViewCursor, the dot + "View project" cursor (mounted in app/layout.tsx)
 lib/content.ts                          the ONLY module that reads content
 content/     experience/ gallery/ writing/ settings.yaml
 public/images/
@@ -139,9 +145,11 @@ Rules:
 
 ## Content model (Keystatic collections)
 
-**experience** — `title` (slug), `label`, `order`, `hasPage`, `externalUrl?`, `summary`, `cover?`, `body` (markdoc)
+**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `summary`, `cover?`, `body` (markdoc). `start`/`end`/`role`/`team` print under the title on the case-study page as Start / End / Role / Team figures.
+
+Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text /%}`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
-**writing** — `title` (slug), `lang` (`en`|`zh`), `label`, `publishedAt`, `draft`, `body` (markdoc)
+**writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
 **settings** (singleton) — `name`, `role`, `intro[]`, `socials[]`, `email` → **`content/settings.yaml`** (no trailing slash on the singleton path means a file, not a directory)
 
 There is no `group` field. Grouping is derived in `lib/content.ts`: consecutive entries sharing a `label` form a group, only the first keeps the visible label, and the rule before a new group runs full width.
@@ -171,7 +179,7 @@ Do not merge steps 3 and 4.
 
 ## Verify before calling anything done
 
-- Measure the live DOM at 1280px against the numbers in the Layout section above — the column lands at x=390, nav top 517, row tops 563/609/655/…, dividers at 608 (inset) / 654 (full) / …
+- Measure the live DOM at 1280px against the numbers in the Layout section above — the column lands at x=320 and is 640px wide; rows keep a 46px pitch (with the current intro copy, row tops 454/500/546/…, dividers 499/545/…).
 - Switch tabs — the masthead must not move by a single pixel.
 - 375px — no horizontal scroll, labels stack above titles, dividers run full width.
 - `pnpm build` — zero type errors, all detail routes prerendered.

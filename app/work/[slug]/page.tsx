@@ -6,6 +6,8 @@ import { Column } from "@/components/Column";
 import { DetailChain } from "@/components/DetailChain";
 import { Header } from "@/components/Header";
 import { Prose } from "@/components/Prose";
+import { SectionRail } from "@/components/SectionRail";
+import { Stat, Stats } from "@/components/Stats";
 import {
   getCaseStudyTour,
   getExperienceEntry,
@@ -52,6 +54,7 @@ export default async function WorkPage({ params }: Props) {
   return (
     <Column>
       <Header name={settings.name} role={settings.role} href="/" />
+      <SectionRail />
 
       {/* The rest of the case studies follow in list order, so reaching the
           end keeps scrolling into the next one while the URL follows along.
@@ -74,7 +77,19 @@ export default async function WorkPage({ params }: Props) {
                 `cover` is the social-preview image; the body already opens
                 with it, so rendering it again would duplicate the lead. */}
             <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
-              <Prose node={study.body} />
+              {/* When the project ran and who did what, as figures under
+                  its name. */}
+              {study.start || study.end || study.role || study.team ? (
+                <div className="mb-12">
+                  <Stats>
+                    {study.start ? <Stat value={study.start} label="Start" /> : null}
+                    {study.end ? <Stat value={study.end} label="End" /> : null}
+                    {study.role ? <Stat value={study.role} label="Role" /> : null}
+                    {study.team ? <Stat value={study.team} label="Team" /> : null}
+                  </Stats>
+                </div>
+              ) : null}
+              <Prose node={study.body} idPrefix={study.slug} />
             </div>
           </article>
         ))}

@@ -9,6 +9,8 @@ import {
 } from "@/lib/site";
 import { AIExperience } from "@/components/ai/AIExperience";
 import { SmoothScrollLens } from "@/components/effects/SmoothScrollLens";
+import { ImageZoom } from "@/components/effects/ImageZoom";
+import { ViewCursor } from "@/components/effects/ViewCursor";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -63,6 +65,8 @@ export default function RootLayout({
           <div data-lens-content>{children}</div>
         </AIExperience>
         <SmoothScrollLens />
+        <ImageZoom />
+        <ViewCursor />
       </body>
     </html>
   );

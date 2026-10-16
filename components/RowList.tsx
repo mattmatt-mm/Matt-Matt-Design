@@ -10,7 +10,7 @@ export type Row = {
   lang?: "en" | "zh";
 };
 
-function Title({ row }: { row: Row }) {
+function Title({ row, cursor }: { row: Row; cursor?: string }) {
   const external = row.href?.startsWith("http");
 
   if (!row.href) return <>{row.title}</>;
@@ -26,6 +26,7 @@ function Title({ row }: { row: Row }) {
       <a
         href={row.href}
         className={className}
+        data-cursor={cursor && "View website"}
         rel="noopener noreferrer"
         target="_blank"
       >
@@ -35,13 +36,21 @@ function Title({ row }: { row: Row }) {
   }
 
   return (
-    <Link href={row.href} className={className}>
+    <Link href={row.href} className={className} data-cursor={cursor}>
       {row.title}
     </Link>
   );
 }
 
-export function RowList({ rows }: { rows: Row[] }) {
+export function RowList({
+  rows,
+  cursor,
+}: {
+  rows: Row[];
+  /** Label for the view cursor over linked titles, e.g. "View project".
+   * Titles that leave the site read "View website" instead. */
+  cursor?: string;
+}) {
   return (
     <ul>
       {rows.map((row, i) => {
@@ -63,7 +72,7 @@ export function RowList({ rows }: { rows: Row[] }) {
                 className="ml-25"
                 lang={row.lang === "zh" ? "zh-Hant" : undefined}
               >
-                <Title row={row} />
+                <Title row={row} cursor={cursor} />
               </div>
             </div>
 

@@ -12,5 +12,5 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function ExperiencePage() {
   const rows = await getExperience();
-  return <RowList rows={rows} />;
+  return <RowList rows={rows} cursor="View project" />;
 }
