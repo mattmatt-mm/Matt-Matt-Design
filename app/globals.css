@@ -157,6 +157,15 @@
     gap: var(--dock-gap);
     transform: translateX(-50%);
     pointer-events: none;
+    transition: width var(--ai-open-dur) var(--ai-ease);
+  }
+
+  /* Detail page: the bar contracts to a circle the size of the AI trigger,
+     Dynamic Island style. Everything sized from --dock-w (the row, and the AI
+     trigger's travel to centre) follows. A capsule, not a squircle, so the
+     width can animate without a clip path regenerating every frame. */
+  .site-dock-row[data-detail="true"] {
+    --dock-w: var(--dock-h);
   }
 
   /* Sits above the page and the scroll lens so the fade covers both, but
@@ -232,7 +241,45 @@
        a tap should answer immediately, so transform keeps its own 120ms. */
     transition:
       color var(--dock-slide-dur) var(--dock-slide-ease),
+      opacity var(--ai-open-dur) var(--ai-ease),
+      filter var(--ai-open-dur) var(--ai-ease),
       transform 120ms ease-out;
+  }
+
+  /* The tabs and the recess give way inside the contracting bar while the
+     arrow resolves at its centre: a cross-fade inside a changing shape. */
+  .site-dock-row[data-detail="true"] :is(.site-dock-tab, .site-dock-pill) {
+    opacity: 0;
+    filter: blur(var(--ai-blur));
+    pointer-events: none;
+  }
+
+  .site-dock-back {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--color-fg);
+    text-decoration: none;
+    opacity: 0;
+    filter: blur(var(--ai-blur));
+    pointer-events: none;
+    transition:
+      opacity var(--ai-open-dur) var(--ai-ease),
+      filter var(--ai-open-dur) var(--ai-ease),
+      transform 120ms ease-out;
+  }
+
+  .site-dock-row[data-detail="true"] .site-dock-back {
+    opacity: 1;
+    filter: none;
+    pointer-events: auto;
+  }
+
+  .site-dock-back:hover {
+    color: var(--color-muted);
   }
 
   .site-dock-icon {
@@ -265,7 +312,10 @@
     box-shadow: var(--shadow-navigation-active);
     transform: translateX(calc(var(--dock-active) * 100%));
     pointer-events: none;
-    transition: transform var(--dock-slide-dur) var(--dock-slide-ease);
+    transition:
+      transform var(--dock-slide-dur) var(--dock-slide-ease),
+      opacity var(--ai-open-dur) var(--ai-ease),
+      filter var(--ai-open-dur) var(--ai-ease);
   }
 
   /* Off-dock routes park the pill under the first column rather than leaving it
@@ -889,6 +939,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     .ai-morph-surface,
+    .site-dock-row,
+    .site-dock-back,
     .site-dock,
     .site-dock-pill,
     .site-dock-tab,
@@ -1131,6 +1183,12 @@
     width: var(--prose-media-width);
     max-width: none;
     height: auto;
+    margin-inline: calc((100% - var(--prose-media-width)) / 2);
+  }
+
+  /* A case-study video breaks out exactly like an image does. */
+  .prose .video-player {
+    width: var(--prose-media-width);
     margin-inline: calc((100% - var(--prose-media-width)) / 2);
   }
 
@@ -1603,6 +1661,238 @@
     .demo-anim {
       animation-duration: 1ms !important;
       animation-delay: 0ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Case-study video, after the Video.js v10 player: a blurred control strip
+     floating 12px inside the frame. The frame and the strip are squircles;
+     the colours are fixed light-on-dark in both themes, because they sit on
+     the video rather than on the page. */
+  .video-player {
+    --video-bar-inset: 12px;
+    --video-bar-bg: rgb(0 0 0 / 40%);
+    --video-bar-fg: rgb(255 255 255);
+    --video-track: rgb(255 255 255 / 30%);
+    --video-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+  }
+
+  .video-player-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 16px;
+    background: rgb(0 0 0);
+  }
+
+  .video-player-media {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+  }
+
+  .video-player:fullscreen .video-player-frame {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    clip-path: none !important;
+  }
+
+  .video-player:fullscreen .video-player-media {
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .video-player-bar {
+    position: absolute;
+    inset-inline: var(--video-bar-inset);
+    bottom: var(--video-bar-inset);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 48px;
+    padding-inline: 4px;
+    border-radius: 16px;
+    color: var(--video-bar-fg);
+    background: var(--video-bar-bg);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    transition:
+      opacity 240ms var(--video-ease),
+      transform 240ms var(--video-ease);
+  }
+
+  .video-player[data-controls="hidden"] .video-player-bar {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  .video-player[data-controls="hidden"] .video-player-media {
+    cursor: none;
+  }
+
+  .video-player-button {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+    color: inherit;
+    transition: opacity 120ms ease-out;
+  }
+
+  .video-player-button:hover {
+    opacity: 0.6;
+  }
+
+  .video-player-time {
+    flex: none;
+    padding-inline: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .video-player-scrubber {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    margin-inline: 8px;
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .video-player-track {
+    width: 100%;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--video-track);
+  }
+
+  .video-player-fill {
+    height: 100%;
+    background: var(--video-bar-fg);
+  }
+
+  .video-player-thumb {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--video-bar-fg);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 120ms ease-out;
+  }
+
+  .video-player-scrubber:is(:hover, :focus-visible, :active) .video-player-thumb {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* The page's focus ring is foreground-coloured, which disappears on a dark
+     strip in light mode. Same ring, drawn in the strip's own colour. */
+  .video-player-bar :focus-visible {
+    outline-color: var(--video-bar-fg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .video-player-bar {
+      transition: opacity 240ms linear;
+    }
+
+    .video-player[data-controls="hidden"] .video-player-bar {
+      transform: none;
+    }
+  }
+
+  /* Below 640px the column is the full screen width, so the elapsed time
+     goes and the remaining time carries the clock alone. */
+  @media (max-width: 639px) {
+    .video-player-time:first-of-type {
+      display: none;
+    }
+  }
+}
+
+@layer components {
+  /* Detail-chain gate (case studies and writing). The title block is sticky and is followed by a spacer
+     one screen tall: the reader scrolls that screen while the title holds,
+     drifting up 48px into its resting place as the line fills — the
+     friction. When the spacer runs out the title scrolls on at normal speed
+     with the case study directly beneath it, so there is no empty screen
+     between heading and content. The content stays hidden during the push
+     and enters as the line fades. The page only ever moves under the
+     reader's own scroll. DetailChain writes `--gate-progress` (0–1) on
+     the gate and `data-gate="open"` on the article. */
+  .chain-gate {
+    --chain-gate-friction: 100svh;
+    --chain-gate-drift: 48px;
+  }
+
+  .chain-gate-head {
+    position: sticky;
+    top: 40svh;
+    transform: translateY(
+      calc((1 - var(--gate-progress, 0)) * var(--chain-gate-drift))
+    );
+  }
+
+  .chain-gate-friction {
+    height: var(--chain-gate-friction);
+  }
+
+  .chain-gate-track {
+    height: 1px;
+    margin-top: 24px;
+    background: var(--color-line);
+    transition: opacity var(--ai-close-dur) var(--ai-ease);
+  }
+
+  .chain-gate-fill {
+    height: 100%;
+    background: var(--color-fg);
+    transform: scaleX(var(--gate-progress, 0));
+    transform-origin: left;
+  }
+
+  /* Hidden only once the script is running, so without it the content is
+     simply there. Leaving uses the close timing, arriving the open timing. */
+  [data-chain="ready"] .chain-gate-body {
+    opacity: 0;
+    filter: blur(var(--ai-blur));
+    transform: translateY(var(--ai-travel));
+    transition:
+      opacity var(--ai-close-dur) var(--ai-ease),
+      filter var(--ai-close-dur) var(--ai-ease),
+      transform var(--ai-close-dur) var(--ai-ease);
+  }
+
+  [data-chain="ready"] [data-gate="open"] .chain-gate-body {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition-duration: var(--ai-open-dur);
+  }
+
+  [data-gate="open"] .chain-gate-track {
+    opacity: 0;
+    transition-duration: var(--ai-open-dur);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chain-gate-head {
+      transform: none;
+    }
+
+    [data-chain="ready"] .chain-gate-body {
+      filter: none;
+      transform: none;
     }
   }
 }

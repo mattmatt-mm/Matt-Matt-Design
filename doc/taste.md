@@ -2,7 +2,7 @@
 
 - Status: authoritative design guidance
 - Owner: Matt
-- Updated: 2026-08-23
+- Updated: 2026-10-16
 
 This file records Matt's reusable interface rules. Read it before proposing or
 building UI. It complements the measured tokens in `CLAUDE.md`.
@@ -91,6 +91,13 @@ not decorative borders and should remain where required.
   surface with a uniform 4px padding, making the bar 48px tall and
   `count × 60 + 8` wide. No visible caption sits under the icon; the label lives
   in an `sr-only` span so the tab still announces itself.
+- On a detail page (`/work/<slug>`, `/writing/<slug>`) the bar contracts,
+  Dynamic Island style, into a 48px circle holding a 20px back arrow, beside
+  the AI trigger. The arrow returns to the page the visitor came from, or to
+  the page's list when they arrived from outside the site. The width morphs over 300ms on
+  `--ai-ease` while tabs and pill fade out with 3px blur and the arrow
+  resolves in. Detail pages are served contracted; only navigation animates.
+  Matt asked for this on 2026-10-16. See `doc/dock-back-button-plan.md`.
 - Bar and active tab are capsules — radius is half the height, 24px and 20px.
   The AI trigger is a 48×48px circle, a separate sibling with an 8px dock gap.
 - Every dock measurement derives from `--dock-tab-w`, `--dock-tab-h`,
@@ -233,6 +240,24 @@ not decorative borders and should remain where required.
   pacing by declaring its own transition after `.press-shrink`; a row link keeps
   its hover dim. A row link is `inline-block` only so the transform applies at
   all. Removed under reduced motion.
+
+- Case studies run on into each other, and so do writing posts. The end of one keeps scrolling into the
+  next in list order, wrapping round. Matt asked for this on 2026-10-16. Never
+  swap pages and reset the scroll to fake it; that cuts touch momentum.
+- Between two case studies sits a gate, 128px below the previous case
+  study with no hairline above it: a sticky muted "Next", the title, and a 1px progress line. The title holds for a screen of
+  scrolling, drifting 48px while the line fills, then scrolls on with the
+  content 24px beneath it — never an empty screen between title and content.
+  The content enters on release with the shared open motion (fade, 3px blur
+  to sharp, 8px up, 300ms) as the line fades on the same clock. The URL and
+  tab title change only once the gate is passed. Friction is visual, never
+  wheel or touch hijacking. See `doc/case-study-continuous-scroll-plan.md`.
+- Case-study video follows the Video.js v10 player: a translucent black,
+  blurred control strip floating 12px inside the frame. Frame and strip are
+  16px squircles, not capsules. Only controls that do something appear — no
+  volume on a silent recording. It plays muted while on screen and stops when
+  it leaves; a reader's pause is final. See
+  `doc/case-study-video-player-plan.md`.
 
 ## 10. AI response completion
 

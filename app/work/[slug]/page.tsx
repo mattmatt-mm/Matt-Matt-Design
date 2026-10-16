@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ChainGate } from "@/components/ChainGate";
 import { Column } from "@/components/Column";
+import { DetailChain } from "@/components/DetailChain";
 import { Header } from "@/components/Header";
 import { Prose } from "@/components/Prose";
 import {
+  getCaseStudyTour,
   getExperienceEntry,
   getSettings,
   listExperienceSlugs,
@@ -38,8 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WorkPage({ params }: Props) {
   const { slug } = await params;
-  const [entry, settings] = await Promise.all([
+  const [entry, tour, settings] = await Promise.all([
     getExperienceEntry(slug),
+    getCaseStudyTour(slug),
     getSettings(),
   ]);
 
@@ -49,16 +53,32 @@ export default async function WorkPage({ params }: Props) {
     <Column>
       <Header name={settings.name} role={settings.role} href="/" />
 
-      <article className="mt-15">
-        <h1 className="text-title">{entry.title}</h1>
+      {/* The rest of the case studies follow in list order, so reaching the
+          end keeps scrolling into the next one while the URL follows along.
+          See doc/case-study-continuous-scroll-plan.md. */}
+      <DetailChain basePath="/work">
+        {tour.map((study, i) => (
+          <article
+            key={study.slug}
+            data-chain-entry={study.slug}
+            data-title={`${study.title} — ${siteName}`}
+            className={i === 0 ? "mt-15" : "mt-32"}
+          >
+            {i === 0 ? (
+              <h1 className="text-title">{study.title}</h1>
+            ) : (
+              <ChainGate title={study.title} />
+            )}
 
-        {/* `label` groups rows in the list only — it is not shown here.
-            `cover` is the social-preview image; the body already opens with it,
-            so rendering it again here would just duplicate the lead image. */}
-        <div className="mt-6">
-          <Prose node={entry.body} />
-        </div>
-      </article>
+            {/* `label` groups rows in the list only — it is not shown here.
+                `cover` is the social-preview image; the body already opens
+                with it, so rendering it again would duplicate the lead. */}
+            <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
+              <Prose node={study.body} />
+            </div>
+          </article>
+        ))}
+      </DetailChain>
 
       <p className="mt-15">
         <Link href="/" className="text-muted hover:text-fg no-underline">

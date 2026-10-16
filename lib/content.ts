@@ -187,7 +187,9 @@ export async function getGallery(): Promise<GalleryEntry[]> {
     projectName: e.entry.projectName ?? "",
     image: e.entry.image ?? undefined,
     alt: e.entry.alt ?? "",
-    href: e.entry.project ? pageFor.get(e.entry.project) : undefined,
+    href:
+      e.entry.externalUrl ||
+      (e.entry.project ? pageFor.get(e.entry.project) : undefined),
     ...(e.entry.image ? measure(e.entry.image) : {}),
   }));
 }
@@ -211,9 +213,54 @@ export async function getWritingEntry(slug: string) {
   return { ...entry, slug, body };
 }
 
+/**
+ * Every case study with a page, in list order, starting at `slug` and wrapping
+ * round — the tour a detail page scrolls through. Each appears once.
+ */
+export async function getCaseStudyTour(slug: string) {
+  const pages = (await listExperienceSlugs()).sort(
+    (a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0),
+  );
+  const start = pages.findIndex((e) => e.slug === slug);
+  if (start === -1) return [];
+
+  const ordered = [...pages.slice(start), ...pages.slice(0, start)];
+  return Promise.all(
+    ordered.map(async (e) => ({
+      slug: e.slug,
+      title: e.entry.title,
+      // Keystatic bundles its own copy of Markdoc — same cast as above.
+      body: (await e.entry.body()).node as unknown as MarkdocNode,
+    })),
+  );
+}
+
 export async function listExperienceSlugs() {
   const all = await reader.collections.experience.all();
   return all.filter((e) => e.entry.hasPage && !e.entry.externalUrl);
+}
+
+/**
+ * Every visible post, newest first as on the Writing list, starting at `slug`
+ * and wrapping round — the tour a post page scrolls through.
+ */
+export async function getWritingTour(slug: string) {
+  const posts = (await listWritingSlugs()).sort((a, b) =>
+    (b.entry.publishedAt ?? "").localeCompare(a.entry.publishedAt ?? ""),
+  );
+  const start = posts.findIndex((e) => e.slug === slug);
+  if (start === -1) return [];
+
+  const ordered = [...posts.slice(start), ...posts.slice(0, start)];
+  return Promise.all(
+    ordered.map(async (e) => ({
+      slug: e.slug,
+      title: e.entry.title,
+      lang: e.entry.lang,
+      // Keystatic bundles its own copy of Markdoc — same cast as above.
+      body: (await e.entry.body()).node as unknown as MarkdocNode,
+    })),
+  );
 }
 
 export async function listWritingSlugs() {

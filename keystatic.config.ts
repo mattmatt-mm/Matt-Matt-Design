@@ -158,7 +158,36 @@ export default config({
           directory: "public/images/experience",
           publicPath: "/images/experience/",
         }),
-        body: fields.markdoc({ label: "Body" }),
+        body: fields.markdoc({
+          label: "Body",
+          components: {
+            // Registered so the editor offers it and keeps the tag on save.
+            video: block({
+              label: "Video",
+              description:
+                "A screen recording with play, scrub and fullscreen controls. It plays silently while on screen.",
+              schema: {
+                src: fields.file({
+                  label: "Video file (.mp4)",
+                  directory: "public/videos/experience",
+                  publicPath: "/videos/experience/",
+                  validation: { isRequired: true },
+                }),
+                poster: fields.image({
+                  label: "Still image",
+                  description:
+                    "Shown before the video loads. Optional, but avoids a black box on slow connections.",
+                  directory: "public/videos/experience",
+                  publicPath: "/videos/experience/",
+                }),
+                title: fields.text({
+                  label: "Description",
+                  description: "What the recording shows, for screen readers.",
+                }),
+              },
+            }),
+          },
+        }),
       },
     }),
 
@@ -179,6 +208,11 @@ export default config({
           collection: "experience",
           description:
             "Optional. Pick an Experience entry and this image becomes a link to it. Ignored if that entry has no page of its own.",
+        }),
+        externalUrl: fields.url({
+          label: "External link",
+          description:
+            "Optional. If set, the image links to this website in a new tab, instead of to a case study.",
         }),
         image: fields.image({
           label: "Image",

@@ -8,7 +8,7 @@ export type GalleryEntry = {
   alt?: string;
   width?: number;
   height?: number;
-  /** Set when the entry points at a case study that has a page. */
+  /** A case study page, or an external site (opens in a new tab). */
   href?: string;
 };
 
@@ -47,12 +47,23 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
             // the hover on its own — the same restraint as a list row. Only
             // this linked branch presses: an entry with no case study behind
             // it is not a target, so it must not answer a tap like one.
-            <Link
-              href={entry.href}
-              className="press-shrink group block no-underline"
-            >
-              <Figure entry={entry} />
-            </Link>
+            entry.href.startsWith("http") ? (
+              <a
+                href={entry.href}
+                className="press-shrink group block no-underline"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <Figure entry={entry} />
+              </a>
+            ) : (
+              <Link
+                href={entry.href}
+                className="press-shrink group block no-underline"
+              >
+                <Figure entry={entry} />
+              </Link>
+            )
           ) : (
             <Figure entry={entry} />
           )}

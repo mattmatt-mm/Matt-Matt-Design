@@ -87,6 +87,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
 - The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `188×48`, capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
+- On a detail page (`/work/*`, `/writing/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/` or `/writing`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
 - Tapping a tab hops the icon up `2px` and back over `240ms` and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the icon is `aria-hidden` with an `sr-only` label beside it so the tab is announced once.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
@@ -98,7 +99,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
   mid-word. Skipped entirely under `prefers-reduced-motion`. The shimmer span is
   forced back to `display: inline` so the link's underline is not lost.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
-- No page transitions, scroll effects, or parallax.
+- No page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
 
 ### Responsive
 One breakpoint: `640px`, and it only governs the page gutters — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout).
@@ -119,7 +120,7 @@ app/
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
   sitemap.ts · robots.ts · feed.xml/route.ts
-components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo
+components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
              effects/
 lib/content.ts                          the ONLY module that reads content

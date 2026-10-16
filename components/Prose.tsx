@@ -1,11 +1,13 @@
 import * as React from "react";
 import Markdoc, { type Node } from "@markdoc/markdoc";
 import { Demo } from "./Demo";
+import { VideoPlayer } from "./VideoPlayer";
 
 /**
  * Case studies run to nineteen images, so they load as they are scrolled to
  * rather than all at once. Posts can also drop in an interactive example with
- * {% demo kind="easing" /%}.
+ * {% demo kind="easing" /%}, and case studies a screen recording with
+ * {% video src="/videos/…" poster="/videos/…-poster.webp" /%}.
  */
 const config = {
   nodes: {
@@ -30,6 +32,15 @@ const config = {
     },
   },
   tags: {
+    video: {
+      render: "VideoPlayer",
+      selfClosing: true,
+      attributes: {
+        src: { type: String, required: true },
+        poster: { type: String },
+        title: { type: String },
+      },
+    },
     demo: {
       render: "Demo",
       selfClosing: true,
@@ -70,7 +81,7 @@ export function Prose({ node, lang }: { node: Node; lang?: "en" | "zh" }) {
       className={`prose ${lang === "zh" ? "prose-zh" : ""}`}
       lang={lang === "zh" ? "zh-Hant" : undefined}
     >
-      {Markdoc.renderers.react(content, React, { components: { Demo } })}
+      {Markdoc.renderers.react(content, React, { components: { Demo, VideoPlayer } })}
     </div>
   );
 }

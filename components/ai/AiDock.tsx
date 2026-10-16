@@ -1,10 +1,11 @@
 "use client";
 
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { ImageSquare } from "@phosphor-icons/react/dist/ssr/ImageSquare";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react";
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
@@ -34,6 +35,45 @@ export function AiDock({
   const pathname = usePathname();
   const [tapped, setTapped] = useState<{ href: string; plays: number } | null>(null);
   const tapSound = useRef<HTMLAudioElement | null>(null);
+
+  // On a detail page the bar contracts, Dynamic Island style, into one circle
+  // holding the way back to the list the page belongs to.
+  const detail = /^\/(work|writing)\/[^/]+/.test(pathname);
+  const backHref = pathname.startsWith("/writing/") ? "/writing" : "/";
+  const backLabel = backHref === "/" ? "Back to Experience" : "Back to Writing";
+  const tabsHidden = aiOpen || detail;
+
+  // The arrow means "back to where I was": a gallery item returns to the
+  // gallery, a row to its list. That is only safe as a real history step when
+  // this detail page was pushed from a page of ours just now — otherwise (a
+  // shared link, or arriving here with the browser's own back/forward) the
+  // entry behind it may not be ours, and the arrow falls back to the list.
+  const router = useRouter();
+  const previousPath = useRef<string | null>(null);
+  const poppedHistory = useRef(false);
+  const [canStepBack, setCanStepBack] = useState(false);
+
+  useEffect(() => {
+    const onPop = () => {
+      poppedHistory.current = true;
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  useEffect(() => {
+    const previous = previousPath.current;
+    const previousWasDetail =
+      previous !== null && /^\/(work|writing)\/[^/]+/.test(previous);
+    // Moving between entries of one detail page (the scroll tour replacing
+    // the URL) keeps whatever the arrow already knew.
+    if (!detail) setCanStepBack(false);
+    else if (!previousWasDetail) {
+      setCanStepBack(previous !== null && !poppedHistory.current);
+    }
+    poppedHistory.current = false;
+    previousPath.current = pathname;
+  }, [pathname, detail]);
 
   const isActive = (href: string) =>
     href === "/"
@@ -77,6 +117,7 @@ export function AiDock({
       <div
         className="site-dock-row"
         data-ai-open={aiOpen ? "true" : "false"}
+        data-detail={detail ? "true" : "false"}
         style={
           {
             "--dock-count": tabs.length,
@@ -106,8 +147,8 @@ export function AiDock({
                   key={tab.href}
                   href={tab.href}
                   aria-current={active ? "page" : undefined}
-                  aria-hidden={aiOpen ? "true" : undefined}
-                  tabIndex={aiOpen ? -1 : undefined}
+                  aria-hidden={tabsHidden ? "true" : undefined}
+                  tabIndex={tabsHidden ? -1 : undefined}
                   className="site-dock-tab press-shrink"
                   data-active={active ? "true" : "false"}
                   onClick={() => tap(tab.href)}
@@ -127,6 +168,32 @@ export function AiDock({
                 </Link>
               );
             })}
+            <Link
+              href={backHref}
+              aria-hidden={detail && !aiOpen ? undefined : "true"}
+              tabIndex={detail && !aiOpen ? undefined : -1}
+              className="site-dock-back press-shrink"
+              onClick={(event) => {
+                tap(backHref);
+                if (canStepBack) {
+                  event.preventDefault();
+                  router.back();
+                }
+              }}
+            >
+              <span
+                key={tapped?.href === backHref ? tapped.plays : 0}
+                className={
+                  tapped?.href === backHref && detail
+                    ? "site-dock-icon tab-hop"
+                    : "site-dock-icon"
+                }
+                aria-hidden="true"
+              >
+                <ArrowLeft size={20} weight="regular" />
+              </span>
+              <span className="sr-only">{canStepBack ? "Back" : backLabel}</span>
+            </Link>
           </nav>
         </div>
         <div className="ai-trigger-shell">
