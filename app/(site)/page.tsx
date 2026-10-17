@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { RowList } from "@/components/RowList";
-import { getExperience, getSettings } from "@/lib/content";
+import { GalleryList } from "@/components/GalleryList";
+import { getGallery, getSettings } from "@/lib/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
@@ -10,7 +10,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function ExperiencePage() {
-  const rows = await getExperience();
-  return <RowList rows={rows} cursor="View project" />;
+/** / — home is the Gallery, the left-most tab. */
+export default async function HomePage() {
+  const entries = await getGallery();
+  return (
+    <div className="pt-3">
+      <GalleryList entries={entries} />
+    </div>
+  );
 }

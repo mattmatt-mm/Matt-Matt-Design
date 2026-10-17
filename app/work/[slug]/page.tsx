@@ -100,8 +100,8 @@ export default async function WorkPage({ params }: Props) {
       </DetailChain>
 
       <p className="mt-15">
-        <Link href="/" className="text-muted hover:text-fg no-underline">
-          Back to Experience
+        <Link href="/profile" className="text-muted hover:text-fg no-underline">
+          Back to Profile
         </Link>
       </p>
     </Column>

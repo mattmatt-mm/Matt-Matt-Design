@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { ImageSquare } from "@phosphor-icons/react/dist/ssr/ImageSquare";
+import { House } from "@phosphor-icons/react/dist/ssr/House";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import Link from "next/link";
@@ -10,10 +10,12 @@ import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 
+// Home (the Gallery) on the left, Writing in the middle, Profile (the
+// Experience list) on the right.
 const tabs = [
-  { href: "/", label: "Experience", icon: UserCircle },
-  { href: "/gallery", label: "Gallery", icon: ImageSquare },
+  { href: "/", label: "Home", icon: House },
   { href: "/writing", label: "Writing", icon: PenNib },
+  { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 const TAP_VOLUME = 0.5;
@@ -39,8 +41,9 @@ export function AiDock({
   // On a detail page the bar contracts, Dynamic Island style, into one circle
   // holding the way back to the list the page belongs to.
   const detail = /^\/(work|writing)\/[^/]+/.test(pathname);
-  const backHref = pathname.startsWith("/writing/") ? "/writing" : "/";
-  const backLabel = backHref === "/" ? "Back to Experience" : "Back to Writing";
+  const backHref = pathname.startsWith("/writing/") ? "/writing" : "/profile";
+  const backLabel =
+    backHref === "/profile" ? "Back to Profile" : "Back to Writing";
   const tabsHidden = aiOpen || detail;
 
   // The arrow means "back to where I was": a gallery item returns to the
@@ -77,8 +80,10 @@ export function AiDock({
 
   const isActive = (href: string) =>
     href === "/"
-      ? pathname === "/" || pathname.startsWith("/work/")
-      : pathname.startsWith(href);
+      ? pathname === "/"
+      : href === "/profile"
+        ? pathname.startsWith("/profile") || pathname.startsWith("/work/")
+        : pathname.startsWith(href);
 
   // The pill slides to this column. Resolved during render, so the server sends
   // it already in place — there is no first-paint snap to suppress.

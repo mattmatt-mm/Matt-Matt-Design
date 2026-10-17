@@ -86,9 +86,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 ### Interaction
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
-- Tabs are **real links** (`/`, `/gallery`, `/writing`), not client toggles.
+- Tabs are **real links**, not client toggles. Left to right: **Home** `/` (the Gallery, house icon), **Writing** `/writing`, **Profile** `/profile` (the Experience list, person icon). Matt reordered them on 2026-10-17; `/gallery` permanently redirects to `/` (`next.config.ts`).
 - The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `188×48`, capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
-- On a detail page (`/work/*`, `/writing/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/` or `/writing`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
+- On a detail page (`/work/*`, `/writing/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/profile` or `/writing`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
 - Tapping a tab hops the icon up `2px` and back over `240ms` and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the icon is `aria-hidden` with an `sr-only` label beside it so the tab is announced once.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
@@ -118,8 +118,8 @@ The page gutters switch at `688px` — `24px` inline padding below it, none abov
 app/
   layout.tsx                            fonts, metadata defaults
   (site)/layout.tsx                     Header + Intro — shared, must not remount
-  (site)/page.tsx                       /          Experience list
-  (site)/gallery/page.tsx               /gallery
+  (site)/page.tsx                       /          Home: the Gallery
+  (site)/profile/page.tsx               /profile   Experience list
   (site)/writing/page.tsx               /writing
   work/[slug]/page.tsx                  experience detail
   writing/[slug]/page.tsx               writing detail

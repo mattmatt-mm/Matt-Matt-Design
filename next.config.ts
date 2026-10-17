@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
   // which is why this only ever failed in production and only for the AI:
   // every question fell through to the unknown fallback because the fact list
   // was empty.
+  // Gallery became the home page on 2026-10-17 and the Experience list moved
+  // to /profile, so old gallery links land home.
+  async redirects() {
+    return [{ source: "/gallery", destination: "/", permanent: true }];
+  },
+
   outputFileTracingIncludes: {
     "/api/ai": ["./content/**/*"],
     "/api/ai/contact": ["./content/**/*"],
