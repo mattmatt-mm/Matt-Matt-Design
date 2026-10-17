@@ -145,7 +145,7 @@ Rules:
 
 ## Content model (Keystatic collections)
 
-**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `summary`, `cover?`, `body` (markdoc). `start`/`end`/`role`/`team` print under the title on the case-study page as Start / End / Role / Team figures.
+**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `summary`, `cover?`, `body` (markdoc). These print under the title on the case-study page as Timeline (`start – end`, e.g. "Sep 2025 – Feb 2026"), Role and Team figures; any that are empty are left out.
 
 Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text /%}`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`

@@ -269,7 +269,7 @@ export default config({
         start: fields.text({
           label: "Start",
           description:
-            "When the project began, shown under the title on its page. e.g. Sep 2025",
+            "When the project began. Shown under the title as the Timeline, e.g. Sep 2025 – Feb 2026",
         }),
         end: fields.text({
           label: "End",

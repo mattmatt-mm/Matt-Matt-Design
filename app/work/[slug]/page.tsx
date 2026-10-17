@@ -82,8 +82,12 @@ export default async function WorkPage({ params }: Props) {
               {study.start || study.end || study.role || study.team ? (
                 <div className="mb-12">
                   <Stats>
-                    {study.start ? <Stat value={study.start} label="Start" /> : null}
-                    {study.end ? <Stat value={study.end} label="End" /> : null}
+                    {study.start || study.end ? (
+                      <Stat
+                        value={[study.start, study.end].filter(Boolean).join(" – ")}
+                        label="Timeline"
+                      />
+                    ) : null}
                     {study.role ? <Stat value={study.role} label="Role" /> : null}
                     {study.team ? <Stat value={study.team} label="Team" /> : null}
                   </Stats>
