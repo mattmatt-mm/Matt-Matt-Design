@@ -46,6 +46,22 @@ Snap the sensor into Incipe Board, then read it with one line of code using the 
 {% stat value="Top Performer" label="HKSTP Incubation 2025" /%}
 {% /stats %}
 
+#### Onboarding
+
+## Unboxing the board is a moment worth marking.
+
+Someone opening Incipe for the first time has just unboxed a new board. So the first run treats it as an occasion rather than a settings form: "Build it." on a black screen, the Incipe mark resolving out of a blur, then the mascot saying hello. Only then does it ask you to plug in your board and pick a project, and it hands you straight into the workspace.
+
+{% video src="/videos/experience/incipe-workspace/onboarding.mp4" poster="/videos/experience/incipe-workspace/onboarding-poster.webp" title="First run of Incipe Workspace: Build it, the Incipe mark, the mascot saying hello, plugging in the board, choosing a project and arriving in the workspace" /%}
+
+#### Live preview
+
+## You see the board connect before you have to trust it.
+
+With hardware, the first doubt is always whether anything is connected at all. Visibility of system status is one of the oldest rules in interface design, and here it is the whole point. The board preview is a live 3D model of the real board: plug in a sensor and it appears in the slot it is actually in, labelled with its port, while the connection panel beside it shows the USB port that was found. Nobody has to guess, and nobody has to read a log.
+
+{% video src="/videos/experience/incipe-workspace/live-board-preview.mp4" poster="/videos/experience/incipe-workspace/live-board-preview-poster.webp" title="The live board preview: the 3D board turns into view, an IMU module sits in slot L2 and lights up, and the connection panel lists the board's USB port" /%}
+
 #### Craft
 
 ## Every default I caught became a rule.
@@ -62,11 +78,21 @@ So I kept a running log. Every time I caught a default, it became a written rule
 
 #### Panels
 
-## Panels open and close with a pull.
+## Panels follow your hand, not a timer.
 
-The side panels open and close by dragging their edge. Pull 200px past the panel's minimum width and the collapse is armed: the panel leans 20px toward its exit and fades to half. It only commits when you let go, so pulling back cancels it.
+The side panels open and close by dragging their edge, and the panel goes wherever the pointer goes. Drag past the edge of the window and back without letting go, and the panel is still there. Nothing is decided until you release.
+
+{% points %}
+{% point title="Opens at once" text="I cut the entrance short. In a tool people use all day, a panel should be there the moment you ask for it." /%}
+
+{% point title="Warns before it closes" text="Pull 200px past the minimum width and the panel leans 20px toward its exit and fades to half. Pull back and it returns." /%}
+
+{% point title="Comes back from the edge" text="Hover the sidebar button to peek at your projects without docking the panel. Hover the left edge of the window and a tip shows a click brings it back." /%}
+{% /points %}
 
 From a closed edge, a 4px pull opens the panel right under your pointer, and a click docks it at the width you last left it. There is no seam line. The grip is a 3px pill that grows from 24px to 40px while you drag.
+
+{% video src="/videos/experience/incipe-workspace/sidebar.mp4" poster="/videos/experience/incipe-workspace/sidebar-poster.webp" title="Dragging the board panel closed and open, pulling past the window edge and back without it closing, and hovering the sidebar button to bring the projects panel back" /%}
 
 #### Press
 
@@ -91,6 +117,18 @@ The sound is synthesised live rather than played from a file: a short noise clic
 When the board itself connects, its 3D model spins into view, then flies onto the Board button in the header in 460ms. As it lands, a ring of dots sweeps across the button over 760ms. This replaced a copper outline flash, which was exactly the kind of hard outline the slop log rules out.
 
 The wave is a mask, not a scale. The dot grid stays still and a growing ring reveals it, so the dots appear in place instead of zooming toward you. The mascot plays the same wave.
+
+{% video src="/videos/experience/incipe-workspace/board-connected.mp4" poster="/videos/experience/incipe-workspace/board-connected-poster.webp" title="Plugging in the board: its 3D model spins in over the dimmed workspace with a Board connected note, then a sensor arrives and lights up" /%}
+
+#### Agent
+
+## The agent is a companion that points, not only a wall of text.
+
+Learning to code alone is lonely, and a long reply is easy to skim past. So the agent comes with a mascot: a small blob that thinks, reacts and keeps a beginner company while they build. Replies render as proper Markdown, with headings, lists and code, so a plan reads like a plan.
+
+When you ask how to do something in the app, the agent does not stop at describing it. It highlights the buttons in the app itself, one coach mark at a time, so the companion works like a pet showing you around the interface.
+
+{% video src="/videos/experience/incipe-workspace/agent.mp4" poster="/videos/experience/incipe-workspace/agent-poster.webp" title="Chatting with the Incipe agent: it highlights the Flash button with a step-by-step coach mark, then in Plan Mode asks a question before writing a plan for a flowering-plant project" /%}
 
 #### Corners
 
