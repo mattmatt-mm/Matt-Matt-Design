@@ -1234,6 +1234,58 @@
     margin-block: 24px;
   }
 
+  /* A point's line drawing (components/PointFigure.tsx): fg, muted and the
+     hairline colour standing on a 1px ground rule, 12px above the title.
+     Strokes stay 1px at any column width. */
+  .point-figure {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin-bottom: 12px;
+    overflow: visible;
+  }
+
+  .point-figure * {
+    fill: none;
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .point-figure .pf-ground {
+    stroke: var(--color-line);
+  }
+
+  .point-figure .pf-ink {
+    stroke: var(--color-fg);
+  }
+
+  .point-figure .pf-muted {
+    stroke: var(--color-muted);
+  }
+
+  .point-figure .pf-faint {
+    stroke: var(--color-line);
+  }
+
+  .point-figure .pf-dash {
+    stroke-dasharray: 4 4;
+  }
+
+  .point-figure .pf-paper {
+    fill: var(--color-bg);
+  }
+
+  .point-figure .pf-fill {
+    fill: var(--color-fg);
+    stroke: none;
+  }
+
+  .point-figure .pf-paper-ink {
+    stroke: var(--color-bg);
+    stroke-width: 2px;
+    stroke-linecap: round;
+  }
+
   .stats,
   .points,
   .flows-columns {

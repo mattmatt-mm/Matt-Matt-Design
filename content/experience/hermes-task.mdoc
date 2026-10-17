@@ -2,8 +2,128 @@
 title: Hermes Task
 label: Hobby
 order: 100
-hasPage: false
-externalUrl: 'https://task.mattmattdesign.com'
-summary: ''
+start: Aug 2026
+role: Design Engineer
+team: Solo
+hasPage: true
+externalUrl: ''
+summary: "How do you keep track of everyone you met and everything you promised them? Hermes Task is a shared task list and contact tracker for the Incipe team that you run by talking to an AI assistant in Telegram. Underneath is a small sync engine modelled on Linear's, so every screen opens without waiting for the database. I designed and built it on my own in eleven days."
 cover: ''
 ---
+[Open Hermes Task](https://task.mattmattdesign.com)
+
+{% video src="/videos/experience/hermes-task/demo.mp4" poster="/videos/experience/hermes-task/demo-poster.webp" title="A tour of Hermes Task: a person's page with their linked tasks, the agent settings, the contact list and sign-in" /%}
+
+#### Overview
+
+## How do you remember everyone you met, and what you promised each of them?
+
+The Incipe team is four people, and between us we meet investors, partner institutions and distributors every week. Hermes Task tracks those people and the tasks we owe them. Nobody has to open it to keep it current: you tell Hermes, an open-source AI agent, in Telegram, and it updates the app. I designed and built it on my own in eleven days.
+
+#### Problem
+
+## After LEAP East, I had more people to follow up than I could remember.
+
+A week at a conference ends with a pile of contacts and a promise made to each one. The tools we had stored tasks, but they forgot who each task was for. And at the end of a day of meetings, nobody wants to open another app.
+
+{% points %}
+{% point figure="crowd" title="People pile up" text="Investors, institutions and distributors arrive faster than anyone can remember them." /%}
+
+{% point figure="promises" title="Promises slip" text="Each conversation ends with something we owe them, and that is the first thing to go." /%}
+
+{% point figure="message" title="Apps wait to be opened" text="After a day of meetings, a dashboard is one screen too many. A message is not." /%}
+{% /points %}
+
+#### Approach
+
+## Tell an assistant instead of filling in a database.
+
+When you get home from a meeting, you could open an app, find the person and fill in three forms. Or you could send one message. So we had to ask: what if updating the app was as easy as telling a private assistant what happened?
+
+{% flows outcome="Follow up on time" note="Both end with the same record." %}
+{% flow title="A task app" steps="Open the app | Find the person | Write the meeting note | Create each task | Set the next follow-up date" /%}
+
+{% flow title="Hermes Task" steps="Send Hermes one message" /%}
+{% /flows %}
+
+Hermes reads "I met Williams today, I'll meet him next Monday, help me prepare a proposal". From that one sentence it writes a meeting note on David Williams, creates two tasks with due dates and sets when to get back to him. The app on screen changes while you watch.
+
+{% video src="/videos/experience/hermes-task/book-meeting.mp4" poster="/videos/experience/hermes-task/book-meeting-poster.webp" title="Telling Hermes in Telegram about a meeting with David Williams; his page in the app gains a note, two tasks and a next follow-up date" /%}
+
+#### Agent
+
+## Everything is designed so Hermes reads as little as possible.
+
+Every time the agent reads or writes, it spends tokens and time. So I judged every change by one question: does this cut what Hermes has to read for each message?
+
+{% points %}
+{% point title="Short IDs" text="Every record gets an ID like T-20 or C-6, never a 36-character UUID, so you and Hermes call it by the same name." /%}
+
+{% point title="Three verbs" text="Hermes can apply changes, find a record or fetch the daily brief. One message becomes one batch of changes." /%}
+
+{% point title="Replies to repeat" text="The server answers with a single line per change, written so Hermes can pass it straight on to you." /%}
+{% /points %}
+
+When a name matches two people, Hermes asks which one you mean instead of guessing. A mistake is fixed the same way it was made: change it in the app, or tell Hermes to put it back. The app has no chat panel of its own. Telegram is the only place to talk to Hermes, so every change, from a person or an agent, goes through one write path and lands in one timeline.
+
+{% video src="/videos/experience/hermes-task/report-task.mp4" poster="/videos/experience/hermes-task/report-task-poster.webp" title="Telling Hermes the proposal for David Williams is done and asking what is still unfinished; the task leaves the list" /%}
+
+#### Reminders
+
+## The assistant comes to you.
+
+Each person has a date for when to get back to them, and the app has no scheduler of its own. Hermes runs a scheduled job instead: it fetches the day's brief, which is already written out, and sends it on. It lists what is due, what is waiting on someone else and who needs a follow-up today.
+
+Other agents can connect too. Each member creates their own access key in the app and gets an MCP server that holds no database password, so it is safe to hand to a colleague.
+
+#### Speed
+
+## Clicking a tab asks the database for nothing.
+
+The first version was as slow as ClickUp. One hour of one person browsing made 1,692 database requests, for nine contacts and five tasks. I took the idea behind Linear's sync engine and built the small version of it:
+
+- **One copy in the browser.** The server sends the whole workspace once, on a cold load. Every screen reads from that copy, so going from Tasks to Connections and back costs zero requests.
+- **Saved for the next visit.** The copy is also saved in the browser and read before the first paint, so a return visit opens on yesterday's data and quietly catches up.
+- **Live without polling.** When someone else, or Hermes, changes something, the database pushes a signal and the copy refreshes. No refresh button.
+- **Edits show first.** Your change appears at once and is saved behind it. If the save fails, the old value comes back.
+- **No loading screens.** I deleted every skeleton. If something still flashes, that is a bug, not a wait.
+
+{% stats %}
+{% stat value="1,692" label="requests in one hour, before" /%}
+
+{% stat value="About 30" label="requests in two hours on an iPhone, after" /%}
+
+{% stat value="0" label="requests to switch tabs" /%}
+{% /stats %}
+
+#### Motion
+
+## The page can slide because it never waits.
+
+Switching pages is a 250ms slide: 8px of travel, a fade and a 3px blur, forward or back according to where you are going. The old page stays mounted while it leaves, so the two cross rather than cut. The slide only works because the new page needs no fetch. Otherwise it would be 250ms of empty box.
+
+{% video src="/videos/experience/hermes-task/transition.mp4" poster="/videos/experience/hermes-task/transition-poster.webp" title="Moving between Connections, a person, My settings and Tasks while Hermes updates the app in Telegram beside it" /%}
+
+#### Trade-off
+
+## I left out the parts Linear only needs at scale.
+
+Linear also keeps a full local database, tracks every field on its own and sends only what changed. Those pay off at tens of thousands of rows. This workspace holds tens. So any change re-reads the whole workspace, and the copy lives in plain browser storage, which can be read before the first paint.
+
+#### Reflection
+
+## What I would keep.
+
+{% points %}
+{% point title="Design for the agent" text="When an agent is the main user, its token budget is the interface." /%}
+
+{% point title="Meet people where they talk" text="A message gets sent; a form gets put off." /%}
+
+{% point title="Delete the wait" text="Fast is not a faster spinner. It is no reason to show one." /%}
+{% /points %}
+
+#### Built with
+
+## Next.js, Supabase and Hermes.
+
+Next.js and Supabase, with Supabase Realtime for live updates, the open-source Hermes agent in Telegram, and an MCP server so other agents can use the app too.

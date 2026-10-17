@@ -3,6 +3,7 @@ import Markdoc, { type Config, type Node } from "@markdoc/markdoc";
 import { Demo } from "./Demo";
 import { Flow, Flows } from "./Flows";
 import { LottieSequence } from "./LottieSequence";
+import { POINT_FIGURES } from "./PointFigure";
 import { Point, Points } from "./Points";
 import { Stat, Stats } from "./Stats";
 import { VideoPlayer } from "./VideoPlayer";
@@ -110,6 +111,7 @@ const config = {
       attributes: {
         title: { type: String, required: true },
         text: { type: String },
+        figure: { type: String, matches: ["", ...POINT_FIGURES] },
       },
     },
     flows: {

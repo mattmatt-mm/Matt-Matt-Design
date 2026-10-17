@@ -63,6 +63,17 @@ const explainerComponents = {
         label: "Line",
         description: "One sentence, in grey, under the title.",
       }),
+      figure: fields.select({
+        label: "Drawing",
+        description: "An optional line drawing above the title.",
+        options: [
+          { label: "None", value: "" },
+          { label: "A pile of people", value: "crowd" },
+          { label: "Promises slipping off a line", value: "promises" },
+          { label: "Screens against one message", value: "message" },
+        ],
+        defaultValue: "",
+      }),
     },
   }),
   flows: repeating({

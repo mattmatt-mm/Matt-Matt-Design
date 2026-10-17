@@ -329,6 +329,11 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   pasted in as illustrated images. Matt rejected an orange flow-diagram image
   because it did not fit the portfolio's identity. The Stats block is the first
   of these: figure in fg, label muted beneath, 16/21 only.
+- A point can carry a small line drawing above its title
+  (`{% point figure="crowd" … /%}`, `components/PointFigure.tsx`). Matt
+  supplied a colourful three-panel reference on 2026-10-17; we kept its
+  structure (drawing, title, one line) and redrew it in fg, muted and the
+  hairline colour on a 1px ground rule. No colour, no framed card.
 
 ## 13. Review checklist
 
