@@ -65,8 +65,19 @@
     inset 0 3px 2px 0 rgb(255 255 255 / 100%),
     inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
   --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
-  /* The shade above the AI's arc (.ai-gradient-mask). */
-  --filter-arc: drop-shadow(0 -6px 24px rgb(0 0 0 / 7%));
+  /* The arcs behind the dock and the open AI fade out at the edge on an
+     eased curve, not a straight ramp: solid for most of the dome, then a long
+     gentle tail, so the edge has no visible start or stop. Stops are a
+     fraction of the arc's radius; alpha follows an ease-in-out. */
+  --arc-fade:
+    var(--color-bg) 62%,
+    color-mix(in srgb, var(--color-bg) 97%, transparent) 68%,
+    color-mix(in srgb, var(--color-bg) 89%, transparent) 74%,
+    color-mix(in srgb, var(--color-bg) 74%, transparent) 80%,
+    color-mix(in srgb, var(--color-bg) 52%, transparent) 86%,
+    color-mix(in srgb, var(--color-bg) 28%, transparent) 92%,
+    color-mix(in srgb, var(--color-bg) 10%, transparent) 97%,
+    transparent 100%;
 
   /* Type — 16/21 everywhere; 32/42 is the only second size. */
   --text-base: 16px;
@@ -193,15 +204,13 @@
     left: 0;
     height: min(120px, 16dvh);
     /* The AI mask's arc, smaller (Matt, 2026-10-18): a dome of the page
-       colour behind the dock, highest at its centre, with the same shade cast
-       up from the curve. Solid, like the AI's: at 94% a dark image showed
+       colour behind the dock, highest at its centre, feathered on the same
+       eased --arc-fade. Its core is fully solid: at 94% a dark image showed
        through as a muddy grey. */
     background: radial-gradient(
-      ellipse 80% 90% at 50% 100%,
-      var(--color-bg) calc(100% - 1px),
-      transparent 100%
+      ellipse 80% 100% at 50% 100%,
+      var(--arc-fade)
     );
-    filter: var(--filter-arc);
     pointer-events: none;
   }
 
@@ -424,21 +433,17 @@
     pointer-events: none;
   }
 
-  /* An arc, not a straight fade (Matt, 2026-10-18, after Dia's footer): a
-     solid dome of the page colour rising from the bottom edge, highest at the
-     centre where the AI stacks, lower at the sides, with a soft shade cast
-     just above its curve. The page stays crisp above the arc instead of
-     washing out in a band. The shade is a drop shadow, so it follows the
-     curve's own edge. */
+  /* An arc, not a flat band (Matt, 2026-10-18, after Dia's footer): a dome
+     of the page colour rising from the bottom edge, highest at the centre
+     where the AI stacks, lower at the sides, its edge feathered on the eased
+     --arc-fade so it softens without reading as a mechanical ramp. */
   .ai-gradient-mask {
     top: auto;
     height: min(480px, 60dvh);
     background: radial-gradient(
-      ellipse 80% 60% at 50% 100%,
-      var(--color-bg) calc(100% - 1px),
-      transparent 100%
+      ellipse 80% 75% at 50% 100%,
+      var(--arc-fade)
     );
-    filter: var(--filter-arc);
   }
 
   .ai-viewport {
@@ -1336,7 +1341,6 @@
          near-black page had no edge to it. Off-white with near-black text is
          the light theme mirrored — there the surface is the text colour too.
          Matt asked for this on 2026-10-18. */
-      --filter-arc: drop-shadow(0 -6px 24px rgb(0 0 0 / 55%));
       --color-ai-response: #f3f1ec;
       --color-on-ai-response: #12110f;
       --color-ai-form: #e4e1da;

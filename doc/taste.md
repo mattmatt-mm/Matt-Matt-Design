@@ -145,17 +145,16 @@ not decorative borders and should remain where required.
   and the rim thins unevenly around the corner.
 - Active navigation uses fill, foreground color, and this recess — never a
   heavier border.
-- Keep a pointer-transparent mask fixed behind the bottom navigation and above
-  page content: the AI mask's arc, smaller — a solid `--color-bg` dome, an
-  ellipse 80% of the width by 90% of a `min(120px, 16dvh)` strip, with the
-  same `--filter-arc` shade. Solid, not translucent: a dark image showed
-  through a 94% fill as a muddy grey (Matt, 2026-10-18). Hide it while AI is
-  open; the taller AI arc takes over in the same frame.
-- The AI mask is an arc, not a fade (Matt, 2026-10-18, after Dia's footer): a
-  solid dome of `--color-bg` rising from the bottom edge — an ellipse 80% of
-  the width by 60% of the mask's height, centred on the bottom — with a soft
-  `--filter-arc` shade cast up from its curve. The page stays crisp above the
-  curve rather than washing out in a band.
+- The masks behind the dock and the open AI are arcs, not flat bands (Matt,
+  2026-10-18, after Dia's footer): a dome of `--color-bg` rising from the
+  bottom edge, highest at the centre. Their edge is feathered, not cut — the
+  hard edge with a drop shadow was rejected — on the eased `--arc-fade`: solid
+  to 62% of the radius, then a long ease-in-out tail, so the fade has no
+  visible start or stop ("not robotic"). The core is fully solid; a 94% fill
+  let dark images show through as a muddy grey.
+  - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
+  - AI: ellipse 80% wide by 75% of a `min(480px, 60dvh)` strip.
+  Hide the dock's while AI is open; the AI's takes over in the same frame.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
