@@ -21,7 +21,7 @@ can see which work actually gets read.
 1. **Offer.** "Hiring? I can walk you through the case studies that match the
    role you're filling." Two buttons: **No thanks** and **Walk me through**.
    Nothing is focused on arrival, so no focus ring shows until someone tabs.
-2. **Pick.** "Which skills does the role need?" with three chips — Branding, UI/UX,
+2. **Pick.** "Which skills does the role need?" with a three-row checklist — Branding, UI/UX,
    Frontend development. Any number can be selected; **Continue** waits for at
    least one.
 3. **Ready.** "Here is the customised case study walkthrough that may interest
@@ -34,7 +34,7 @@ can see which work actually gets read.
 5. **Settle.** Once the splash has gone, the cloud speaks through the same
    answer surface the AI uses, centred 8px above the dock: "Please enjoy." (2.4s), then "You can change what's
    shown by pressing me." (6s), then it goes quiet. Pressing the cloud (or the
-   bubble) on a walkthrough opens the chips with the current picks selected,
+   bubble) on a walkthrough opens the checklist with the current picks ticked,
    over any conversation already had, plus **Ask a question** to return to it.
    Picking again replays the splash, even onto the same walkthrough.
 6. **Exit.** The dock is contracted, exactly as on a case study, but the circle
@@ -42,7 +42,7 @@ can see which work actually gets read.
 
 **I'm hiring** sits above the first-question composer, on the left — and above the follow-up composer once a conversation exists, between the answer and the field — so the
 walkthrough can be found again at any time. Someone who has already said yes
-goes straight to the chips. The composer's review notice moved into an info
+goes straight to the checklist. The composer's review notice moved into an info
 button on the right of the same row, shown as a tooltip on hover, focus or tap.
 
 The offer appears at most once every 24 hours per browser (Matt's choice,
@@ -79,7 +79,7 @@ content that already has a canonical home.
 ## Content
 
 Experience entries gain a **Disciplines** multiselect in Keystatic (Branding,
-UI/UX, Frontend development). It decides which chips a case study answers to
+UI/UX, Frontend development). It decides which checklist rows a case study answers to
 and is never shown on the page. Starting values, read from each entry's role
 and summary — Matt should check them:
 
@@ -138,9 +138,7 @@ blockers do not drop them.
 
 - Every surface comes from the existing AI vocabulary: the black response
   surface, and squircle buttons beneath it with the 8px companion gap.
-- Chips are squircles, not capsules — capsules belong to the dock. Off: theme
-  surface with fg text. On: the neutral black AI surface with white text,
-  announced through `aria-pressed`.
+- The pick step is a checklist on the email form's surface, one row per skill.
 - The primary button is the black `Send to Matt` treatment; No thanks is the
   same shape on the theme surface.
 - Steps change with the existing `ai-content-enter` rise and blur.

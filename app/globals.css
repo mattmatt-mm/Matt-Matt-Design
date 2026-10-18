@@ -1078,7 +1078,6 @@
     color: var(--color-ai-form-muted);
   }
 
-  .ai-tour-chips,
   .ai-tour-actions {
     display: flex;
     flex-wrap: wrap;
@@ -1092,48 +1091,79 @@
   /* No shadow: these sit in the AI's own stack, flat, as Matt asked on
      2026-10-18. */
   .ai-tour-button {
-    --tour-ring: 1.5px;
     position: relative;
     min-height: 40px;
     pointer-events: auto;
   }
 
-  .ai-tour-button-surface,
-  .ai-tour-button-fill {
+  .ai-tour-button-surface {
     position: absolute;
+    inset: 0;
     pointer-events: none;
     transition: background-color 120ms ease-out;
   }
 
-  /* Outline chip: the outer squircle shows as a ring around the inner one. */
-  .ai-tour-button-surface {
-    inset: 0;
-    background: var(--color-line);
-  }
-
-  .ai-tour-button-fill {
-    inset: var(--tour-ring);
-    background: var(--color-surface);
-  }
-
-  .ai-tour-button[data-tone="outline"]:hover .ai-tour-button-fill {
-    background: color-mix(in srgb, var(--color-fg) 4%, var(--color-surface));
-  }
-
-  /* Primary — the action, and a chosen chip: the AI response surface. */
-  .ai-tour-button[data-tone="primary"] :is(.ai-tour-button-surface, .ai-tour-button-fill) {
+  /* Primary — the action: the AI response surface. */
+  .ai-tour-button[data-tone="primary"] .ai-tour-button-surface {
     background: var(--color-ai-response);
   }
 
-  /* Secondary — No thanks, Ask a question: the Notes copy button's fill, an
-     8% tint of the text colour, no ring. Mixed over the surface rather than
-     layered, so it holds in both themes. */
-  .ai-tour-button[data-tone="secondary"] :is(.ai-tour-button-surface, .ai-tour-button-fill) {
+  /* Secondary — a way out: the Notes copy button's fill, an 8% tint of the
+     text colour, mixed over the surface rather than layered so it holds in
+     both themes. */
+  .ai-tour-button[data-tone="secondary"] .ai-tour-button-surface {
     background: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface));
   }
 
-  .ai-tour-button[data-tone="secondary"]:hover :is(.ai-tour-button-surface, .ai-tour-button-fill) {
+  .ai-tour-button[data-tone="secondary"]:hover .ai-tour-button-surface {
     background: color-mix(in srgb, var(--color-fg) 14%, var(--color-surface));
+  }
+
+  /* The pick step's checklist: the email form's surface, one row per skill,
+     the same hairline between rows. */
+  .ai-tour-checklist {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--ai-radius);
+    background: var(--color-ai-form);
+    color: var(--color-on-ai-response);
+    pointer-events: auto;
+  }
+
+  .ai-tour-check {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .ai-tour-check + .ai-tour-check {
+    border-top: 1px solid var(--color-ai-form-divider);
+  }
+
+  .ai-tour-check-box {
+    display: grid;
+    place-items: center;
+    color: var(--color-ai-form-muted);
+    transition: color 120ms ease-out;
+  }
+
+  .ai-tour-check:hover .ai-tour-check-box,
+  .ai-tour-check input:checked ~ .ai-tour-check-box {
+    color: var(--color-on-ai-response);
+  }
+
+  /* The input itself is hidden, so its focus is drawn on the row — inside
+     it, since the panel's squircle clip would cut an outside ring off the
+     first and last rows. */
+  .ai-tour-check:has(input:focus-visible) {
+    outline: 1px solid var(--color-on-ai-response);
+    outline-offset: -4px;
   }
 
   .ai-tour-button button {

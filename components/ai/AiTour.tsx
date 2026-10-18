@@ -1,15 +1,12 @@
 "use client";
 
-import {
-  SITE_SQUIRCLE_RADIUS,
-  SiteSquircle,
-} from "@/components/SiteSquircle";
+import { CheckSquare } from "@phosphor-icons/react/dist/ssr/CheckSquare";
+import { Square } from "@phosphor-icons/react/dist/ssr/Square";
+import { SiteSquircle } from "@/components/SiteSquircle";
 import { DISCIPLINES, type Discipline } from "@/lib/disciplines";
 
 export type TourStep = "cookies" | "offer" | "pick" | "ready";
 
-/** The quiet button's ring, in px. Matches --tour-ring in globals.css. */
-const TOUR_RING = 1.5;
 
 /**
  * The guided tour the AI offers a first-time visitor: an offer, a choice of
@@ -76,21 +73,35 @@ export function AiTour({
         </SiteSquircle>
 
         {step === "pick" ? (
-          <div className="ai-tour-chips" role="group" aria-label="Kinds of work">
-            {DISCIPLINES.map((d) => {
-              const on = picks.includes(d.value);
-              return (
-                <TourButton
-                  key={d.value}
-                  tone={on ? "primary" : "outline"}
-                  pressed={on}
-                  onClick={() => onToggle(d.value)}
-                >
-                  {d.label}
-                </TourButton>
-              );
-            })}
-          </div>
+          // A checklist on the email form's surface, not a row of chips: the
+          // choices read as one question with three answers, and the only
+          // buttons left are the ones that act. Matt, 2026-10-18.
+          <SiteSquircle asChild>
+            <fieldset className="ai-tour-checklist">
+              <legend className="sr-only">Skills the role needs</legend>
+              {DISCIPLINES.map((d) => {
+                const on = picks.includes(d.value);
+                return (
+                  <label key={d.value} className="ai-tour-check">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={on}
+                      onChange={() => onToggle(d.value)}
+                    />
+                    <span>{d.label}</span>
+                    <span className="ai-tour-check-box" aria-hidden="true">
+                      {on ? (
+                        <CheckSquare size={20} weight="fill" />
+                      ) : (
+                        <Square size={20} weight="regular" />
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
+            </fieldset>
+          </SiteSquircle>
         ) : null}
 
         <div className="ai-tour-actions">
@@ -140,43 +151,28 @@ export function AiTour({
 
 /**
  * A squircle button. The surface is a sibling under the label rather than the
- * button itself, so its clip path cannot clip the elevation filter.
+ * button itself, so its clip path cannot clip the label's focus ring.
  */
 function TourButton({
   tone,
-  pressed,
   disabled,
   onClick,
   children,
 }: {
   /**
-   * primary: the action, and a chosen chip (filled). outline: a chip not yet
-   * chosen. secondary: a way out — No thanks, Ask a question — filled grey
-   * like the Notes copy button, so it never reads as an unchosen chip.
+   * primary: the action (Accept, Walk me through, Continue, Start
+   * walkthrough). secondary: a way out — Decline, No thanks, Ask a question —
+   * filled grey like the Notes copy button.
    */
-  tone: "primary" | "secondary" | "outline";
-  pressed?: boolean;
+  tone: "primary" | "secondary";
   disabled?: boolean;
   onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
   children: React.ReactNode;
 }) {
   return (
     <div className="ai-tour-button" data-tone={tone}>
-      {/* Two squircles, one inside the other: the outer one shows as a ring
-          on an outline chip. A CSS border or inset shadow would follow
-          border-radius, not the squircle, and part at the corners. */}
       <SiteSquircle className="ai-tour-button-surface" aria-hidden="true" />
-      <SiteSquircle
-        className="ai-tour-button-fill"
-        cornerRadius={SITE_SQUIRCLE_RADIUS - TOUR_RING}
-        aria-hidden="true"
-      />
-      <button
-        type="button"
-        aria-pressed={pressed}
-        disabled={disabled}
-        onClick={onClick}
-      >
+      <button type="button" disabled={disabled} onClick={onClick}>
         {children}
       </button>
     </div>

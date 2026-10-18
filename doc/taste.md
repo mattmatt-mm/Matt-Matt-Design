@@ -154,21 +154,19 @@ not decorative borders and should remain where required.
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
 
-- The guided tour's chips and buttons are squircles under the AI response,
-  40px tall with the 8px companion gap, and flat — no shadow (Matt,
-  2026-10-18). A chip and a button must never look alike:
-  - Chip, chosen: filled with the AI response surface.
-  - Chip, not chosen: outline — the theme surface inside a 1.5px
-    `--color-line` ring. The ring is a second squircle inset inside the first,
-    never a CSS border or inset shadow. It is the one sanctioned exception to
-    "no hard border", because a white chip over the faded page otherwise
-    disappears.
-  - Secondary button (No thanks, Ask a question): the Notes copy button's fill,
-    an 8% tint of the text colour mixed over the surface, no ring; 14% on hover.
-  - Primary button (Continue, Walk me through, Start walkthrough): the AI
+- The guided tour asks its pick question as a checklist, not chips — chips
+  were one button too many (Matt, 2026-10-18). One squircle panel on the email
+  form's surface (`--color-ai-form`), a 44px row per skill with the label left
+  and a 20px Phosphor Square / CheckSquare (fill) right, the form's hairline
+  between rows. Real checkboxes, hidden, with the focus ring drawn inside the
+  row so the panel's clip cannot cut it.
+- Its buttons are squircles under the response, 40px tall with the 8px
+  companion gap, and flat — no shadow:
+  - Primary (Accept, Walk me through, Continue, Start walkthrough): the AI
     response surface.
-  They are not capsules — capsules stay with the dock. Matt asked for the tour
-  on 2026-10-18; see `doc/hr-mode-plan.md`.
+  - Secondary (Decline, No thanks, Ask a question): the Notes copy button's
+    fill, an 8% tint of the text colour mixed over the surface; 14% on hover.
+  Not capsules — capsules stay with the dock. See `doc/hr-mode-plan.md`.
 - The AI composer (Ask me anything, Follow up) wears the dock's stack: the 1px
   `--shadow-navigation` rim on the surface and `--filter-navigation` on a
   wrapper around it, since the squircle's clip path would cut a drop shadow off
