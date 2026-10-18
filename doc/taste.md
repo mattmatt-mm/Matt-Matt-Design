@@ -145,11 +145,12 @@ not decorative borders and should remain where required.
   and the rim thins unevenly around the corner.
 - Active navigation uses fill, foreground color, and this recess — never a
   heavier border.
-- Keep a pointer-transparent gradient mask fixed behind the bottom navigation
-  and above page content. It uses the same theme-aware fade colors as the AI
-  overlay but a shorter `min(240px, 35dvh)` footprint so content stays legible
-  without washing out the page. Hide it while AI is open; the taller AI mask
-  takes over in the same frame.
+- Keep a pointer-transparent mask fixed behind the bottom navigation and above
+  page content: the AI mask's arc, smaller — a solid `--color-bg` dome, an
+  ellipse 80% of the width by 90% of a `min(120px, 16dvh)` strip, with the
+  same `--filter-arc` shade. Solid, not translucent: a dark image showed
+  through a 94% fill as a muddy grey (Matt, 2026-10-18). Hide it while AI is
+  open; the taller AI arc takes over in the same frame.
 - The AI mask is an arc, not a fade (Matt, 2026-10-18, after Dia's footer): a
   solid dome of `--color-bg` rising from the bottom edge — an ellipse 80% of
   the width by 60% of the mask's height, centred on the bottom — with a soft

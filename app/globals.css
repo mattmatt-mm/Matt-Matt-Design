@@ -192,13 +192,16 @@
     bottom: 0;
     left: 0;
     height: min(120px, 16dvh);
-    /* One even ramp, clear to solid. Landing the solid stop early left the
-       last third of the strip flat and read as a painted band. */
-    background: linear-gradient(
-      to bottom,
-      var(--color-content-mask-clear) 0%,
-      var(--color-content-mask-solid) 100%
+    /* The AI mask's arc, smaller (Matt, 2026-10-18): a dome of the page
+       colour behind the dock, highest at its centre, with the same shade cast
+       up from the curve. Solid, like the AI's: at 94% a dark image showed
+       through as a muddy grey. */
+    background: radial-gradient(
+      ellipse 80% 90% at 50% 100%,
+      var(--color-bg) calc(100% - 1px),
+      transparent 100%
     );
+    filter: var(--filter-arc);
     pointer-events: none;
   }
 
