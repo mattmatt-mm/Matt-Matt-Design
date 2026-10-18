@@ -111,7 +111,6 @@ export function AiOverlay({
 
   return (
     <div className="ai-layer" data-open="true">
-      <div className="ai-gradient-mask" aria-hidden="true" />
       <div className="ai-viewport">
         {tour ? (
           tour

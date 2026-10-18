@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, type ReactNode } from "react";
+import { Check } from "@phosphor-icons/react/dist/ssr/Check";
+import { Copy } from "@phosphor-icons/react/dist/ssr/Copy";
 import { SiteSquircle } from "@/components/SiteSquircle";
 
 /**
@@ -58,8 +60,18 @@ export function Notes({ title, children }: { title?: string; children: ReactNode
     <SiteSquircle className="notes" role="note" aria-label={title ?? "Notes"}>
       <div className="notes-band">
         <span className="notes-title">{title ?? "Notes"}</span>
-        <button type="button" className="notes-copy" onClick={copy}>
-          {copied ? "Copied" : "Copy prompt"}
+        <button
+          type="button"
+          className="notes-copy"
+          onClick={copy}
+          aria-label={copied ? "Copied" : "Copy prompt"}
+        >
+          {/* Both icons share one grid cell; the outgoing one shrinks and
+              blurs away as the incoming one grows in (.icon-swap). */}
+          <span className="icon-swap" data-state={copied ? "b" : "a"} aria-hidden>
+            <Copy data-icon="a" />
+            <Check data-icon="b" />
+          </span>
         </button>
       </div>
       <div className="notes-perforation" aria-hidden />

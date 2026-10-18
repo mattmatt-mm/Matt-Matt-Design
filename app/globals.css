@@ -129,6 +129,11 @@
        reads as a wobble rather than a move. */
     --ai-cross-travel: 24px;
     --ai-blur: 3px;
+    /* Icon swap (.icon-swap): a quick in-place exchange, so shorter and
+       softer than the AI handoff. */
+    --icon-swap-dur: 250ms;
+    --icon-swap-ease: ease-in-out;
+    --icon-swap-blur: 2px;
     --ai-radius: 16px;
     /* Slightly quicker than the AI handoff: the pill crosses a 76px column, not
        the width of the screen. Same curve, so the two read as one system. */
@@ -196,7 +201,10 @@
   }
 
   /* Sits above the page and the scroll lens so the fade covers both, but
-     below the dock — the navigation floats over this, never under it. */
+     below the dock — the navigation floats over this, never under it. One
+     fade serves both states: opening the AI grows it into the AI's taller arc
+     on the AI's own clock, and closing shrinks it back, rather than one fade
+     swapping for another. */
   .site-content-mask {
     position: fixed;
     z-index: 65;
@@ -204,6 +212,7 @@
     bottom: 0;
     left: 0;
     height: min(120px, 16dvh);
+    transition: height var(--ai-close-dur) var(--ai-ease);
     /* The AI mask's arc, smaller (Matt, 2026-10-18): a dome of the page
        colour behind the dock, highest at its centre, feathered on the same
        eased --arc-fade. */
@@ -214,8 +223,18 @@
     pointer-events: none;
   }
 
+  /* Open: the AI's arc, tall enough that the row above the composer sits in
+     the denser part. Beneath the AI layer, so its content stays on top. */
   .site-content-mask[data-ai-open="true"] {
-    opacity: 0;
+    z-index: 59;
+    height: min(480px, 60dvh);
+    transition-duration: var(--ai-open-dur);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-content-mask {
+      transition: none;
+    }
   }
 
   .site-dock-shadow {
@@ -422,7 +441,6 @@
   }
 
   .ai-layer,
-  .ai-gradient-mask,
   .ai-viewport {
     position: fixed;
     inset: 0;
@@ -431,19 +449,6 @@
   .ai-layer {
     z-index: 60;
     pointer-events: none;
-  }
-
-  /* An arc, not a flat band (Matt, 2026-10-18, after Dia's footer): a dome
-     of the page colour rising from the bottom edge, highest at the centre
-     where the AI stacks, lower at the sides, fading on the eased --arc-fade
-     from solid at the bottom to clear at the curve. */
-  .ai-gradient-mask {
-    top: auto;
-    height: min(480px, 60dvh);
-    background: radial-gradient(
-      ellipse 80% 100% at 50% 100%,
-      var(--arc-fade)
-    );
   }
 
   .ai-viewport {
@@ -1594,6 +1599,34 @@
     animation-duration: var(--ai-open-dur);
   }
 
+  /* The dock sits out of that cross-fade. Inside it, the bar's own
+     contraction to a circle played as a fade between a wide bar and a
+     shrinking one. Shown live and unanimated here, the dock morphs exactly as
+     it does on any other navigation. */
+  .site-dock-row {
+    view-transition-name: site-dock;
+  }
+
+  /* The fade behind the dock likewise. Left in the page, it was drawn under
+     the travelling thumbnail, which lifts above the page for the morph: the
+     fade vanished beneath the picture and popped back when it landed. Named,
+     it paints above the thumbnail, as it does on the page. */
+  .site-content-mask {
+    view-transition-name: site-fade;
+  }
+
+  ::view-transition-old(site-dock),
+  ::view-transition-old(site-fade) {
+    display: none;
+  }
+
+  ::view-transition-group(site-dock),
+  ::view-transition-new(site-dock),
+  ::view-transition-group(site-fade),
+  ::view-transition-new(site-fade) {
+    animation: none;
+  }
+
   /* Lottie clips (components/LottieSequence.tsx) draw square, one layer per
      clip so the incoming one can draw before the outgoing one leaves. */
   .lottie-sequence {
@@ -2277,9 +2310,14 @@
     background: var(--color-note-band);
   }
 
+  /* Icon only: a 32px circle in the band, its hit area stretched to 44px.
+     Copy swaps to a check on success and back after two seconds. */
   .notes-copy {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 32px;
     height: 32px;
-    padding-inline: 12px;
     border-radius: 9999px;
     color: inherit;
     background: rgb(0 0 0 / 8%);
@@ -2287,8 +2325,44 @@
     transition: background 120ms ease-out;
   }
 
+  .notes-copy::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
   .notes-copy:hover {
     background: rgb(0 0 0 / 14%);
+  }
+
+  /* Icon swap, after transitions.dev: two icons stacked in one cell; the
+     outgoing one shrinks to a quarter and blurs out while the incoming one
+     grows in. data-state names which icon (data-icon a | b) is showing. */
+  .icon-swap {
+    display: inline-grid;
+  }
+
+  .icon-swap > [data-icon] {
+    grid-area: 1 / 1;
+    width: 16px;
+    height: 16px;
+    transition:
+      opacity var(--icon-swap-dur) var(--icon-swap-ease),
+      filter var(--icon-swap-dur) var(--icon-swap-ease),
+      transform var(--icon-swap-dur) var(--icon-swap-ease);
+  }
+
+  .icon-swap[data-state="a"] > [data-icon="b"],
+  .icon-swap[data-state="b"] > [data-icon="a"] {
+    opacity: 0;
+    filter: blur(var(--icon-swap-blur));
+    transform: scale(0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon-swap > [data-icon] {
+      transition: none;
+    }
   }
 
   .notes-perforation {
