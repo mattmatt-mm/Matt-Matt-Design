@@ -26,6 +26,17 @@
   --color-shimmer-sunset-gold: #ffc832;
   --color-shimmer-sunset-rose: #ff6450;
   --color-shimmer-sunset-red: #ff3c3c;
+  /* Notes module (components/Notes.tsx), after Apple Notes. The band stays
+     yellow with black ink in both themes; the paper follows the page. */
+  --color-note-band: #ffd60a;
+  --color-note-band-ink: #000000;
+  --color-note-paper: #f4f2ec;
+  --color-note-rule: rgb(0 0 0 / 7%);
+  --color-note-perforation: #c9c3b4;
+  /* ISD brand, sampled from the HKUST AIS hero. Fixed in both themes: the
+     ISD dot hero is a piece of their brand, like a photograph. */
+  --color-isd-orange: #fcb041;
+  --color-isd-cream: #fcfaf6;
 
   /* Spacing — px, not rem, so the 4px grid never drifts with root font-size.
      1 = 4px, 2 = 8px, 3 = 12px, 4 = 16px, 6 = 24px, 8 = 32px,
@@ -54,6 +65,20 @@
     inset 0 3px 2px 0 rgb(255 255 255 / 100%),
     inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
   --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
+  /* The arcs behind the dock and the open AI are one continuous fade, with
+     no flat core: solid only at the very bottom centre, thinning on an
+     ease-in-out (smoothstep) all the way out to clear at the curve. A flat
+     plateau inside a feathered edge read as unnatural (Matt, 2026-10-18).
+     Stops are fractions of the arc's radius. */
+  --arc-fade:
+    var(--color-bg) 0%,
+    color-mix(in srgb, var(--color-bg) 93.9%, transparent) 15%,
+    color-mix(in srgb, var(--color-bg) 78.4%, transparent) 30%,
+    color-mix(in srgb, var(--color-bg) 57.5%, transparent) 45%,
+    color-mix(in srgb, var(--color-bg) 35.2%, transparent) 60%,
+    color-mix(in srgb, var(--color-bg) 15.6%, transparent) 75%,
+    color-mix(in srgb, var(--color-bg) 2.8%, transparent) 90%,
+    transparent 100%;
 
   /* Type — 16/21 everywhere; 32/42 is the only second size. */
   --text-base: 16px;
@@ -179,12 +204,12 @@
     bottom: 0;
     left: 0;
     height: min(120px, 16dvh);
-    /* One even ramp, clear to solid. Landing the solid stop early left the
-       last third of the strip flat and read as a painted band. */
-    background: linear-gradient(
-      to bottom,
-      var(--color-content-mask-clear) 0%,
-      var(--color-content-mask-solid) 100%
+    /* The AI mask's arc, smaller (Matt, 2026-10-18): a dome of the page
+       colour behind the dock, highest at its centre, feathered on the same
+       eased --arc-fade. */
+    background: radial-gradient(
+      ellipse 80% 100% at 50% 100%,
+      var(--arc-fade)
     );
     pointer-events: none;
   }
@@ -408,14 +433,16 @@
     pointer-events: none;
   }
 
+  /* An arc, not a flat band (Matt, 2026-10-18, after Dia's footer): a dome
+     of the page colour rising from the bottom edge, highest at the centre
+     where the AI stacks, lower at the sides, fading on the eased --arc-fade
+     from solid at the bottom to clear at the curve. */
   .ai-gradient-mask {
     top: auto;
     height: min(480px, 60dvh);
-    background: linear-gradient(
-      to bottom,
-      var(--color-content-mask-clear) 24%,
-      var(--color-content-mask-solid) 52%,
-      var(--color-bg) 68%
+    background: radial-gradient(
+      ellipse 80% 100% at 50% 100%,
+      var(--arc-fade)
     );
   }
 
@@ -481,11 +508,19 @@
     pointer-events: auto;
   }
 
-  .ai-composer-surface {
+  .ai-composer-shadow {
     position: absolute;
     z-index: 0;
     inset: 0;
-    background: var(--color-surface);
+    filter: var(--filter-navigation);
+    pointer-events: none;
+  }
+
+  .ai-composer-surface {
+    position: absolute;
+    inset: 0;
+    /* Fallback geometry for the rim; the squircle clip path is the shape. */
+    border-radius: var(--ai-radius);
     pointer-events: none;
   }
 
@@ -549,8 +584,7 @@
     opacity: 0.45;
   }
 
-  .ai-composer-error,
-  .ai-review-disclosure {
+  .ai-composer-error {
     position: absolute;
     z-index: 1;
     right: 0;
@@ -564,8 +598,104 @@
     color: var(--color-fg);
   }
 
-  .ai-review-disclosure {
+  /* The row above the first question: the recruiter walkthrough on the left,
+     the privacy notice behind an info button on the right. */
+  /* Lined up with the field below: "I'm hiring" starts where its text does
+     (16px in) and the info icon sits over the send icon's centre. The send
+     button is 8px in on the first composer and flush on a follow-up, so the
+     row's end inset follows it. */
+  .ai-composer-aside {
+    --aside-end: 8px;
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    bottom: calc(100% + 8px);
+    left: 0;
+    padding-inline: 16px var(--aside-end);
+    display: flex;
+    height: 21px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Above a follow-up it sits in the flow, between the answer and the field. */
+  .ai-composer-aside[data-inline="true"] {
+    --aside-end: 0px;
+    position: relative;
+    inset: auto;
+    margin-bottom: 8px;
+  }
+
+  .ai-hiring {
+    display: inline-flex;
+    /* 44px hit area around a 21px line. */
+    margin: -12px 0 -12px -4px;
+    padding: 12px 4px;
+    align-items: center;
+    gap: 4px;
+    border: 0;
+    background: transparent;
     color: var(--color-muted-readable);
+    font: inherit;
+    cursor: pointer;
+    transition: color 120ms ease-out;
+  }
+
+  .ai-hiring:hover {
+    color: var(--color-fg);
+  }
+
+  .ai-info {
+    position: relative;
+    display: inline-flex;
+  }
+
+  .ai-info-button {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    margin: -12px 0 -11px 0;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: var(--color-muted-readable);
+    cursor: pointer;
+    transition: color 120ms ease-out;
+  }
+
+  .ai-info-button:hover,
+  .ai-info[data-open="true"] .ai-info-button {
+    color: var(--color-fg);
+  }
+
+  .ai-info-tooltip {
+    position: absolute;
+    /* Back out to the field's edge, whatever the row's end inset. */
+    right: calc(-1 * var(--aside-end));
+    bottom: calc(100% + 8px);
+    width: 240px;
+    padding: 8px 12px;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: 12px;
+    line-height: 16px;
+    opacity: 0;
+    transform: translateY(4px);
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 120ms ease-out,
+      transform 120ms ease-out,
+      visibility 0s linear 120ms;
+  }
+
+  .ai-info[data-open="true"] .ai-info-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+    transition:
+      opacity 120ms ease-out,
+      transform 120ms ease-out;
   }
 
   .ai-thinking,
@@ -686,6 +816,28 @@
 
   .ai-exchange-answer {
     width: 100%;
+  }
+
+  /* The cloud's unprompted lines (AIExperience): an answer, placed where the
+     exchange puts one, over the page with the AI otherwise closed. Above the
+     content mask, below the dock. Announced through the live region, so it
+     stays out of the tab order; the cloud beneath does the same thing. */
+  .ai-cloud-says {
+    position: fixed;
+    z-index: 68;
+    /* The dock's surfaces are showing here, unlike under an open AI, so the
+       answer keeps the 8px companion gap above them rather than sitting 1px
+       off the control row. */
+    bottom: calc(var(--ai-control-bottom) + var(--dock-h) + var(--dock-gap));
+    left: 50%;
+    width: 345px;
+    transform: translateX(-50%);
+    cursor: pointer;
+    animation: ai-contact-enter var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  .ai-cloud-says .ai-response {
+    min-height: 66px;
   }
 
   .ai-exchange-swap {
@@ -927,12 +1079,216 @@
     color: var(--color-muted);
   }
 
+  /* The guided tour (components/ai/AiTour.tsx). Each step is the response and
+     the controls beneath it, held to the 8px companion gap. */
+  .ai-tour-step {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: 8px;
+    animation: ai-content-enter var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  .ai-tour-note {
+    margin-top: 8px;
+    color: var(--color-ai-form-muted);
+  }
+
+  .ai-tour-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ai-tour-actions > .ai-tour-button {
+    flex: 1 1 0;
+  }
+
+  /* No shadow: these sit in the AI's own stack, flat, as Matt asked on
+     2026-10-18. */
+  .ai-tour-button {
+    position: relative;
+    min-height: 40px;
+    pointer-events: auto;
+  }
+
+  .ai-tour-button-surface {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transition: background-color 120ms ease-out;
+  }
+
+  /* Primary — the action: the AI response surface. */
+  .ai-tour-button[data-tone="primary"] .ai-tour-button-surface {
+    background: var(--color-ai-response);
+  }
+
+  /* Secondary — a way out: the Notes copy button's fill, an 8% tint of the
+     text colour, mixed over the surface rather than layered so it holds in
+     both themes. */
+  .ai-tour-button[data-tone="secondary"] .ai-tour-button-surface {
+    background: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface));
+  }
+
+  .ai-tour-button[data-tone="secondary"]:hover .ai-tour-button-surface {
+    background: color-mix(in srgb, var(--color-fg) 14%, var(--color-surface));
+  }
+
+  /* The pick step's checklist: the email form's surface, one row per skill,
+     the same hairline between rows. */
+  .ai-tour-checklist {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0 16px;
+    border: 0;
+    border-radius: var(--ai-radius);
+    background: var(--color-ai-form);
+    color: var(--color-on-ai-response);
+    pointer-events: auto;
+  }
+
+  .ai-tour-check {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+  }
+
+  .ai-tour-check + .ai-tour-check {
+    border-top: 1px solid var(--color-ai-form-divider);
+  }
+
+  .ai-tour-check-box {
+    display: grid;
+    place-items: center;
+    color: var(--color-ai-form-muted);
+    transition: color 120ms ease-out;
+  }
+
+  .ai-tour-check:hover .ai-tour-check-box,
+  .ai-tour-check input:checked ~ .ai-tour-check-box {
+    color: var(--color-on-ai-response);
+  }
+
+  /* The input itself is hidden, so its focus is drawn on the row — inside
+     it, since the panel's squircle clip would cut an outside ring off the
+     first and last rows. */
+  .ai-tour-check:has(input:focus-visible) {
+    outline: 1px solid var(--color-on-ai-response);
+    outline-offset: -4px;
+  }
+
+  .ai-tour-button button {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 0;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+    cursor: pointer;
+    transition: color 120ms ease-out;
+  }
+
+  .ai-tour-button[data-tone="primary"] button {
+    color: var(--color-on-ai-response);
+  }
+
+  .ai-tour-button button:disabled {
+    cursor: default;
+    color: var(--color-muted);
+  }
+
+  /* Start walkthrough (components/ai/WalkthroughSplash.tsx). Above the dock
+     and the AI layer, so the fading sheet covers both. */
+  .walkthrough-splash {
+    position: fixed;
+    z-index: 90;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  .walkthrough-splash[data-revealing="true"] {
+    pointer-events: none;
+  }
+
+  /* The wipe: a mask twice the screen tall plus the feather, opaque on top and
+     clear below. Sliding it from 0% to 100% carries the soft edge from below
+     the screen to above it, uncovering the page from the bottom up. */
+  .walkthrough-splash-sheet {
+    position: absolute;
+    inset: 0;
+    background: var(--color-bg);
+    opacity: 0;
+    --splash-mask: linear-gradient(
+      to bottom,
+      #000 calc(50% - var(--splash-feather) / 2),
+      transparent calc(50% + var(--splash-feather) / 2)
+    );
+    -webkit-mask-image: var(--splash-mask);
+    mask-image: var(--splash-mask);
+    -webkit-mask-size: 100% calc(200% + var(--splash-feather));
+    mask-size: 100% calc(200% + var(--splash-feather));
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: 0 0%;
+    mask-position: 0 0%;
+  }
+
+  /* The page column, with the eyebrow at the height the walkthrough's own
+     lands: page top padding, the two-line masthead, then the article's 60px. */
+  /* A copy of the pressed button, laid over its original so it can be seen
+     leaving above the sheet. */
+  .walkthrough-splash-button {
+    position: fixed;
+    z-index: 1;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .walkthrough-splash-column {
+    position: relative;
+    width: 100%;
+    max-width: var(--container-column);
+    margin: 0 auto;
+    padding: calc(var(--spacing) * 30 + var(--text-base--line-height) * 2)
+      calc(var(--spacing) * 6) 0;
+    color: var(--color-fg);
+  }
+
+  .walkthrough-splash-column p {
+    opacity: 0;
+    transform-origin: 0 0;
+  }
+
+  @media (min-width: 688px) {
+    /* A copy of the pressed button, laid over its original so it can be seen
+     leaving above the sheet. */
+  .walkthrough-splash-button {
+    position: fixed;
+    z-index: 1;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .walkthrough-splash-column {
+      padding-inline: 0;
+    }
+  }
+
   @media (max-width: 399px) {
     .ai-morph-surface,
     .ai-morph-surface[data-kind="answer"],
     .ai-morph-surface[data-kind="answer-followup"],
     .ai-control-row,
     .ai-exchange,
+    .ai-cloud-says,
     .ai-contact-submit-shell {
       width: calc(100vw - 56px);
     }
@@ -953,7 +1309,9 @@
 
     .ai-content-enter,
     .ai-exchange,
-    .ai-exchange-swap {
+    .ai-exchange-swap,
+    .ai-tour-step,
+    .ai-cloud-says {
       animation: none;
     }
   }
@@ -971,12 +1329,23 @@
       --color-fg: #f3f1ec;
       --color-muted: #96938b;
       --color-muted-readable: #b2afa7;
+      --color-note-paper: #1c1b18;
+      --color-note-rule: rgb(255 255 255 / 7%);
+      --color-note-perforation: #4a4740;
       --color-line: #383631;
       --color-surface: #1c1b18;
       --color-surface-active: rgb(243 241 236 / 8%);
       --color-content-mask-clear: rgb(18 17 15 / 0%);
       --color-content-mask-solid: rgb(18 17 15 / 94%);
-      --color-ai-form-divider: rgb(255 255 255 / 12%);
+      /* The AI's surfaces invert rather than stay black: a black answer on a
+         near-black page had no edge to it. Off-white with near-black text is
+         the light theme mirrored — there the surface is the text colour too.
+         Matt asked for this on 2026-10-18. */
+      --color-ai-response: #f3f1ec;
+      --color-on-ai-response: #12110f;
+      --color-ai-form: #e4e1da;
+      --color-ai-form-muted: #6f6c66;
+      --color-ai-form-divider: rgb(18 17 15 / 12%);
       --shadow-floating: inset 0 0 1px 0 rgb(255 255 255 / 20%);
       --filter-elevated: drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
       /* Same three-layer bevel, inverted for a dark surface: the hairline and
@@ -1207,9 +1576,22 @@
     height: auto;
   }
 
-  .prose > :not(h2 ~ *):is(p:has(> img), .video-player, .lottie-sequence) {
+  .prose > :not(h2 ~ *):is(p:has(> img), .video-player, .recording, .lottie-sequence, .isd-dot-hero) {
     width: var(--prose-lead-width);
     margin-inline: calc((100% - var(--prose-lead-width)) / 2);
+  }
+
+  /* Opening a case study from the home gallery: the card's picture travels
+     into the thumbnail while the rest of the page cross-fades
+     (components/effects/ThumbnailMorph.tsx). Same clock as the image zoom. */
+  ::view-transition-group(case-thumb) {
+    animation-duration: var(--ai-open-dur);
+    animation-timing-function: var(--ai-ease);
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--ai-open-dur);
   }
 
   /* Lottie clips (components/LottieSequence.tsx) draw square, one layer per
@@ -1822,6 +2204,173 @@
      floating 12px inside the frame. The frame and the strip are squircles;
      the colours are fixed light-on-dark in both themes, because they sit on
      the video rather than on the page. */
+  /* The ISD dot hero (components/isd/IsdDotHero.tsx): a 16:9 canvas at the
+     thumbnail's width. Its review page (app/lab/isd-hero) lines its controls
+     up underneath. */
+  .isd-dot-hero {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--color-isd-cream);
+  }
+
+  .isd-review-stage {
+    width: min(840px, 100vw - 48px);
+    margin-inline: calc((100% - min(840px, 100vw - 48px)) / 2);
+  }
+
+  .isd-review-controls,
+  .isd-review-beats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .isd-review-controls button,
+  .isd-review-beats button {
+    height: 32px;
+    padding-inline: 12px;
+    border-radius: 9999px;
+    background: var(--color-surface-active);
+    cursor: pointer;
+  }
+
+  .isd-review-beats button[aria-pressed="true"],
+  .isd-review-controls button[aria-pressed="true"] {
+    color: var(--color-bg);
+    background: var(--color-fg);
+  }
+
+  .isd-review-time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .isd-review-scrubber {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    accent-color: var(--color-isd-orange);
+  }
+
+  /* Notes (components/Notes.tsx): the recipe behind an interaction, as an
+     Apple Notes card. A 48px yellow band holds the title and the copy
+     button, a row of perforation dots tears it from the paper, and the paper
+     is ruled on the 21px line so every line of text sits on a rule. Lists and
+     paragraphs inside keep that rhythm: no margins, a blank line between
+     paragraphs. Matt asked for it on 2026-10-18. */
+  .notes {
+    overflow: hidden;
+    border-radius: 16px;
+    background: var(--color-note-paper);
+  }
+
+  .notes-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 48px;
+    padding-inline: 16px;
+    color: var(--color-note-band-ink);
+    background: var(--color-note-band);
+  }
+
+  .notes-copy {
+    height: 32px;
+    padding-inline: 12px;
+    border-radius: 9999px;
+    color: inherit;
+    background: rgb(0 0 0 / 8%);
+    cursor: pointer;
+    transition: background 120ms ease-out;
+  }
+
+  .notes-copy:hover {
+    background: rgb(0 0 0 / 14%);
+  }
+
+  .notes-perforation {
+    height: 12px;
+    background-image: radial-gradient(
+      circle,
+      var(--color-note-perforation) 2px,
+      transparent 2.5px
+    );
+    background-size: 16px 12px;
+    background-position: 8px 0;
+  }
+
+  .notes-body {
+    padding: 12px 16px 21px;
+    background-image: linear-gradient(
+      to bottom,
+      transparent 20px,
+      var(--color-note-rule) 20px,
+      var(--color-note-rule) 21px
+    );
+    background-size: 100% 21px;
+    background-position: 0 12px;
+    background-origin: border-box;
+  }
+
+  .prose .notes-body > * + * {
+    margin-top: 21px;
+  }
+
+  .prose .notes-body :is(p, ul, ol, li) {
+    margin-block: 0;
+  }
+
+  .prose .notes-body li + li {
+    margin-top: 0;
+  }
+
+  /* A screen recording filed like a folder (components/Recording.tsx): a
+     caption tab at the top-left, an inside curve where the tab meets the
+     recording, and the recording at full width beneath. The tab is the line
+     grey with the text colour on it, so the caption holds its contrast in
+     both themes. Matt drew it on 2026-10-18, replacing a padded backdrop
+     frame that shrank the video. Corners are squircles cut per corner in
+     the component; the border-radius values are the first-paint fallback. */
+  .recording {
+    margin-inline: 0;
+    margin-bottom: 0;
+  }
+
+  .recording-tab-row {
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .recording-tab {
+    padding: 12px 24px;
+    border-radius: 16px 16px 0 0;
+    color: var(--color-fg);
+    background: var(--color-line);
+  }
+
+  .recording-fillet {
+    width: 16px;
+    height: 16px;
+    background: radial-gradient(
+      circle at 100% 0,
+      transparent 15.5px,
+      var(--color-line) 16px
+    );
+  }
+
+  .recording-body {
+    overflow: hidden;
+    border-radius: 0 16px 16px 16px;
+    background: var(--color-line);
+  }
+
+  .video-player-frame[data-flush] {
+    border-radius: 0;
+  }
+
   .video-player {
     --video-bar-inset: 12px;
     --video-bar-bg: rgb(0 0 0 / 40%);
@@ -2112,13 +2661,17 @@
     cursor: none;
   }
 
+  /* The label, floating to the right of the dot and centred on it. */
   .view-cursor {
+    --view-dot: 12px;
     position: fixed;
     top: 0;
     left: 0;
     z-index: 100;
     display: flex;
     align-items: center;
+    margin-left: calc(var(--view-dot) / 2 + 12px);
+    transform: translateY(-50%);
     pointer-events: none;
     opacity: 0;
     filter: blur(3px);
@@ -2132,16 +2685,39 @@
     filter: blur(0);
   }
 
+  /* The dot, centred on the pointer, in its own layer: white under a
+     difference blend, so it shows as the inverse of whatever is beneath —
+     black on the page or a pale image, white on a dark one, in either theme.
+     It shrinks while the button is held, on the same 120ms as the site's
+     press-shrink. */
   .view-cursor-dot {
-    width: 8px;
-    height: 8px;
-    margin-left: -4px;
+    --view-dot: 12px;
+    position: fixed;
+    top: calc(var(--view-dot) / -2);
+    left: calc(var(--view-dot) / -2);
+    z-index: 100;
+    width: var(--view-dot);
+    height: var(--view-dot);
     border-radius: 50%;
-    background: var(--color-fg);
+    background: #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+    opacity: 0;
+    transform: scale(1);
+    transition:
+      opacity 160ms ease-out,
+      transform 120ms ease-out;
+  }
+
+  .view-cursor-dot[data-visible] {
+    opacity: 1;
+  }
+
+  .view-cursor-dot[data-pressed] {
+    transform: scale(0.75);
   }
 
   .view-cursor-label {
-    margin-left: 12px;
     padding: 4px 12px;
     border-radius: 16px;
     background: var(--color-surface);
@@ -2151,7 +2727,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .view-cursor {
+    .view-cursor,
+    .view-cursor-dot {
       transition: none;
     }
   }

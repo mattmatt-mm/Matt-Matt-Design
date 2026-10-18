@@ -19,6 +19,21 @@ const nextConfig: NextConfig = {
     return [{ source: "/gallery", destination: "/", permanent: true }];
   },
 
+  // Engagement tracking (lib/analytics.ts) reaches PostHog through our own
+  // domain, so content blockers that drop third-party analytics keep it.
+  async rewrites() {
+    const host =
+      process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+    const assets = host.replace(".i.posthog.com", "-assets.i.posthog.com");
+    return [
+      { source: "/ingest/static/:path*", destination: `${assets}/static/:path*` },
+      { source: "/ingest/array/:path*", destination: `${assets}/array/:path*` },
+      { source: "/ingest/:path*", destination: `${host}/:path*` },
+    ];
+  },
+  // PostHog's API paths end in a slash; redirecting them would break capture.
+  skipTrailingSlashRedirect: true,
+
   outputFileTracingIncludes: {
     "/api/ai": ["./content/**/*"],
     "/api/ai/contact": ["./content/**/*"],

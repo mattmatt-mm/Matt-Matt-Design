@@ -34,7 +34,9 @@ Next.js 15 (App Router, TS) · Tailwind v4 (`@theme`) · Keystatic (git storage)
 Not using: databases, i18n routing, state libraries, animation libraries — the
 exceptions are `gradient-shimmer`, a zero-dependency component used solely for the
 intro links (see Interaction), and `lottie-web` (light SVG build), loaded on demand
-only by `components/LottieSequence.tsx` to play Matt's Lottie exports.
+only by `components/LottieSequence.tsx` to play Matt's Lottie exports, and
+`posthog-js`, loaded on demand only by `lib/analytics.ts` after a visitor opts in
+through the guided tour (HR mode).
 
 ---
 
@@ -54,8 +56,9 @@ only by `components/LottieSequence.tsx` to play Matt's Lottie exports.
 The entire site follows the operating-system theme through
 `prefers-color-scheme`; native controls and browser chrome advertise both
 schemes. There is no separate saved preference or theme toggle. AI response and
-contact surfaces remain neutral black in both schemes as a deliberate inverse
-treatment.
+contact surfaces are the inverse of the page: black in light mode, warm
+off-white (`#F3F1EC`, near-black text) in dark mode, so they always stand off
+the background. Matt changed this from black-in-both on 2026-10-18.
 
 ### Type
 - **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
@@ -100,12 +103,16 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
   mid-word. Skipped entirely under `prefers-reduced-motion`. The shimmer span is
   forced back to `display: inline` so the link's underline is not lost.
 - Focus: `outline: 1px solid var(--color-fg); outline-offset: 2px`. Never removed.
-- Over a project target (gallery links and Experience rows) the pointer becomes an 8px dot with a floating label on a squircle surface: "View project" for a case study, "View website" for a link that leaves the site. Fine hover-capable pointers only; touch never sees it (`components/effects/ViewCursor.tsx`, labels set by `data-cursor`).
+- Over a project target (gallery links and Experience rows) the pointer becomes a 12px dot that inverts what is beneath it (difference blend) and shrinks to 75% while pressed, with a floating label on a squircle surface: "View project" for a case study, "View website" for a link that leaves the site. Fine hover-capable pointers only; touch never sees it (`components/effects/ViewCursor.tsx`, labels set by `data-cursor`).
 - Every case-study and post image zooms on click, Enter or Space (`components/effects/ImageZoom.tsx`): the image travels from its place to the centre of the window over `--ai-open-dur` on `--ai-ease`, as large as the window allows inside the 24px gutter and never past its own pixels, while the page dims behind it. Click anywhere or Escape travels it back. The cursor reads "Zoom" over an image and "Close" over the open view. Reduced motion: no travel.
 - Detail pages carry a section rail: the current entry's `##` headings pinned to the screen's left edge (24px in), muted, with the section being read in fg. It follows the detail chain and fades out while breakout imagery passes beneath it (`components/SectionRail.tsx`).
 - Case studies can play Lottie exports in order and loop them with the Lottie sequence block (`{% lottie %}{% clip src /%}…{% /lottie %}`; files in `public/lottie/`). It loads when near the screen, pauses off screen, and under reduced motion holds the last clip's final frame. Re-encode embedded PNGs to WebP before adding a file (Kedonia's went from 3.9MB to 670KB).
 - Case studies and posts can set out figures with the Stats block (`{% stats %}{% stat value label /%}{% /stats %}`): figure in fg, label muted, 16/21 only.
-- No page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
+- Opening a case study from a home gallery card morphs the card's image into the case study's thumbnail over `--ai-open-dur` (View Transitions, `components/effects/ThumbnailMorph.tsx`); the rest of the page cross-fades. Forward only; skipped under reduced motion. Matt asked for it on 2026-10-18.
+- **HR mode** (`doc/hr-mode-plan.md`): about a second after a first visit, the AI opens on its own, asks for cookies (Decline / Accept, asked until answered), then offers a guided tour — No thanks / Walk me through, then a Branding · UI/UX · Frontend development checklist ("I'm hiring" above the composer reopens it), then "Start walkthrough" to `/tour/<focus>`, the case-study chain filtered to the chosen disciplines. On a walkthrough the dock is contracted as on a detail page, with an X that exits to Home; the cloud says "Please enjoy." then "You can change what's shown by pressing me." in a bubble, and pressing it reopens the checklist over any existing conversation. Offered at most once every 24 hours per browser, counted from when it appears (`mmd:tour-offered` holds the time); `?tour` on any URL offers it again. The checklist is one squircle panel on the email form's surface (`components/ai/AiTour.tsx`).
+- Engagement tracking is PostHog, consent-gated: nothing loads until **Accept** on the AI's cookie question (remembered as `mmd:tracking` = `granted`/`denied`), then pageviews, autocaptured clicks, heatmaps, masked session replays and named events (`tour_*`, `walkthrough_message_shown`, `case_study_viewed`, `ai_question_asked` with the question text, `contact_sent`; full list in the plan). `?ref=<name>` tags a visitor. Routed through `/ingest` (`next.config.ts`). Needs `NEXT_PUBLIC_POSTHOG_KEY`; without it every call is a no-op.
+- Start walkthrough plays a ~2.4s splash (`components/ai/WalkthroughSplash.tsx`): the pressed button swelling, blurring and fading as the page background fades up and the selected titles rise in, then a feathered upward wipe while the eyebrow and first title glide onto the page's own. Tap or Esc skips; none under reduced motion. Matt asked for it on 2026-10-18.
+- No other page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
 
 ### Responsive
 The page gutters switch at `688px` — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout). Two component-level exceptions: a Stats block stacks below 640px, and the section rail only appears from 1104px, where it clears the 640px text by 48px (it steps aside while an 840px thumbnail passes beneath).
@@ -122,6 +129,7 @@ app/
   (site)/profile/page.tsx               /profile   Experience list
   (site)/writing/page.tsx               /writing
   work/[slug]/page.tsx                  experience detail
+  tour/[focus]/page.tsx                 HR-mode walkthrough — the chain filtered by discipline, noindex
   writing/[slug]/page.tsx               writing detail
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
@@ -145,9 +153,9 @@ Rules:
 
 ## Content model (Keystatic collections)
 
-**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `summary`, `cover?`, `body` (markdoc). These print under the title on the case-study page as Timeline (`start – end`, e.g. "Sep 2025 – Feb 2026"), Role and Team figures; any that are empty are left out.
+**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). These print under the title on the case-study page as Timeline (`start – end`, e.g. "Sep 2025 – Feb 2026"), Role and Team figures; any that are empty are left out.
 
-Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
+Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a `caption` (two to four words) and are filed under it as a folder tab, the recording at full width (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
 **writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
 **settings** (singleton) — `name`, `role`, `intro[]`, `socials[]`, `email` → **`content/settings.yaml`** (no trailing slash on the singleton path means a file, not a directory)

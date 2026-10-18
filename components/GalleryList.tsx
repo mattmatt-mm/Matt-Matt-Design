@@ -63,6 +63,9 @@ export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
                 href={entry.href}
                 className="press-shrink group block no-underline"
                 data-cursor="View project"
+                // Morphs into the case study's thumbnail on open
+                // (components/effects/ThumbnailMorph.tsx).
+                data-morph={entry.href.split("/").pop()}
               >
                 <Figure entry={entry} />
               </Link>

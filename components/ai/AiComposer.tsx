@@ -1,7 +1,9 @@
 "use client";
 
+import { Briefcase } from "@phosphor-icons/react/dist/ssr/Briefcase";
+import { Info } from "@phosphor-icons/react/dist/ssr/Info";
 import { KeyReturn } from "@phosphor-icons/react/dist/ssr/KeyReturn";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SiteSquircle } from "@/components/SiteSquircle";
 import { MAX_QUESTION_CHARS } from "@/lib/ai/limits";
 
@@ -17,7 +19,10 @@ export function AiComposer({
   placeholder = "Ask me anything",
   compact = false,
   showDisclosure = true,
+  onHiring,
 }: {
+  /** Opens the recruiter walkthrough. */
+  onHiring?: () => void;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -62,10 +67,15 @@ export function AiComposer({
 
   return (
     <div className="ai-composer" data-compact={compact ? "true" : "false"}>
-      <SiteSquircle
-        className="ai-composer-surface elevated-surface"
-        aria-hidden="true"
-      />
+      {/* The dock's lift: the drop shadow sits on this wrapper, because the
+          squircle's clip path would cut it off the surface itself. The
+          surface keeps the dock's 1px rim. */}
+      <div className="ai-composer-shadow" aria-hidden="true">
+        <SiteSquircle
+          className="ai-composer-surface navigation-surface"
+          aria-hidden="true"
+        />
+      </div>
       <textarea
         ref={input}
         value={value}
@@ -113,11 +123,66 @@ export function AiComposer({
           {error}
         </p>
       ) : showDisclosure ? (
-        <p id="ai-review-disclosure" className="ai-review-disclosure">
-          Questions and responses may be reviewed. Do not share personal
-          information.
-        </p>
+        <ComposerAside onHiring={onHiring} />
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * The row above the field: the way into the recruiter walkthrough on the left
+ * (doc/hr-mode-plan.md), and the review notice folded into an info button on
+ * the right, opening as a tooltip on hover, focus or tap. Floats over the
+ * first question's composer; `inline` takes its place in the flow above a
+ * follow-up, so it is still there once a conversation exists.
+ */
+export function ComposerAside({
+  onHiring,
+  inline = false,
+}: {
+  onHiring?: () => void;
+  inline?: boolean;
+}) {
+  const [infoOpen, setInfoOpen] = useState(false);
+  return (
+    <div className="ai-composer-aside" data-inline={inline ? "true" : "false"}>
+      {onHiring ? (
+        <button type="button" className="ai-hiring" onClick={onHiring}>
+          <Briefcase size={16} weight="regular" aria-hidden="true" />
+          I&rsquo;m hiring
+        </button>
+      ) : (
+        <span />
+      )}
+      <span
+        className="ai-info"
+        data-open={infoOpen ? "true" : "false"}
+        onMouseEnter={() => setInfoOpen(true)}
+        onMouseLeave={() => setInfoOpen(false)}
+      >
+        <button
+          type="button"
+          className="ai-info-button"
+          aria-label="About privacy"
+          aria-describedby="ai-review-disclosure"
+          aria-expanded={infoOpen}
+          onClick={() => setInfoOpen((open) => !open)}
+          onFocus={() => setInfoOpen(true)}
+          onBlur={() => setInfoOpen(false)}
+        >
+          <Info size={16} weight="regular" />
+        </button>
+        <SiteSquircle asChild>
+          <span
+            id="ai-review-disclosure"
+            role="tooltip"
+            className="ai-info-tooltip elevated-surface"
+          >
+            Questions and responses may be reviewed. Do not share personal
+            information.
+          </span>
+        </SiteSquircle>
+      </span>
     </div>
   );
 }

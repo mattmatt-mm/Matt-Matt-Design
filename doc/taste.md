@@ -145,14 +145,58 @@ not decorative borders and should remain where required.
   and the rim thins unevenly around the corner.
 - Active navigation uses fill, foreground color, and this recess — never a
   heavier border.
-- Keep a pointer-transparent gradient mask fixed behind the bottom navigation
-  and above page content. It uses the same theme-aware fade colors as the AI
-  overlay but a shorter `min(240px, 35dvh)` footprint so content stays legible
-  without washing out the page. Hide it while AI is open; the taller AI mask
-  takes over in the same frame.
+- The masks behind the dock and the open AI are arcs, not flat bands (Matt,
+  2026-10-18, after Dia's footer): a dome of `--color-bg` rising from the
+  bottom edge, highest at the centre. It is one continuous fade with no flat
+  core and no hard edge — solid only at the very bottom centre, thinning on a
+  smoothstep (`--arc-fade`) all the way out to clear at the curve. Rejected
+  along the way: a hard edge with a drop shadow, and a feathered edge around
+  a flat 80% core, which read as unnatural.
+  - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
+  - AI: ellipse 80% wide by 100% of a `min(480px, 60dvh)` strip — tall enough
+    that the row above the composer sits in the denser part and stays legible.
+  Hide the dock's while AI is open; the AI's takes over in the same frame.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
+
+- The guided tour asks its pick question as a checklist, not chips — chips
+  were one button too many (Matt, 2026-10-18). One squircle panel on the email
+  form's surface (`--color-ai-form`), a 44px row per skill with the label left
+  and a 20px Phosphor Square / CheckSquare (fill) right, the form's hairline
+  between rows. Real checkboxes, hidden, with the focus ring drawn inside the
+  row so the panel's clip cannot cut it.
+- Its buttons are squircles under the response, 40px tall with the 8px
+  companion gap, and flat — no shadow:
+  - Primary (Accept, Walk me through, Continue, Start walkthrough): the AI
+    response surface.
+  - Secondary (Decline, No thanks, Ask a question): the Notes copy button's
+    fill, an 8% tint of the text colour mixed over the surface; 14% on hover.
+  Not capsules — capsules stay with the dock. See `doc/hr-mode-plan.md`.
+- The AI composer (Ask me anything, Follow up) wears the dock's stack: the 1px
+  `--shadow-navigation` rim on the surface and `--filter-navigation` on a
+  wrapper around it, since the squircle's clip path would cut a drop shadow off
+  the surface itself (Matt, 2026-10-18). The row above it lines up with the
+  field: "I'm hiring" starts at the text's 16px inset, the info icon centres on
+  the send icon.
+- Above the first-question composer: **I'm hiring** (Phosphor Briefcase,
+  muted, fg on hover) on the left, and a 16px Phosphor Info button on the right
+  whose tooltip carries the review notice. Do not print that notice as a line of
+  text. Do not auto-focus a control when an AI surface appears unprompted — the
+  focus ring reads as a stray frame. Matt asked for both on 2026-10-18.
+- Start walkthrough opens with a splash: the pressed button swells a little,
+  blurs and fades while the page background fades up over everything and the
+  selected titles rise in on the page column, then the sheet
+  wipes upward behind a soft feather while the eyebrow and first title glide
+  onto the page's own. ~2.4s, skippable by tap or Escape, themed, off under
+  reduced motion. Spec in `doc/hr-mode-plan.md`.
+- After a walkthrough opens, the cloud speaks through the answer surface
+  itself (`AiAnswer`: black squircle, 16px padding, sunset beam), 345px wide and
+  centred like any answer, 8px above the dock — never a smaller one-off bubble. "Please enjoy.", then "You can change what's shown by pressing
+  me.", then nothing. Asked for from inside the AI, the tour steps aside back
+  to the conversation (No thanks / Ask a question) instead of closing it.
+- On a walkthrough (`/tour/*`) the dock contracts exactly as on a detail page,
+  but the circle holds a 20px Phosphor X that leaves the walkthrough for Home.
 
 ## 6. Icons and character
 
@@ -189,8 +233,12 @@ not decorative borders and should remain where required.
 - Do not invent off-scale sizes or weights to create hierarchy.
 - Elevated controls use the theme surface on its warm background without a
   solid border.
-- AI response and contact surfaces stay neutral black in both themes; do not
-  add an AI accent color or invert those approved surfaces in dark mode.
+- AI response and contact surfaces are the inverse of the page: black with
+  white text in light mode, warm off-white `#F3F1EC` with near-black text in
+  dark mode (the form a step darker, `#E4E1DA`). Black on a near-black page had
+  no edge, so Matt reversed the old black-in-both rule on 2026-10-18. The
+  sunset beam switches to its light variant on the off-white surface. Do not
+  add an AI accent color.
 - Secondary copy and placeholders use the existing muted grays.
 - Interface copy is compact, plain, sentence case, and specific.
 - The AI speaks about Matt in the third person.
@@ -258,9 +306,16 @@ not decorative borders and should remain where required.
   volume on a silent recording. It plays muted while on screen and stops when
   it leaves; a reader's pause is final. See
   `doc/case-study-video-player-plan.md`.
-
-## 10. AI response completion
-
+- Case-study prose speaks human: what an interaction feels like and why,
+  never "24px height, 4px between controls". The numbers live in a Notes
+  card (Apple Notes style, yellow band, ruled paper, Copy prompt) written as
+  a prompt to rebuild it. Matt asked for this on 2026-10-18; see
+  `doc/case-study-voice.md`.
+- Screen recordings are filed like a folder: a two-to-four-word caption on a
+  line-grey tab at the top-left, an inside curve joining it to the recording,
+  and the recording at full width. Matt drew this on 2026-10-18 after a
+  padded backdrop frame made the video too small: never pad a recording
+  inside a frame.
 - Thinking and the intro's LinkedIn, Github, and email links share the same
   sunset shimmer palette. State-specific pause timing may differ.
 - Let a response surface grow with its full text. Do not crop it, cap its visual
@@ -322,9 +377,16 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   floating label on the elevated squircle surface: "View project" for a case
   study, "View website" for a link off the site, "Zoom" over a case-study
   image and "Close" over the zoomed view. Never on touch, never on ordinary
-  links.
+  links. The dot is 12px, inverts whatever is beneath it (a white dot under a
+  difference blend, so it reads on dark images and in dark mode) and shrinks
+  to 75% while the button is held, on the 120ms press-shrink clock. The label
+  is centred on the dot and does not invert (Matt, 2026-10-18).
 - Image zoom moves the image itself from the page to the window centre and
   back; it never cross-fades a second copy in.
+- A home gallery card opens its case study by morphing its picture into
+  the case study's thumbnail, on the image zoom's clock, while the page
+  cross-fades. Matt asked for this on 2026-10-18. See
+  `doc/thumbnail-morph-plan.md`.
 - Explainers are drawn in the site's own type, tokens and hairlines, not
   pasted in as illustrated images. Matt rejected an orange flow-diagram image
   because it did not fit the portfolio's identity. The Stats block is the first

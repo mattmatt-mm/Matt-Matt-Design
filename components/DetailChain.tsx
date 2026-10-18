@@ -16,10 +16,16 @@ import { useEffect, useRef } from "react";
  */
 export function DetailChain({
   basePath,
+  followUrl = true,
+  source = "site",
   children,
 }: {
   /** Where entries live: `/work` or `/writing`. */
   basePath: string;
+  /** A guided walkthrough keeps its own URL rather than taking each entry's. */
+  followUrl?: boolean;
+  /** Reported with each entry reached, so tracking can tell a tour apart. */
+  source?: "site" | "tour";
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -30,6 +36,19 @@ export function DetailChain({
     const articles = [
       ...root.querySelectorAll<HTMLElement>("[data-chain-entry]"),
     ];
+    let reached = "";
+    // Tracking listens for this (lib/analytics.ts); nothing here knows about it.
+    const announce = (article: HTMLElement) => {
+      const slug = article.dataset.chainEntry ?? "";
+      if (!slug || slug === reached) return;
+      reached = slug;
+      window.dispatchEvent(
+        new CustomEvent("mmd:chain-entry", {
+          detail: { basePath, slug, source },
+        }),
+      );
+    };
+    if (articles[0]) announce(articles[0]);
     if (articles.length < 2) return;
     const gates = articles.map((article) => {
       const gate = article.querySelector<HTMLElement>("[data-chain-gate]");
@@ -70,8 +89,11 @@ export function DetailChain({
       const path = `${basePath}/${active.dataset.chainEntry}`;
       if (path === current) return;
       current = path;
+      announce(active);
       // Replace, not push: Back still leaves the tour for the list.
-      window.history.replaceState(window.history.state, "", path);
+      if (followUrl) {
+        window.history.replaceState(window.history.state, "", path);
+      }
       if (active.dataset.title) document.title = active.dataset.title;
     };
 
@@ -83,7 +105,7 @@ export function DetailChain({
       window.removeEventListener("resize", update);
       delete root.dataset.chain;
     };
-  }, [basePath]);
+  }, [basePath, followUrl, source]);
 
   return <div ref={ref}>{children}</div>;
 }

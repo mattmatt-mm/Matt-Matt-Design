@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChainGate } from "@/components/ChainGate";
+import { CaseStudyChain } from "@/components/CaseStudyChain";
 import { Column } from "@/components/Column";
-import { DetailChain } from "@/components/DetailChain";
 import { Header } from "@/components/Header";
-import { Prose } from "@/components/Prose";
 import { SectionRail } from "@/components/SectionRail";
-import { Stat, Stats } from "@/components/Stats";
 import {
   getCaseStudyTour,
   getExperienceEntry,
@@ -59,45 +56,7 @@ export default async function WorkPage({ params }: Props) {
       {/* The rest of the case studies follow in list order, so reaching the
           end keeps scrolling into the next one while the URL follows along.
           See doc/case-study-continuous-scroll-plan.md. */}
-      <DetailChain basePath="/work">
-        {tour.map((study, i) => (
-          <article
-            key={study.slug}
-            data-chain-entry={study.slug}
-            data-title={`${study.title} — ${siteName}`}
-            className={i === 0 ? "mt-15" : "mt-32"}
-          >
-            {i === 0 ? (
-              <h1 className="text-title">{study.title}</h1>
-            ) : (
-              <ChainGate title={study.title} />
-            )}
-
-            {/* `label` groups rows in the list only — it is not shown here.
-                `cover` is the social-preview image; the body already opens
-                with it, so rendering it again would duplicate the lead. */}
-            <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
-              {/* When the project ran and who did what, as figures under
-                  its name. */}
-              {study.start || study.end || study.role || study.team ? (
-                <div className="mb-12">
-                  <Stats>
-                    {study.start || study.end ? (
-                      <Stat
-                        value={[study.start, study.end].filter(Boolean).join(" – ")}
-                        label="Timeline"
-                      />
-                    ) : null}
-                    {study.role ? <Stat value={study.role} label="Role" /> : null}
-                    {study.team ? <Stat value={study.team} label="Team" /> : null}
-                  </Stats>
-                </div>
-              ) : null}
-              <Prose node={study.body} idPrefix={study.slug} />
-            </div>
-          </article>
-        ))}
-      </DetailChain>
+      <CaseStudyChain studies={tour} />
 
       <p className="mt-15">
         <Link href="/profile" className="text-muted hover:text-fg no-underline">

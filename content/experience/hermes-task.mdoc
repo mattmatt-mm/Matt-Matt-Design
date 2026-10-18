@@ -7,18 +7,23 @@ role: Design Engineer
 team: Solo
 hasPage: true
 externalUrl: ''
+disciplines:
+  - uiux
+  - frontend
 summary: "How do you keep track of everyone you met and everything you promised them? Hermes Task is a shared task list and contact tracker for the Incipe team that you run by talking to an AI assistant in Telegram. Underneath is a small sync engine modelled on Linear's, so every screen opens without waiting for the database. I designed and built it on my own in eleven days."
 cover: '/images/experience/hermes-task/cover.webp'
 ---
 [Open Hermes Task](https://task.mattmattdesign.com)
 
-{% video src="/videos/experience/hermes-task/demo.mp4" poster="/videos/experience/hermes-task/demo-poster.webp" title="A tour of Hermes Task: a person's page with their linked tasks, the agent settings, the contact list and sign-in" /%}
+![On a cobalt ground, the Hermes Task wordmark beside a speech bubble reading "I met Manus at Leap East. I need to send a proposal tomorrow." Below, the app shows Manus's page with his one task, Send proposal to Manus, ticked off as done.](/images/experience/hermes-task/image.webp)
 
 #### Overview
 
 ## How do you remember everyone you met, and what you promised each of them?
 
 The Incipe team is four people, and between us we meet investors, partner institutions and distributors every week. Hermes Task tracks those people and the tasks we owe them. Nobody has to open it to keep it current: you tell Hermes, an open-source AI agent, in Telegram, and it updates the app. I designed and built it on my own in eleven days.
+
+{% video src="/videos/experience/hermes-task/demo.mp4" caption="A tour of the app" poster="/videos/experience/hermes-task/demo-poster.webp" title="A tour of Hermes Task: a person's page with their linked tasks, the agent settings, the contact list and sign-in" /%}
 
 #### Problem
 
@@ -48,7 +53,7 @@ When you get home from a meeting, you could open an app, find the person and fil
 
 Hermes reads "I met Williams today, I'll meet him next Monday, help me prepare a proposal". From that one sentence it writes a meeting note on David Williams, creates two tasks with due dates and sets when to get back to him. The app on screen changes while you watch.
 
-{% video src="/videos/experience/hermes-task/book-meeting.mp4" poster="/videos/experience/hermes-task/book-meeting-poster.webp" title="Telling Hermes in Telegram about a meeting with David Williams; his page in the app gains a note, two tasks and a next follow-up date" /%}
+{% video src="/videos/experience/hermes-task/book-meeting.mp4" caption="Logging a meeting" poster="/videos/experience/hermes-task/book-meeting-poster.webp" title="Telling Hermes in Telegram about a meeting with David Williams; his page in the app gains a note, two tasks and a next follow-up date" /%}
 
 #### Agent
 
@@ -66,7 +71,7 @@ Every time the agent reads or writes, it spends tokens and time. So I judged eve
 
 When a name matches two people, Hermes asks which one you mean instead of guessing. A mistake is fixed the same way it was made: change it in the app, or tell Hermes to put it back. The app has no chat panel of its own. Telegram is the only place to talk to Hermes, so every change, from a person or an agent, goes through one write path and lands in one timeline.
 
-{% video src="/videos/experience/hermes-task/report-task.mp4" poster="/videos/experience/hermes-task/report-task-poster.webp" title="Telling Hermes the proposal for David Williams is done and asking what is still unfinished; the task leaves the list" /%}
+{% video src="/videos/experience/hermes-task/report-task.mp4" caption="Closing a task" poster="/videos/experience/hermes-task/report-task-poster.webp" title="Telling Hermes the proposal for David Williams is done and asking what is still unfinished; the task leaves the list" /%}
 
 #### Reminders
 
@@ -100,9 +105,18 @@ The first version was as slow as ClickUp. One hour of one person browsing made 1
 
 ## The page can slide because it never waits.
 
-Switching pages is a 250ms slide: 8px of travel, a fade and a 3px blur, forward or back according to where you are going. The old page stays mounted while it leaves, so the two cross rather than cut. The slide only works because the new page needs no fetch. Otherwise it would be 250ms of empty box.
+Pages slide in the direction you are going, so you always know whether you went forward or back. The old page stays put while it leaves, so the two pass each other instead of one cutting to the other. The slide only works because the new page has nothing to wait for. Otherwise it would be a moment of empty box sliding in.
 
-{% video src="/videos/experience/hermes-task/transition.mp4" poster="/videos/experience/hermes-task/transition-poster.webp" title="Moving between Connections, a person, My settings and Tasks while Hermes updates the app in Telegram beside it" /%}
+{% video src="/videos/experience/hermes-task/transition.mp4" caption="Changing pages" poster="/videos/experience/hermes-task/transition-poster.webp" title="Moving between Connections, a person, My settings and Tasks while Hermes updates the app in Telegram beside it" /%}
+
+{% notes title="Page transition recipe" %}
+Animate route changes as a short directional slide:
+
+- 250ms: 8px of travel, a fade and a 3px blur.
+- Slide forward or back according to where the user is going.
+- Keep the old page mounted while it leaves, so the two pages cross rather than cut.
+- Only do this when the next page renders from local data with no fetch; otherwise the slide is 250ms of empty box.
+{% /notes %}
 
 #### Trade-off
 

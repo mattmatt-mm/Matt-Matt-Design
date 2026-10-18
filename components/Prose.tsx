@@ -2,9 +2,12 @@ import * as React from "react";
 import Markdoc, { type Config, type Node } from "@markdoc/markdoc";
 import { Demo } from "./Demo";
 import { Flow, Flows } from "./Flows";
+import { IsdDotHero } from "./isd/IsdDotHero";
 import { LottieSequence } from "./LottieSequence";
+import { Notes } from "./Notes";
 import { POINT_FIGURES } from "./PointFigure";
 import { Point, Points } from "./Points";
+import { Recording } from "./Recording";
 import { Stat, Stats } from "./Stats";
 import { VideoPlayer } from "./VideoPlayer";
 
@@ -102,6 +105,17 @@ const config = {
       selfClosing: true,
       attributes: { src: { type: String, required: true } },
     },
+    // The HKUST AIS opening: the ISD dot story on a canvas
+    // (components/isd/, doc/isd-dot-hero-plan.md).
+    "isd-hero": {
+      render: "IsdDotHero",
+      selfClosing: true,
+    },
+    // The exact recipe behind an interaction, as a copyable prompt.
+    notes: {
+      render: "Notes",
+      attributes: { title: { type: String } },
+    },
     points: {
       render: "Points",
     },
@@ -140,6 +154,8 @@ const config = {
         label: { type: String },
       },
     },
+    // A recording with a caption is filed under a caption tab (Recording);
+    // without one it is the bare player.
     video: {
       render: "VideoPlayer",
       selfClosing: true,
@@ -147,6 +163,15 @@ const config = {
         src: { type: String, required: true },
         poster: { type: String },
         title: { type: String },
+        caption: { type: String },
+      },
+      transform(node: Node, cfg: Config) {
+        const attributes = node.transformAttributes(cfg);
+        return new Markdoc.Tag(
+          attributes.caption ? "Recording" : "VideoPlayer",
+          attributes,
+          [],
+        );
       },
     },
     demo: {
@@ -205,9 +230,12 @@ export function Prose({
           Demo,
           Flow,
           Flows,
+          IsdDotHero,
           LottieSequence,
+          Notes,
           Point,
           Points,
+          Recording,
           Stat,
           Stats,
           VideoPlayer,
