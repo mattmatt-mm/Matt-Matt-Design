@@ -1,5 +1,6 @@
 import { config, fields, collection, singleton } from "@keystatic/core";
-import { block, repeating } from "@keystatic/core/content-components";
+import { block, repeating, wrapper } from "@keystatic/core/content-components";
+import { DISCIPLINES } from "./lib/disciplines";
 
 /**
  * A row of figures for a case study or post. `stats` holds two to four `stat`
@@ -42,6 +43,20 @@ const lottieComponents = {
  * components/Points.tsx and components/Flows.tsx render them.
  */
 const explainerComponents = {
+  "isd-hero": block({
+    label: "ISD dot hero",
+    description:
+      "The animated ISD dot story (one dot to the ISD logo). Built for the HKUST AIS case study; place it above the first section to open the page with it.",
+    schema: {},
+  }),
+  notes: wrapper({
+    label: "Notes",
+    description:
+      "The exact numbers behind an interaction, as an Apple Notes card with a Copy prompt button. Write it as an instruction someone could paste into their AI.",
+    schema: {
+      title: fields.text({ label: "Title", description: "e.g. Panel recipe" }),
+    },
+  }),
   points: repeating({
     label: "Points",
     description:
@@ -303,6 +318,12 @@ export default config({
           description:
             "If set, the row links here instead of to a page on this site.",
         }),
+        disciplines: fields.multiselect({
+          label: "Disciplines",
+          description:
+            "Which guided-tour chips this case study appears under. Never shown on the page.",
+          options: DISCIPLINES.map((d) => ({ label: d.label, value: d.value })),
+        }),
         summary: fields.text({ label: "Summary", multiline: true }),
         cover: fields.image({
           label: "Cover image",
@@ -337,6 +358,11 @@ export default config({
                 title: fields.text({
                   label: "Description",
                   description: "What the recording shows, for screen readers.",
+                }),
+                caption: fields.text({
+                  label: "Caption",
+                  description:
+                    "A few words shown above the recording, e.g. \"Live board preview\". With a caption the recording is filed under a caption tab; without one it is the bare player.",
                 }),
               },
             }),

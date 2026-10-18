@@ -1,2 +1,4 @@
 allowBuilds:
+  # posthog-js pulls it in; its postinstall only prints a donation notice.
+  core-js: false
   sharp: true

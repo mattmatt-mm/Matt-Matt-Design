@@ -4,11 +4,13 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { House } from "@phosphor-icons/react/dist/ssr/House";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
+import { X } from "@phosphor-icons/react/dist/ssr/X";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react";
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
+import { track } from "@/lib/analytics";
 
 // Home (the Gallery) on the left, Writing in the middle, Profile (the
 // Experience list) on the right.
@@ -40,10 +42,20 @@ export function AiDock({
 
   // On a detail page the bar contracts, Dynamic Island style, into one circle
   // holding the way back to the list the page belongs to.
-  const detail = /^\/(work|writing)\/[^/]+/.test(pathname);
-  const backHref = pathname.startsWith("/writing/") ? "/writing" : "/profile";
-  const backLabel =
-    backHref === "/profile" ? "Back to Profile" : "Back to Writing";
+  // A guided walkthrough (doc/hr-mode-plan.md) wears the same contracted bar,
+  // but its circle is the way out of the walkthrough rather than a step back.
+  const walkthrough = pathname.startsWith("/tour/");
+  const detail = walkthrough || /^\/(work|writing)\/[^/]+/.test(pathname);
+  const backHref = walkthrough
+    ? "/"
+    : pathname.startsWith("/writing/")
+      ? "/writing"
+      : "/profile";
+  const backLabel = walkthrough
+    ? "Exit walkthrough"
+    : backHref === "/profile"
+      ? "Back to Profile"
+      : "Back to Writing";
   const tabsHidden = aiOpen || detail;
 
   // The arrow means "back to where I was": a gallery item returns to the
@@ -180,7 +192,9 @@ export function AiDock({
               className="site-dock-back press-shrink"
               onClick={(event) => {
                 tap(backHref);
-                if (canStepBack) {
+                if (walkthrough) {
+                  track("tour_exited", { focus: pathname.slice(6) });
+                } else if (canStepBack) {
                   event.preventDefault();
                   router.back();
                 }
@@ -195,9 +209,15 @@ export function AiDock({
                 }
                 aria-hidden="true"
               >
-                <ArrowLeft size={20} weight="regular" />
+                {walkthrough ? (
+                  <X size={20} weight="regular" />
+                ) : (
+                  <ArrowLeft size={20} weight="regular" />
+                )}
               </span>
-              <span className="sr-only">{canStepBack ? "Back" : backLabel}</span>
+              <span className="sr-only">
+                {canStepBack && !walkthrough ? "Back" : backLabel}
+              </span>
             </Link>
           </nav>
         </div>

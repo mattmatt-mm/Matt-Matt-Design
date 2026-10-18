@@ -36,12 +36,16 @@ export function VideoPlayer({
   title,
   width,
   height,
+  flush = false,
 }: {
   src: string;
   poster?: string;
   title?: string;
   width?: number;
   height?: number;
+  /** Square corners, for a player whose shape comes from a frame around it
+   *  (components/Recording.tsx). */
+  flush?: boolean;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -180,7 +184,11 @@ export function VideoPlayer({
       onPointerDown={wake}
       onFocus={wake}
     >
-      <SiteSquircle className="video-player-frame">
+      <SiteSquircle
+        className="video-player-frame"
+        cornerRadius={flush ? 0 : undefined}
+        data-flush={flush || undefined}
+      >
         <video
           ref={videoRef}
           className="video-player-media"

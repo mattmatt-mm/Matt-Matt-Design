@@ -7,6 +7,9 @@ end: Aug 2026
 role: Design Engineer
 hasPage: true
 externalUrl: ''
+disciplines:
+  - uiux
+  - frontend
 summary: "How do you get a beginner from an idea to working hardware? Getting one sensor working takes six steps of setup; Incipe Board cuts it to two. Incipe Workspace is the desktop app around it: describe what your hardware should do, and an AI agent plans the board, writes the firmware and shows every live connection in 3D. I designed and built the app, and wrote down every rule that kept it from feeling machine-made."
 cover: '/images/experience/incipe-workspace/cover.webp'
 ---
@@ -52,7 +55,7 @@ Snap the sensor into Incipe Board, then read it with one line of code using the 
 
 Someone opening Incipe for the first time has just unboxed a new board. So the first run treats it as an occasion rather than a settings form: "Build it." on a black screen, the Incipe mark resolving out of a blur, then the mascot saying hello. Only then does it ask you to plug in your board and pick a project, and it hands you straight into the workspace.
 
-{% video src="/videos/experience/incipe-workspace/onboarding.mp4" poster="/videos/experience/incipe-workspace/onboarding-poster.webp" title="First run of Incipe Workspace: Build it, the Incipe mark, the mascot saying hello, plugging in the board, choosing a project and arriving in the workspace" /%}
+{% video src="/videos/experience/incipe-workspace/onboarding.mp4" caption="First run" poster="/videos/experience/incipe-workspace/onboarding-poster.webp" title="First run of Incipe Workspace: Build it, the Incipe mark, the mascot saying hello, plugging in the board, choosing a project and arriving in the workspace" /%}
 
 #### Live preview
 
@@ -60,7 +63,7 @@ Someone opening Incipe for the first time has just unboxed a new board. So the f
 
 With hardware, the first doubt is always whether anything is connected at all. Visibility of system status is one of the oldest rules in interface design, and here it is the whole point. The board preview is a live 3D model of the real board: plug in a sensor and it appears in the slot it is actually in, labelled with its port, while the connection panel beside it shows the USB port that was found. Nobody has to guess, and nobody has to read a log.
 
-{% video src="/videos/experience/incipe-workspace/live-board-preview.mp4" poster="/videos/experience/incipe-workspace/live-board-preview-poster.webp" title="The live board preview: the 3D board turns into view, an IMU module sits in slot L2 and lights up, and the connection panel lists the board's USB port" /%}
+{% video src="/videos/experience/incipe-workspace/live-board-preview.mp4" caption="Live board preview" poster="/videos/experience/incipe-workspace/live-board-preview-poster.webp" title="The live board preview: the 3D board turns into view, an IMU module sits in slot L2 and lights up, and the connection panel lists the board's USB port" /%}
 
 #### Craft
 
@@ -72,53 +75,102 @@ So I kept a running log. Every time I caught a default, it became a written rule
 
 - One thing gets one surface. A field that is already a card does not get another card around it.
 - Text that runs out of room fades out. It never ends in three dots.
-- Status is never a hard 100% outline. Tinted edges sit at 35% colour.
+- Status glows softly at the edge. It is never boxed in by a hard outline.
 - No accent stripe down the edge of a box. It is decoration pretending to be information.
-- A row of controls is one object: one 24px height, 4px between controls in a group, 8px between groups.
+- A row of controls reads as one object: everything the same height, and the gaps tell you which buttons belong together.
+
+{% notes title="Interface rules" %}
+Apply these rules to every screen of the app:
+
+- Never put a card inside a card. A field that is already a surface gets no second surface around it.
+- Truncate overflowing text with a fade mask, never an ellipsis.
+- Show status as an edge tinted at 35% of the status colour, never a solid 100% outline.
+- Never add a coloured accent stripe to the edge of a box.
+- Control rows: every control 24px tall, 4px between controls in a group, 8px between groups.
+- Write a test for each rule that fails the build when it is broken.
+{% /notes %}
 
 #### Panels
 
 ## Panels follow your hand, not a timer.
 
-The side panels open and close by dragging their edge, and the panel goes wherever the pointer goes. Drag past the edge of the window and back without letting go, and the panel is still there. Nothing is decided until you release.
+The side panels open and close by dragging their edge, and the panel goes wherever the pointer goes. Drag past the edge of the window and back without letting go, and the panel is still there. Nothing is decided until you let go.
 
 {% points %}
 {% point title="Opens at once" text="I cut the entrance short. In a tool people use all day, a panel should be there the moment you ask for it." /%}
 
-{% point title="Warns before it closes" text="Pull 200px past the minimum width and the panel leans 20px toward its exit and fades to half. Pull back and it returns." /%}
+{% point title="Warns before it closes" text="Pull a panel too far and it starts to lean away and fade, as if it is about to leave. Ease off and it settles back." /%}
 
 {% point title="Comes back from the edge" text="Hover the sidebar button to peek at your projects without docking the panel. Hover the left edge of the window and a tip shows a click brings it back." /%}
 {% /points %}
 
-From a closed edge, a 4px pull opens the panel right under your pointer, and a click docks it at the width you last left it. There is no seam line. The grip is a 3px pill that grows from 24px to 40px while you drag.
+A closed panel is never far away. The smallest tug on its edge brings it out right under your hand, and a click puts it back at the width you left it. There is no seam line to hunt for, only a small grip that grows while you hold it.
 
-{% video src="/videos/experience/incipe-workspace/sidebar.mp4" poster="/videos/experience/incipe-workspace/sidebar-poster.webp" title="Dragging the board panel closed and open, pulling past the window edge and back without it closing, and hovering the sidebar button to bring the projects panel back" /%}
+{% video src="/videos/experience/incipe-workspace/sidebar.mp4" caption="Dragging the panels" poster="/videos/experience/incipe-workspace/sidebar-poster.webp" title="Dragging the board panel closed and open, pulling past the window edge and back without it closing, and hovering the sidebar button to bring the projects panel back" /%}
+
+{% notes title="Panel recipe" %}
+Build resizable side panels that open and close by dragging their edge:
+
+- Capture the pointer for the whole drag, so leaving the window and coming back keeps the drag alive. Decide only on release.
+- Arm the collapse once the pointer is 200px past the panel's minimum width: lean the panel 20px toward its exit and fade it to 50% opacity. Release to close; drag back to cancel.
+- From a closed edge, a 4px pull opens the panel under the pointer. A click docks it at the width it was last left at.
+- Keep the entrance near-instant.
+- No seam line. The grip is a 3px pill, 24px tall at rest, growing to 40px while dragging.
+- Hovering the sidebar button peeks the panel without docking it. Hovering the window's left edge shows a tip that a click reopens it.
+{% /notes %}
 
 #### Press
 
 ## Everything you can press, presses the same way.
 
-Every pressable thing in the app shares one press: it dips to 98% over 0.2s and dims slightly. The press is a dip, not a drop, and nothing lifts on hover.
+Press anything in the app and it gives a little under your finger, like a real key, and dims as if you are holding it down. It is a dip, not a drop, and nothing floats up just because you hovered over it.
 
-List rows return on the only easing curve in the app that overshoots, so letting go feels like a small spring. Menus open on press and select on release. Coming in is instant; going out is a 90ms fade.
+Letting go of a list row has a tiny bounce to it, the only spring in the whole app, so a release feels like letting go of something. Menus work like the ones on a Mac: press to open, slide to your choice, release to pick. They arrive the moment you ask and leave with a quick fade.
+
+{% notes title="Press recipe" %}
+Give every pressable element one shared press state:
+
+- On press: scale to 98% over 0.2s and dim slightly. No lift or shadow on hover.
+- List rows return on an overshooting spring curve, the only overshooting curve in the app.
+- Menus open on pointer down and select on pointer up.
+- Menus enter instantly and exit with a 90ms opacity fade.
+{% /notes %}
 
 #### Sensor snap
 
 ## A plugged-in sensor arrives on screen with a click.
 
-When a module is plugged into the real board, the 3D board shows it arriving. It falls in for 440ms, accelerating, and lands exactly where the seated model sits. On contact it dips and springs back like a click, 28 copper particles burst outward over 0.55s, and the module's light comes up.
+Plug a module into the real board and you watch it happen on screen. The module drops into its slot on the 3D board, gathering speed as if it were falling into place, and lands exactly where it sits in your hand. It dips and springs back like a click, a puff of copper sparks bursts out, and its light comes on.
 
-The sound is synthesised live rather than played from a file: a short noise click, a low body sliding from 210Hz to 150Hz, and a soft tick. All of it is kept below the harsh 2–4kHz band, so it feels tactile rather than shrill.
+You hear it too. The click is made fresh every time rather than played from a recording, and it stays low and soft, closer to a knock on wood than a beep, so it feels like touching something rather than being alerted.
+
+{% notes title="Sensor snap recipe" %}
+Animate a module seating into a 3D board (React Three Fiber):
+
+- Drop the module for 440ms on an accelerating ease-in, landing exactly on the seated model's position.
+- On contact, dip and spring back, burst 28 copper particles outward over 0.55s, and turn the module's light on.
+- Synthesise the sound live with Web Audio: a short noise click, a low body sliding from 210Hz to 150Hz, then a soft tick.
+- Keep every part of the sound below the harsh 2–4kHz band.
+{% /notes %}
 
 #### Board connect
 
 ## The board lands in the header as a wave of dots.
 
-When the board itself connects, its 3D model spins into view, then flies onto the Board button in the header in 460ms. As it lands, a ring of dots sweeps across the button over 760ms. This replaced a copper outline flash, which was exactly the kind of hard outline the slop log rules out.
+When the board connects, its 3D model spins into view and then flies up into the Board button in the header, so you see exactly where it went and where to find it again. As it lands, a ripple of dots spreads across the button.
 
-The wave is a mask, not a scale. The dot grid stays still and a growing ring reveals it, so the dots appear in place instead of zooming toward you. The mascot plays the same wave.
+That ripple replaced a copper outline flash, exactly the kind of hard outline the rule log bans. The dots do not zoom towards you. They were there all along, uncovered by a widening ring. The mascot plays the same ripple, so the two feel related.
 
-{% video src="/videos/experience/incipe-workspace/board-connected.mp4" poster="/videos/experience/incipe-workspace/board-connected-poster.webp" title="Plugging in the board: its 3D model spins in over the dimmed workspace with a Board connected note, then a sensor arrives and lights up" /%}
+{% video src="/videos/experience/incipe-workspace/board-connected.mp4" caption="Plugging in the board" poster="/videos/experience/incipe-workspace/board-connected-poster.webp" title="Plugging in the board: its 3D model spins in over the dimmed workspace with a Board connected note, then a sensor arrives and lights up" /%}
+
+{% notes title="Board connect recipe" %}
+When the board connects:
+
+- Spin its 3D model into view, then fly it onto the header's Board button in 460ms.
+- On landing, sweep a ring of dots across the button over 760ms.
+- Build the wave as a mask: keep the dot grid still and reveal it with a growing ring. Never scale the dots.
+- Play the same wave on the mascot.
+{% /notes %}
 
 #### Agent
 
@@ -128,28 +180,44 @@ Learning to code alone is lonely, and a long reply is easy to skim past. So the 
 
 When you ask how to do something in the app, the agent does not stop at describing it. It highlights the buttons in the app itself, one coach mark at a time, so the companion works like a pet showing you around the interface.
 
-{% video src="/videos/experience/incipe-workspace/agent.mp4" poster="/videos/experience/incipe-workspace/agent-poster.webp" title="Chatting with the Incipe agent: it highlights the Flash button with a step-by-step coach mark, then in Plan Mode asks a question before writing a plan for a flowering-plant project" /%}
+{% video src="/videos/experience/incipe-workspace/agent.mp4" caption="The agent as a guide" poster="/videos/experience/incipe-workspace/agent-poster.webp" title="Chatting with the Incipe agent: it highlights the Flash button with a step-by-step coach mark, then in Plan Mode asks a question before writing a plan for a flowering-plant project" /%}
 
 #### Corners
 
 ## Every corner is a continuous curve.
 
-The whole app is set to a superellipse matched to Figma's 60% corner smoothing, wherever the rendering engine supports it, and falls back to ordinary round corners where it does not. There is one radius, 6px, for everything.
+Every corner in the app has the soft, continuous curve of an iPhone icon, rather than a circle stuck onto a straight edge. Where the screen cannot draw it, it quietly falls back to an ordinary rounded corner. And every corner is the same size, so nothing looks borrowed from another app.
 
-Where the curve matters most, I drew it by hand. The blinking caret in onboarding is a true squircle, and the shader that takes over from it draws the identical curve, so the handover is seamless. The mascot's body is a superellipse too, morphing from squarer to rounder as it shrinks into the composer.
+Where the curve matters most, I drew it by hand. The blinking cursor in onboarding is a true squircle, and the shader that takes over from it draws the very same curve, so you never see the swap. The mascot's body is one too, softening from squarer to rounder as it shrinks into the message box.
+
+{% notes title="Corner recipe" %}
+- Use a superellipse matched to Figma's 60% corner smoothing wherever the renderer supports it, and fall back to border-radius where it does not.
+- Use one radius for everything: 6px.
+- Draw the onboarding caret as a true squircle, and have the shader that replaces it draw the identical curve.
+- Morph the mascot's superellipse from squarer to rounder as it shrinks into the composer.
+{% /notes %}
 
 #### Motion
 
 ## Blur, fade and morph keep it one moving thing.
 
-A few motion rules held the app together:
+A few motion rules kept the app feeling like one continuous thing:
 
-- **Blur sells continuity.** A plain opacity fade reads as a pop. When the mascot changes seats, it cross-fades with a 3px blur and a 95% scale over 0.28s, so it reads as one thing moving rather than two things swapping.
-- **State words swap in 150ms.** "Thinking" rises, blurs 2px and fades out while "Done" rises from below, out of the blur.
-- **Shapes morph instead of cutting.** The mascot's outline interpolates between shapes rather than jumping.
-- **Exits carry the motion.** Entrances are instant or opacity only, because a travelling entrance is time between asking and getting.
-- **Stagger only when it tells a story.** Onboarding content arrives 40ms apart, rising 12px out of a 3px blur over 500ms. Panels never stagger.
+- **Blur sells continuity.** A plain fade looks like one thing vanishing and another popping in. Add a touch of blur and a slight shrink, and the mascot changing seats reads as the same creature moving.
+- **Words trade places.** "Thinking" drifts up and softens away as "Done" rises in beneath it, so you see the status change instead of missing it.
+- **Shapes morph instead of cutting.** The mascot's outline flows from one shape into the next rather than jumping.
+- **Exits carry the motion.** Things arrive the instant you ask for them. The movement goes on the way out, where it costs you nothing.
+- **Stagger only when it tells a story.** Onboarding unfolds a line at a time because it is a welcome. Panels never do, because you are working.
 - **Reduced motion keeps the result.** It drops the movement, never the content.
+
+{% notes title="Motion recipe" %}
+- Mascot changing seats: cross-fade with a 3px blur and a 95% scale over 0.28s.
+- Status words: swap in 150ms. The outgoing word rises, blurs 2px and fades while the incoming word rises from below, out of the same blur.
+- Mascot outline: interpolate between shapes, never cut.
+- Entrances are instant or opacity only. Put the travel on exits.
+- Onboarding: stagger items 40ms apart, each rising 12px out of a 3px blur over 500ms. Panels never stagger.
+- Reduced motion: remove the movement, keep every piece of content.
+{% /notes %}
 
 #### Built with
 

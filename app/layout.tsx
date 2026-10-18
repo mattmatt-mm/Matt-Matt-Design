@@ -8,8 +8,10 @@ import {
   siteUrl,
 } from "@/lib/site";
 import { AIExperience } from "@/components/ai/AIExperience";
+import { getTourCatalog } from "@/lib/content";
 import { SmoothScrollLens } from "@/components/effects/SmoothScrollLens";
 import { ImageZoom } from "@/components/effects/ImageZoom";
+import { ThumbnailMorph } from "@/components/effects/ThumbnailMorph";
 import { ViewCursor } from "@/components/effects/ViewCursor";
 import "./globals.css";
 
@@ -49,9 +51,10 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const tourCatalog = await getTourCatalog();
   return (
     <html lang="en">
       {/* Browser extensions (Grammarly, password managers) add attributes to
@@ -61,11 +64,12 @@ export default function RootLayout({
           bugs anywhere inside the app are still reported. */}
       <body suppressHydrationWarning>
         <SquircleNoScript />
-        <AIExperience>
+        <AIExperience tourCatalog={tourCatalog}>
           <div data-lens-content>{children}</div>
         </AIExperience>
         <SmoothScrollLens />
         <ImageZoom />
+        <ThumbnailMorph />
         <ViewCursor />
       </body>
     </html>

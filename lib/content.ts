@@ -6,6 +6,7 @@ import path from "node:path";
 import keystaticConfig from "@/keystatic.config";
 import type { Row } from "@/components/RowList";
 import type { GalleryEntry } from "@/components/GalleryList";
+import type { Discipline } from "@/lib/disciplines";
 
 const reader = createReader(process.cwd(), keystaticConfig);
 
@@ -242,19 +243,36 @@ export async function getCaseStudyTour(slug: string) {
   if (start === -1) return [];
 
   const ordered = [...pages.slice(start), ...pages.slice(0, start)];
-  return Promise.all(
-    ordered.map(async (e) => ({
-      slug: e.slug,
-      title: e.entry.title,
-      start: e.entry.start,
-      end: e.entry.end,
-      role: e.entry.role,
-      team: e.entry.team,
-      // Keystatic bundles its own copy of Markdoc — same cast as above.
-      body: (await e.entry.body()).node as unknown as MarkdocNode,
-    })),
-  );
+  return Promise.all(ordered.map(toStudy));
 }
+
+/**
+ * The case studies tagged with any of `picks`, in list order — the guided
+ * walkthrough a recruiter asked for. See doc/hr-mode-plan.md.
+ */
+export async function getDisciplineTour(picks: Discipline[]) {
+  const pages = (await listExperienceSlugs())
+    .filter((e) => e.entry.disciplines.some((d) => picks.includes(d)))
+    .sort((a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0));
+  return Promise.all(pages.map(toStudy));
+}
+
+type ExperiencePage = Awaited<ReturnType<typeof listExperienceSlugs>>[number];
+
+async function toStudy(e: ExperiencePage) {
+  return {
+    slug: e.slug,
+    title: e.entry.title,
+    start: e.entry.start,
+    end: e.entry.end,
+    role: e.entry.role,
+    team: e.entry.team,
+    // Keystatic bundles its own copy of Markdoc — same cast as above.
+    body: (await e.entry.body()).node as unknown as MarkdocNode,
+  };
+}
+
+export type CaseStudy = Awaited<ReturnType<typeof toStudy>>;
 
 export async function listExperienceSlugs() {
   const all = await reader.collections.experience.all();
@@ -288,3 +306,20 @@ export async function listWritingSlugs() {
   const all = await reader.collections.writing.all();
   return all.filter((e) => !(hideDrafts && e.entry.draft));
 }
+
+/**
+ * What the walkthrough splash needs to list a recruiter's selection before
+ * the page arrives: every case study with a page, in list order.
+ */
+export async function getTourCatalog() {
+  const pages = (await listExperienceSlugs()).sort(
+    (a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0),
+  );
+  return pages.map((e) => ({
+    slug: e.slug,
+    title: e.entry.title,
+    disciplines: [...e.entry.disciplines],
+  }));
+}
+
+export type TourCatalog = Awaited<ReturnType<typeof getTourCatalog>>;

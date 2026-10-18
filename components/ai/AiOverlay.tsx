@@ -5,14 +5,14 @@ import { ChatCircle } from "@phosphor-icons/react/dist/ssr/ChatCircle";
 import { Envelope } from "@phosphor-icons/react/dist/ssr/Envelope";
 import { BorderBeam } from "border-beam";
 import { SiteSquircle } from "@/components/SiteSquircle";
-import { AiComposer } from "@/components/ai/AiComposer";
+import { AiComposer, ComposerAside } from "@/components/ai/AiComposer";
 import {
   AiContactForm,
   type ContactStatus,
 } from "@/components/ai/AiContactForm";
 import { AiThinking } from "@/components/ai/AiThinking";
 import { MAX_AI_TURNS } from "@/lib/ai/limits";
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export type AIPhase =
   | "ask_primary"
@@ -44,7 +44,13 @@ export function AiOverlay({
   onContactEmailChange,
   onContactNoteChange,
   onContactSubmit,
+  tour,
+  onHiring,
 }: {
+  /** Opens the recruiter walkthrough from the first question's composer. */
+  onHiring?: () => void;
+  /** The guided tour, shown in place of the conversation while it runs. */
+  tour?: React.ReactNode;
   phase: AIPhase;
   question: string;
   answer: string;
@@ -107,26 +113,16 @@ export function AiOverlay({
     <div className="ai-layer" data-open="true">
       <div className="ai-gradient-mask" aria-hidden="true" />
       <div className="ai-viewport">
-        {settled ? (
+        {tour ? (
+          tour
+        ) : settled ? (
           // One surface for both sides of the handoff. The answer is mounted
           // once here and never torn down, so when the thing beneath it
           // changes size it travels to its new position rather than vanishing
           // and reappearing somewhere else.
           <div className="ai-exchange">
             <div ref={answerRef} className="ai-exchange-answer">
-              <SiteSquircle className="ai-response-squircle elevated-surface">
-                <BorderBeam
-                  size="line"
-                  colorVariant="sunset"
-                  theme="dark"
-                  borderRadius={16}
-                  className="ai-response-beam"
-                >
-                  <div className="ai-response">
-                    <p>{answer}</p>
-                  </div>
-                </BorderBeam>
-              </SiteSquircle>
+              <AiAnswer>{answer}</AiAnswer>
             </div>
 
             <div
@@ -145,27 +141,34 @@ export function AiOverlay({
                   onNoteChange={onContactNoteChange}
                   onSubmit={onContactSubmit}
                 />
-              ) : turnsLeft > 0 ? (
-                <AiComposer
-                  value={question}
-                  compact
-                  showDisclosure={false}
-                  autoFocus={false}
-                  placeholder="Follow Up?"
-                  onChange={onQuestionChange}
-                  onSubmit={onFollowUpSubmit}
-                />
               ) : (
-                // The conversation is spent. Say so where the next prompt
-                // would have been, and make the sentence the way out rather
-                // than a dead end beside one.
-                <button
-                  type="button"
-                  className="ai-turns-spent"
-                  onClick={onToggleContact}
-                >
-                  That is all {MAX_AI_TURNS} questions. Email Matt for more.
-                </button>
+                // Still there once a conversation exists: the walkthrough
+                // must stay reachable after a first answer.
+                <>
+                  <ComposerAside inline onHiring={onHiring} />
+                  {turnsLeft > 0 ? (
+                    <AiComposer
+                      value={question}
+                      compact
+                      showDisclosure={false}
+                      autoFocus={false}
+                      placeholder="Follow Up?"
+                      onChange={onQuestionChange}
+                      onSubmit={onFollowUpSubmit}
+                    />
+                  ) : (
+                    // The conversation is spent. Say so where the next prompt
+                    // would have been, and make the sentence the way out
+                    // rather than a dead end beside one.
+                    <button
+                      type="button"
+                      className="ai-turns-spent"
+                      onClick={onToggleContact}
+                    >
+                      That is all {MAX_AI_TURNS} questions. Email Matt for more.
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -188,6 +191,7 @@ export function AiOverlay({
                 <AiComposer
                   value={question}
                   error={composerError}
+                  onHiring={phase === "ask_primary" ? onHiring : undefined}
                   onChange={onQuestionChange}
                   onSubmit={onQuestionSubmit}
                 />
@@ -219,7 +223,7 @@ export function AiOverlay({
               phase replaced the answer and its follow-up outright, with no way
               back. The two are now sides of one thing, and this crosses
               between them. The icon is the side you are not on. */}
-          {canToggleContact ? (
+          {canToggleContact && !tour ? (
             <button
               type="button"
               className="ai-control"
@@ -244,4 +248,42 @@ export function AiOverlay({
       </div>
     </div>
   );
+}
+
+/**
+ * A finished answer: the black response surface with the sunset line beam.
+ * The cloud's own unprompted lines use it too, so everything the AI says
+ * looks the same.
+ */
+export function AiAnswer({ children }: { children: React.ReactNode }) {
+  // The surface inverts with the theme (off-white on a dark page), so the
+  // beam is drawn for the surface it sits on, not for the page.
+  const darkPage = useDarkScheme();
+  return (
+    <SiteSquircle className="ai-response-squircle elevated-surface">
+      <BorderBeam
+        size="line"
+        colorVariant="sunset"
+        theme={darkPage ? "light" : "dark"}
+        borderRadius={16}
+        className="ai-response-beam"
+      >
+        <div className="ai-response">
+          <p>{children}</p>
+        </div>
+      </BorderBeam>
+    </SiteSquircle>
+  );
+}
+
+function useDarkScheme() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setDark(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return dark;
 }
