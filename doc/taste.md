@@ -155,7 +155,10 @@ not decorative borders and should remain where required.
   - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
   - AI: ellipse 80% wide by 100% of a `min(480px, 60dvh)` strip — tall enough
     that the row above the composer sits in the denser part and stays legible.
-  Hide the dock's while AI is open; the AI's takes over in the same frame.
+  It is one fade, not two: opening the AI grows the dock's arc into the AI's
+  over the AI's open clock, and closing shrinks it back (Matt, 2026-10-18;
+  swapping one fade for the other snapped). It stays above the travelling
+  thumbnail during the gallery morph, as it is on the page.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
@@ -422,8 +425,8 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
 - [ ] General interface icons come from Phosphor.
 - [ ] `Send to Matt` is full width, text only, and icon-free.
 - [ ] Companion AI surfaces use the approved 8px gap.
-- [ ] The short bottom content mask sits behind the navigation and yields to the
-      taller AI mask without a gap or doubled fade.
+- [ ] The bottom content mask sits behind the navigation and grows into the
+      AI's taller arc (and back) rather than swapping.
 - [ ] Typography starts with Helvetica Neue.
 - [ ] Light and dark system themes switch the page, controls, overlay, cloud,
       browser chrome, and scroll lens together without a light-only flash.
