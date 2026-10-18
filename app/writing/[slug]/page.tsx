@@ -5,6 +5,7 @@ import { ChainGate } from "@/components/ChainGate";
 import { Column } from "@/components/Column";
 import { DetailChain } from "@/components/DetailChain";
 import { Header } from "@/components/Header";
+import { JsonLd } from "@/components/JsonLd";
 import { Prose } from "@/components/Prose";
 import { SectionRail } from "@/components/SectionRail";
 import {
@@ -13,11 +14,8 @@ import {
   getWritingTour,
   listWritingSlugs,
 } from "@/lib/content";
-import {
-  siteDescription,
-  siteName,
-  siteSocialImage,
-} from "@/lib/site";
+import { siteName, siteSocialImage } from "@/lib/site";
+import { postSchema } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -33,13 +31,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: entry.title,
+    description: entry.description || undefined,
     alternates: { canonical: `/writing/${slug}` },
     openGraph: {
       title: entry.title,
-      description: siteDescription,
+      description: entry.description || undefined,
       siteName,
       type: "article",
-      images: [siteSocialImage],
+      publishedTime: entry.publishedAt ?? undefined,
+      locale: entry.lang === "zh" ? "zh_HK" : "en_US",
+      images: entry.cover ? [entry.cover] : [siteSocialImage],
     },
   };
 }
@@ -56,6 +57,16 @@ export default async function WritingPost({ params }: Props) {
 
   return (
     <Column>
+      <JsonLd
+        data={postSchema({
+          slug,
+          title: entry.title,
+          description: entry.description,
+          publishedAt: entry.publishedAt,
+          lang: entry.lang,
+          cover: entry.cover,
+        })}
+      />
       <Header name={settings.name} role={settings.role} href="/" />
       <SectionRail />
 

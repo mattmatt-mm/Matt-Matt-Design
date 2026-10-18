@@ -1,6 +1,7 @@
 import { createReader } from "@keystatic/core/reader";
 import type { Node as MarkdocNode } from "@markdoc/markdoc";
 import { imageSize } from "image-size";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import keystaticConfig from "@/keystatic.config";
@@ -228,7 +229,74 @@ export async function getWritingEntry(slug: string) {
   // Keystatic bundles its own copy of Markdoc, so the node it hands back is
   // structurally identical but nominally a different type. One cast, here.
   const body = (await entry.body()).node as unknown as MarkdocNode;
-  return { ...entry, slug, body };
+  const description = entry.summary?.trim() || firstSentences(body);
+  return { ...entry, slug, body, description };
+}
+
+/**
+ * Google shows about 160 characters of a description and trims the rest
+ * itself; a little longer lets a short opening question keep the sentence
+ * that answers it.
+ */
+const DESCRIPTION_LENGTH = 200;
+
+/**
+ * A post without a summary is described by its opening paragraph, cut at the
+ * last sentence end that fits, so Google never shows a sentence broken off
+ * mid-word. Handles Chinese full stops as well as English ones.
+ */
+function firstSentences(body: MarkdocNode): string {
+  const paragraph = [...body.walk()].find((n) => n.type === "paragraph");
+  if (!paragraph) return "";
+  const text = [...paragraph.walk()]
+    .filter((n) => n.type === "text")
+    .map((n) => String(n.attributes.content ?? ""))
+    .join("")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= DESCRIPTION_LENGTH) return text;
+
+  const head = text.slice(0, DESCRIPTION_LENGTH);
+  const end = Math.max(
+    ...[". ", "? ", "! ", "。", "？", "！"].map((mark) => {
+      const i = head.lastIndexOf(mark);
+      return i === -1 ? -1 : i + mark.trimEnd().length;
+    }),
+  );
+  return end > 0 ? head.slice(0, end) : `${head.slice(0, head.lastIndexOf(" "))}…`;
+}
+
+/**
+ * When a content file last changed, from git, for the sitemap. Vercel clones
+ * only the most recent commits, and in such a shallow clone every file older
+ * than the cut appears to change in the oldest commit it has; that date would
+ * be wrong, so it is left out rather than guessed.
+ */
+export function lastChanged(file: string): string | undefined {
+  try {
+    const [hash, date] = execFileSync(
+      "git",
+      ["log", "-1", "--format=%H %cI", "--", file],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    )
+      .trim()
+      .split(" ");
+    if (!hash || !date) return undefined;
+    const shallow = execFileSync(
+      "git",
+      ["rev-parse", "--git-path", "shallow"],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    ).trim();
+    let cut = "";
+    try {
+      cut = readFileSync(shallow, "utf8");
+    } catch {
+      // not a shallow clone — every date is real
+    }
+    return cut.includes(hash) ? undefined : date;
+  } catch {
+    return undefined;
+  }
 }
 
 /**

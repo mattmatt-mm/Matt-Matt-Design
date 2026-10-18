@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { CaseStudyChain } from "@/components/CaseStudyChain";
 import { Column } from "@/components/Column";
 import { Header } from "@/components/Header";
+import { JsonLd } from "@/components/JsonLd";
 import { SectionRail } from "@/components/SectionRail";
 import {
   getCaseStudyTour,
@@ -11,7 +12,9 @@ import {
   getSettings,
   listExperienceSlugs,
 } from "@/lib/content";
+import { DISCIPLINES } from "@/lib/disciplines";
 import { siteName, siteSocialImage } from "@/lib/site";
+import { caseStudySchema } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -50,6 +53,18 @@ export default async function WorkPage({ params }: Props) {
 
   return (
     <Column>
+      <JsonLd
+        data={caseStudySchema({
+          slug,
+          title: entry.title,
+          summary: entry.summary,
+          cover: entry.cover,
+          role: entry.role,
+          disciplines: DISCIPLINES.filter((d) =>
+            entry.disciplines.includes(d.value),
+          ).map((d) => d.label),
+        })}
+      />
       <Header name={settings.name} role={settings.role} href="/" />
       <SectionRail />
 

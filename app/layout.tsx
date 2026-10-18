@@ -3,6 +3,7 @@ import { SquircleNoScript } from "@squircle-js/react";
 import {
   siteDescription,
   siteName,
+  siteShortName,
   siteSocialImage,
   siteTitle,
   siteUrl,
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: siteTitle,
-    template: "%s — Matt",
+    template: `%s — ${siteName}`,
   },
   description: siteDescription,
   manifest: "/manifest.webmanifest",
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
   appleWebApp: {
     capable: true,
-    title: siteName,
+    title: siteShortName,
     statusBarStyle: "default",
   },
   alternates: {

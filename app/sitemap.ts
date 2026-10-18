@@ -1,5 +1,9 @@
 import type { MetadataRoute } from "next";
-import { listExperienceSlugs, listWritingSlugs } from "@/lib/content";
+import {
+  lastChanged,
+  listExperienceSlugs,
+  listWritingSlugs,
+} from "@/lib/content";
 import { siteUrl } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -9,13 +13,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   return [
-    { url: siteUrl, priority: 1 },
+    { url: siteUrl },
     { url: `${siteUrl}/writing` },
     { url: `${siteUrl}/profile` },
-    ...work.map((e) => ({ url: `${siteUrl}/work/${e.slug}` })),
+    ...work.map((e) => ({
+      url: `${siteUrl}/work/${e.slug}`,
+      lastModified: lastChanged(`content/experience/${e.slug}.mdoc`),
+    })),
     ...writing.map((e) => ({
       url: `${siteUrl}/writing/${e.slug}`,
-      lastModified: e.entry.publishedAt ?? undefined,
+      lastModified:
+        lastChanged(`content/writing/${e.slug}.mdoc`) ??
+        e.entry.publishedAt ??
+        undefined,
     })),
   ];
 }
