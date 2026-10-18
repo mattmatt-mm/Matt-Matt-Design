@@ -150,8 +150,9 @@ not decorative borders and should remain where required.
   bottom edge, highest at the centre. Their edge is feathered, not cut — the
   hard edge with a drop shadow was rejected — on the eased `--arc-fade`: solid
   to 62% of the radius, then a long ease-in-out tail, so the fade has no
-  visible start or stop ("not robotic"). The core is fully solid; a 94% fill
-  let dark images show through as a muddy grey.
+  visible start or stop ("not robotic"). The core is 80% (`--arc-core`), not
+  solid, so the page still shows through rather than being blocked; every
+  fade stop scales from it.
   - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
   - AI: ellipse 80% wide by 75% of a `min(480px, 60dvh)` strip.
   Hide the dock's while AI is open; the AI's takes over in the same frame.

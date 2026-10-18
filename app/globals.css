@@ -66,17 +66,20 @@
     inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
   --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
   /* The arcs behind the dock and the open AI fade out at the edge on an
-     eased curve, not a straight ramp: solid for most of the dome, then a long
-     gentle tail, so the edge has no visible start or stop. Stops are a
-     fraction of the arc's radius; alpha follows an ease-in-out. */
+     eased curve, not a straight ramp: steady across most of the dome, then a
+     long gentle tail, so the edge has no visible start or stop. The core is
+     80%, not solid, so the page still shows through (Matt, 2026-10-18);
+     every stop is that core scaled by an ease-in-out, as a fraction of the
+     arc's radius. */
+  --arc-core: 80%;
   --arc-fade:
-    var(--color-bg) 62%,
-    color-mix(in srgb, var(--color-bg) 97%, transparent) 68%,
-    color-mix(in srgb, var(--color-bg) 89%, transparent) 74%,
-    color-mix(in srgb, var(--color-bg) 74%, transparent) 80%,
-    color-mix(in srgb, var(--color-bg) 52%, transparent) 86%,
-    color-mix(in srgb, var(--color-bg) 28%, transparent) 92%,
-    color-mix(in srgb, var(--color-bg) 10%, transparent) 97%,
+    color-mix(in srgb, var(--color-bg) var(--arc-core), transparent) 62%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.97), transparent) 68%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.89), transparent) 74%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.74), transparent) 80%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.52), transparent) 86%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.28), transparent) 92%,
+    color-mix(in srgb, var(--color-bg) calc(var(--arc-core) * 0.1), transparent) 97%,
     transparent 100%;
 
   /* Type — 16/21 everywhere; 32/42 is the only second size. */
@@ -205,8 +208,7 @@
     height: min(120px, 16dvh);
     /* The AI mask's arc, smaller (Matt, 2026-10-18): a dome of the page
        colour behind the dock, highest at its centre, feathered on the same
-       eased --arc-fade. Its core is fully solid: at 94% a dark image showed
-       through as a muddy grey. */
+       eased --arc-fade, 80% at its core. */
     background: radial-gradient(
       ellipse 80% 100% at 50% 100%,
       var(--arc-fade)
