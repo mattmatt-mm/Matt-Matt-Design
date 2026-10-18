@@ -65,6 +65,8 @@
     inset 0 3px 2px 0 rgb(255 255 255 / 100%),
     inset 0 -2px 4px 0 rgb(255 255 255 / 100%);
   --filter-navigation: drop-shadow(0 2px 10px rgb(0 0 0 / 5%));
+  /* The shade above the AI's arc (.ai-gradient-mask). */
+  --filter-arc: drop-shadow(0 -6px 24px rgb(0 0 0 / 7%));
 
   /* Type — 16/21 everywhere; 32/42 is the only second size. */
   --text-base: 16px;
@@ -419,15 +421,21 @@
     pointer-events: none;
   }
 
+  /* An arc, not a straight fade (Matt, 2026-10-18, after Dia's footer): a
+     solid dome of the page colour rising from the bottom edge, highest at the
+     centre where the AI stacks, lower at the sides, with a soft shade cast
+     just above its curve. The page stays crisp above the arc instead of
+     washing out in a band. The shade is a drop shadow, so it follows the
+     curve's own edge. */
   .ai-gradient-mask {
     top: auto;
     height: min(480px, 60dvh);
-    background: linear-gradient(
-      to bottom,
-      var(--color-content-mask-clear) 24%,
-      var(--color-content-mask-solid) 52%,
-      var(--color-bg) 68%
+    background: radial-gradient(
+      ellipse 80% 60% at 50% 100%,
+      var(--color-bg) calc(100% - 1px),
+      transparent 100%
     );
+    filter: var(--filter-arc);
   }
 
   .ai-viewport {
@@ -1325,6 +1333,7 @@
          near-black page had no edge to it. Off-white with near-black text is
          the light theme mirrored — there the surface is the text colour too.
          Matt asked for this on 2026-10-18. */
+      --filter-arc: drop-shadow(0 -6px 24px rgb(0 0 0 / 55%));
       --color-ai-response: #f3f1ec;
       --color-on-ai-response: #12110f;
       --color-ai-form: #e4e1da;

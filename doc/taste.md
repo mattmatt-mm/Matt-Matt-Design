@@ -150,6 +150,11 @@ not decorative borders and should remain where required.
   overlay but a shorter `min(240px, 35dvh)` footprint so content stays legible
   without washing out the page. Hide it while AI is open; the taller AI mask
   takes over in the same frame.
+- The AI mask is an arc, not a fade (Matt, 2026-10-18, after Dia's footer): a
+  solid dome of `--color-bg` rising from the bottom edge — an ellipse 80% of
+  the width by 60% of the mask's height, centred on the bottom — with a soft
+  `--filter-arc` shade cast up from its curve. The page stays crisp above the
+  curve rather than washing out in a band.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
