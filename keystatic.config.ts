@@ -446,6 +446,19 @@ export default config({
           defaultValue: false,
           description: "Drafts are hidden on the live site.",
         }),
+        summary: fields.text({
+          label: "Summary",
+          multiline: true,
+          description:
+            "One or two sentences on what the post is about, shown by Google and on share cards. Write it in the post's own language. Leave empty to use the first paragraph.",
+        }),
+        cover: fields.image({
+          label: "Share image",
+          directory: "public/images/writing",
+          publicPath: "/images/writing/",
+          description:
+            "Shown when the post is shared. Never shown on the page. Leave empty to use the site's default card.",
+        }),
         body: fields.markdoc({
           label: "Body",
           components: {

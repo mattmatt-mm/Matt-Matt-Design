@@ -133,7 +133,7 @@ app/
   writing/[slug]/page.tsx               writing detail
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
-  sitemap.ts · robots.ts · feed.xml/route.ts
+  sitemap.ts · robots.ts · feed.xml/route.ts · llms.txt/route.ts
 components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
              effects/ — includes ViewCursor, the dot + "View project" cursor (mounted in app/layout.tsx)
@@ -144,6 +144,7 @@ keystatic.config.ts
 ```
 
 Rules:
+- SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). Matt's full name and any photo of him never appear on the site or in code — he is "Matt" of "Matt Matt Design", Hong Kong. See `doc/seo-plan.md`.
 - The Header + Intro block is byte-identical across all three tabs and **must not shift** when switching.
 - Everything statically generated; `generateStaticParams` on both detail routes.
 - Server components unless interactivity demands otherwise.
@@ -157,7 +158,7 @@ Rules:
 
 Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a `caption` (two to four words) and are filed under it as a folder tab, the recording at full width (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
-**writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
+**writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `summary?` (meta description in the post's own language; falls back to the opening paragraph), `cover?` (share image only), `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
 **settings** (singleton) — `name`, `role`, `intro[]`, `socials[]`, `email` → **`content/settings.yaml`** (no trailing slash on the singleton path means a file, not a directory)
 
 There is no `group` field. Grouping is derived in `lib/content.ts`: consecutive entries sharing a `label` form a group, only the first keeps the visible label, and the rule before a new group runs full width.
