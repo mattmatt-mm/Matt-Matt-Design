@@ -147,14 +147,14 @@ not decorative borders and should remain where required.
   heavier border.
 - The masks behind the dock and the open AI are arcs, not flat bands (Matt,
   2026-10-18, after Dia's footer): a dome of `--color-bg` rising from the
-  bottom edge, highest at the centre. Their edge is feathered, not cut — the
-  hard edge with a drop shadow was rejected — on the eased `--arc-fade`: solid
-  to 62% of the radius, then a long ease-in-out tail, so the fade has no
-  visible start or stop ("not robotic"). The core is 80% (`--arc-core`), not
-  solid, so the page still shows through rather than being blocked; every
-  fade stop scales from it.
+  bottom edge, highest at the centre. It is one continuous fade with no flat
+  core and no hard edge — solid only at the very bottom centre, thinning on a
+  smoothstep (`--arc-fade`) all the way out to clear at the curve. Rejected
+  along the way: a hard edge with a drop shadow, and a feathered edge around
+  a flat 80% core, which read as unnatural.
   - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
-  - AI: ellipse 80% wide by 75% of a `min(480px, 60dvh)` strip.
+  - AI: ellipse 80% wide by 100% of a `min(480px, 60dvh)` strip — tall enough
+    that the row above the composer sits in the denser part and stays legible.
   Hide the dock's while AI is open; the AI's takes over in the same frame.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
