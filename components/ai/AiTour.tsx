@@ -3,6 +3,7 @@
 import { CheckSquare } from "@phosphor-icons/react/dist/ssr/CheckSquare";
 import { Square } from "@phosphor-icons/react/dist/ssr/Square";
 import { SiteSquircle } from "@/components/SiteSquircle";
+import { AiLift } from "@/components/ai/AiLift";
 import { DISCIPLINES, type Discipline } from "@/lib/disciplines";
 
 export type TourStep = "cookies" | "offer" | "pick" | "ready";
@@ -43,65 +44,69 @@ export function AiTour({
     <div className="ai-exchange">
       {/* Remounted per step, so each one rises in as an answer would. */}
       <div key={step} className="ai-tour-step">
-        <SiteSquircle className="ai-response-squircle elevated-surface">
-          <div className="ai-response" role="status">
-            {step === "cookies" ? (
-              <>
+        <AiLift>
+          <SiteSquircle className="ai-response-squircle elevated-surface">
+            <div className="ai-response" role="status">
+              {step === "cookies" ? (
+                <>
+                  <p>
+                    Hi, I&rsquo;m Matt&rsquo;s AI. Can Matt use cookies to see how
+                    visitors use his site?
+                  </p>
+                  <p className="ai-tour-note">
+                    He sees which pages are opened and what is clicked, and uses
+                    it only to improve the site.
+                  </p>
+                </>
+              ) : step === "offer" ? (
                 <p>
-                  Hi, I&rsquo;m Matt&rsquo;s AI. Can Matt use cookies to see how
-                  visitors use his site?
+                  Hiring? I can walk you through the case studies that match the
+                  role you&rsquo;re filling.
                 </p>
-                <p className="ai-tour-note">
-                  He sees which pages are opened and what is clicked, and uses
-                  it only to improve the site.
+              ) : step === "pick" ? (
+                <p>Which skills does the role need? Pick as many as apply.</p>
+              ) : (
+                <p>
+                  Here is the customised case study walkthrough that may interest
+                  you.
                 </p>
-              </>
-            ) : step === "offer" ? (
-              <p>
-                Hiring? I can walk you through the case studies that match the
-                role you&rsquo;re filling.
-              </p>
-            ) : step === "pick" ? (
-              <p>Which skills does the role need? Pick as many as apply.</p>
-            ) : (
-              <p>
-                Here is the customised case study walkthrough that may interest
-                you.
-              </p>
-            )}
-          </div>
-        </SiteSquircle>
+              )}
+            </div>
+          </SiteSquircle>
+        </AiLift>
 
         {step === "pick" ? (
           // A checklist on the email form's surface, not a row of chips: the
           // choices read as one question with three answers, and the only
           // buttons left are the ones that act. Matt, 2026-10-18.
-          <SiteSquircle asChild>
-            <fieldset className="ai-tour-checklist">
-              <legend className="sr-only">Skills the role needs</legend>
-              {DISCIPLINES.map((d) => {
-                const on = picks.includes(d.value);
-                return (
-                  <label key={d.value} className="ai-tour-check">
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={on}
-                      onChange={() => onToggle(d.value)}
-                    />
-                    <span>{d.label}</span>
-                    <span className="ai-tour-check-box" aria-hidden="true">
-                      {on ? (
-                        <CheckSquare size={20} weight="fill" />
-                      ) : (
-                        <Square size={20} weight="regular" />
-                      )}
-                    </span>
-                  </label>
-                );
-              })}
-            </fieldset>
-          </SiteSquircle>
+          <AiLift>
+            <SiteSquircle asChild>
+              <fieldset className="ai-tour-checklist elevated-surface">
+                <legend className="sr-only">Skills the role needs</legend>
+                {DISCIPLINES.map((d) => {
+                  const on = picks.includes(d.value);
+                  return (
+                    <label key={d.value} className="ai-tour-check">
+                      <input
+                        type="checkbox"
+                        className="sr-only"
+                        checked={on}
+                        onChange={() => onToggle(d.value)}
+                      />
+                      <span>{d.label}</span>
+                      <span className="ai-tour-check-box" aria-hidden="true">
+                        {on ? (
+                          <CheckSquare size={20} weight="fill" />
+                        ) : (
+                          <Square size={20} weight="regular" />
+                        )}
+                      </span>
+                    </label>
+                  );
+                })}
+              </fieldset>
+            </SiteSquircle>
+          </AiLift>
         ) : null}
 
         <div className="ai-tour-actions">

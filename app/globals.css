@@ -16,11 +16,15 @@
   --color-surface-active: rgb(0 0 0 / 5%);
   --color-content-mask-clear: rgb(253 253 252 / 0%);
   --color-content-mask-solid: rgb(253 253 252 / 94%);
-  --color-ai-response: #000000;
-  --color-on-ai-response: #ffffff;
-  --color-ai-form: #262626;
-  --color-ai-form-muted: #a0a0a0;
-  --color-ai-form-divider: rgb(115 115 115 / 30%);
+  /* The AI's answers and panels are white with the elevated shadow in the
+     light theme; only its action buttons stay dark (Matt, 2026-10-19). */
+  --color-ai-response: #ffffff;
+  --color-on-ai-response: #000000;
+  --color-ai-form: #ffffff;
+  --color-ai-form-muted: #737373;
+  --color-ai-form-divider: rgb(0 0 0 / 8%);
+  --color-ai-action: #000000;
+  --color-on-ai-action: #ffffff;
   --color-shimmer-sunset-coral: #ff5032;
   --color-shimmer-sunset-orange: #ffa028;
   --color-shimmer-sunset-gold: #ffc832;
@@ -231,8 +235,56 @@
     transition-duration: var(--ai-open-dur);
   }
 
+  /* Progressive blur behind the open AI (Matt, 2026-10-19): the page under
+     the white arc goes soft as well as pale, most at the bottom centre and
+     not at all at the curve. Four stacked layers, each masked to the arc's
+     own ellipse and reaching less far up it, so the blurs compound toward
+     the centre — about 9px there, 1px two thirds of the way out. Each layer
+     fades by its own opacity: on a shared parent, opacity would cut the
+     layers off from the page they blur until the fade ended. */
+  .site-content-blur {
+    --blur: 1px;
+    --solid: 40%;
+    --clear: 90%;
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--ai-close-dur) var(--ai-ease);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    mask-image: radial-gradient(
+      ellipse 80% 100% at 50% 100%,
+      black var(--solid),
+      transparent var(--clear)
+    );
+  }
+
+  .site-content-blur[data-step="2"] {
+    --blur: 2px;
+    --solid: 30%;
+    --clear: 70%;
+  }
+
+  .site-content-blur[data-step="3"] {
+    --blur: 4px;
+    --solid: 20%;
+    --clear: 50%;
+  }
+
+  .site-content-blur[data-step="4"] {
+    --blur: 8px;
+    --solid: 0%;
+    --clear: 35%;
+  }
+
+  .site-content-mask[data-ai-open="true"] .site-content-blur {
+    opacity: 1;
+    transition-duration: var(--ai-open-dur);
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .site-content-mask {
+    .site-content-mask,
+    .site-content-blur {
       transition: none;
     }
   }
@@ -489,7 +541,7 @@
     position: relative;
     width: 100%;
     height: 100%;
-    animation: ai-content-enter var(--ai-open-dur) var(--ai-ease) both;
+    animation: ai-content-enter var(--ai-open-dur) var(--ai-ease) backwards;
   }
 
   @keyframes ai-content-enter {
@@ -501,7 +553,7 @@
     to {
       opacity: 1;
       transform: translateY(0);
-      filter: blur(0);
+      filter: none;
     }
   }
 
@@ -741,6 +793,17 @@
     gap: 8px;
   }
 
+  /* components/ai/AiLift.tsx: the drop shadow for a squircle surface, one
+     element up so the squircle's clip path cannot trim it. */
+  .ai-lift {
+    width: 100%;
+    filter: var(--filter-elevated);
+  }
+
+  .ai-answer-stack > .ai-lift {
+    flex: 0 0 auto;
+  }
+
   .ai-answer-stack .ai-response-squircle {
     height: auto;
     flex: 0 0 auto;
@@ -815,7 +878,7 @@
     flex-direction: column;
     gap: 8px;
     transform: translateX(-50%);
-    animation: ai-contact-enter var(--ai-open-dur) var(--ai-ease) both;
+    animation: ai-contact-enter var(--ai-open-dur) var(--ai-ease) backwards;
     pointer-events: auto;
   }
 
@@ -915,7 +978,7 @@
     to {
       opacity: 1;
       transform: translateX(0);
-      filter: blur(0);
+      filter: none;
     }
   }
 
@@ -928,7 +991,7 @@
     to {
       opacity: 1;
       transform: translateX(0);
-      filter: blur(0);
+      filter: none;
     }
   }
 
@@ -949,7 +1012,7 @@
     to {
       opacity: 1;
       transform: scale(1);
-      filter: blur(0);
+      filter: none;
     }
   }
 
@@ -962,7 +1025,7 @@
     to {
       opacity: 1;
       transform: translateX(-50%) scale(1);
-      filter: blur(0);
+      filter: none;
     }
   }
 
@@ -1065,7 +1128,7 @@
   .ai-contact-submit-surface {
     position: absolute;
     inset: 0;
-    background: var(--color-ai-response);
+    background: var(--color-ai-action);
     pointer-events: none;
   }
 
@@ -1076,7 +1139,7 @@
     min-height: 41px;
     border: 0;
     background: transparent;
-    color: var(--color-on-ai-response);
+    color: var(--color-on-ai-action);
     cursor: pointer;
   }
   .ai-contact-submit:disabled {
@@ -1091,7 +1154,7 @@
     width: 100%;
     flex-direction: column;
     gap: 8px;
-    animation: ai-content-enter var(--ai-open-dur) var(--ai-ease) both;
+    animation: ai-content-enter var(--ai-open-dur) var(--ai-ease) backwards;
   }
 
   .ai-tour-note {
@@ -1124,20 +1187,36 @@
     transition: background-color 120ms ease-out;
   }
 
-  /* Primary — the action: the AI response surface. */
+  /* Primary — the action: the one dark surface left in the AI. */
   .ai-tour-button[data-tone="primary"] .ai-tour-button-surface {
-    background: var(--color-ai-response);
+    background: var(--color-ai-action);
   }
 
-  /* Secondary — a way out: the Notes copy button's fill, an 8% tint of the
-     text colour, mixed over the surface rather than layered so it holds in
-     both themes. */
+  /* Secondary — a way out: the Notes copy button's grey, an 8% tint of the
+     text colour over the surface, made translucent over a blur so it reads
+     as frosted glass rather than a solid grey that can match the page
+     behind it (Matt, 2026-10-19). The squircle clip trims the blur too.
+     The blur only reaches the page if no ancestor carries a filter, and a
+     held `blur(0)` still counts as one. So the wrappers it sits in
+     (.ai-exchange, .ai-tour-step, .ai-content-enter) fill their entrance
+     backwards only: once it ends they fall back to their own styles, which
+     carry no filter. */
   .ai-tour-button[data-tone="secondary"] .ai-tour-button-surface {
-    background: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface));
+    background: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-fg) 8%, var(--color-surface)) 64%,
+      transparent
+    );
+    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4);
   }
 
   .ai-tour-button[data-tone="secondary"]:hover .ai-tour-button-surface {
-    background: color-mix(in srgb, var(--color-fg) 14%, var(--color-surface));
+    background: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-fg) 14%, var(--color-surface)) 72%,
+      transparent
+    );
   }
 
   /* The pick step's checklist: the email form's surface, one row per skill,
@@ -1202,7 +1281,7 @@
   }
 
   .ai-tour-button[data-tone="primary"] button {
-    color: var(--color-on-ai-response);
+    color: var(--color-on-ai-action);
   }
 
   .ai-tour-button button:disabled {
@@ -1351,6 +1430,8 @@
       --color-ai-form: #e4e1da;
       --color-ai-form-muted: #6f6c66;
       --color-ai-form-divider: rgb(18 17 15 / 12%);
+      --color-ai-action: #f3f1ec;
+      --color-on-ai-action: #12110f;
       --shadow-floating: inset 0 0 1px 0 rgb(255 255 255 / 20%);
       --filter-elevated: drop-shadow(0 4px 20px rgb(0 0 0 / 5%));
       /* Same three-layer bevel, inverted for a dark surface: the hairline and
@@ -1660,6 +1741,22 @@
     overflow: visible;
   }
 
+  .point-illustration {
+    display: block;
+    width: 100%;
+    aspect-ratio: 192 / 120;
+    margin-bottom: 12px;
+    background-color: var(--color-fg);
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    mask-mode: alpha;
+    pointer-events: none;
+  }
+
   .point-figure * {
     fill: none;
     stroke-width: 1px;
@@ -1692,6 +1789,18 @@
 
   .point-figure .pf-fill {
     fill: var(--color-fg);
+    stroke: none;
+  }
+
+  /* Engraved figures (components/EngravedFigures.tsx) are drawn as filled
+     pen strokes, so a line can swell and taper like a hand-cut one. */
+  .point-figure .pf-fill-muted {
+    fill: var(--color-muted);
+    stroke: none;
+  }
+
+  .point-figure .pf-fill-faint {
+    fill: var(--color-line);
     stroke: none;
   }
 
@@ -2305,7 +2414,10 @@
     justify-content: space-between;
     gap: 16px;
     height: 48px;
-    padding-inline: 16px;
+    /* The title keeps the text inset; the copy button sits 8px from the
+       band's top, bottom and right alike — a control in a corner is inset
+       the same on every side (doc/taste.md). */
+    padding-inline: 16px 8px;
     color: var(--color-note-band-ink);
     background: var(--color-note-band);
   }
@@ -2488,7 +2600,8 @@
     align-items: center;
     gap: 4px;
     height: 48px;
-    padding-inline: 4px;
+    /* 44px buttons in a 48px bar: 2px above, below and at each end alike. */
+    padding-inline: 2px;
     border-radius: 16px;
     color: var(--video-bar-fg);
     background: var(--video-bar-bg);
@@ -2834,5 +2947,50 @@
   /* Touch, or before the view cursor is running: the system zoom cursor. */
   :root:not([data-view-cursor]) .prose img[data-zoom] {
     cursor: zoom-in;
+  }
+}
+
+@layer components {
+  /* Engraving ornament (components/Engraving.tsx). The SVG is a mask and the
+     ink is the text colour, so it follows the theme and the inverted
+     surfaces. See doc/engraving-graphics.md. */
+  .engraving {
+    display: block;
+    flex: none;
+    background-color: currentColor;
+    -webkit-mask: var(--engraving) center / contain no-repeat;
+    mask: var(--engraving) center / contain no-repeat;
+  }
+
+  /* The 404: a line of copy and the engraving standing on one hairline. */
+  .not-found-ground {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .not-found-tree {
+    display: block;
+    flex: none;
+    width: clamp(96px, 24vw, 128px);
+    height: auto;
+    color: var(--color-fg);
+    pointer-events: none;
+  }
+
+  .not-found-tree-still {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .not-found-tree-motion {
+      display: none;
+    }
+
+    .not-found-tree-still {
+      display: block;
+    }
   }
 }

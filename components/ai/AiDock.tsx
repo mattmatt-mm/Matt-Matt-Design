@@ -130,7 +130,13 @@ export function AiDock({
         className="site-content-mask"
         data-ai-open={aiOpen ? "true" : "false"}
         aria-hidden="true"
-      />
+      >
+        {/* Progressive blur under the open AI: four layers, each blurring
+            what the last left, each reaching less far up the arc. */}
+        {[1, 2, 3, 4].map((step) => (
+          <span key={step} className="site-content-blur" data-step={step} />
+        ))}
+      </div>
       <div
         className="site-dock-row"
         data-ai-open={aiOpen ? "true" : "false"}

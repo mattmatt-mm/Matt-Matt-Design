@@ -54,6 +54,15 @@ The interface should feel quiet, exact, warm, and intentional.
 - A corner treatment defines geometry; it is not permission to add a solid
   border. Capsules belong to the navigation dock; do not spread them to
   buttons, fields, or content surfaces.
+- **Uniform inset.** A control or surface nested in a corner of its container
+  sits the same distance from every edge it is near: top, bottom and side
+  alike. If the container's height leaves 8px above and below a button, the
+  button is 8px from the side too, never 16px. Text keeps the text inset;
+  only the nested control moves in. Current examples: the Notes copy button
+  is 8px from the band's top, bottom and right; the video player's control
+  bar is 12px from the frame's sides and bottom, and its 44px buttons 2px
+  inside the 48px bar on every side. Matt flagged the copy button's 8px top against 16px right on
+  2026-10-19.
 
 ## 4. Elevation, not borders
 
@@ -159,6 +168,11 @@ not decorative borders and should remain where required.
   over the AI's open clock, and closing shrinks it back (Matt, 2026-10-18;
   swapping one fade for the other snapped). It stays above the travelling
   thumbnail during the gallery morph, as it is on the page.
+- While the AI is open, the page under its arc is blurred as well as paled:
+  a progressive blur, strongest at the bottom centre (about 9px) and gone
+  before the curve, so the conversation reads over the page without a hard
+  band (Matt, 2026-10-19). Four stacked `backdrop-filter` layers on the
+  arc's own ellipse; it fades with the AI and is absent behind the dock.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
@@ -171,10 +185,13 @@ not decorative borders and should remain where required.
   row so the panel's clip cannot cut it.
 - Its buttons are squircles under the response, 40px tall with the 8px
   companion gap, and flat — no shadow:
-  - Primary (Accept, Walk me through, Continue, Start walkthrough): the AI
-    response surface.
+  - Primary (Accept, Walk me through, Continue, Start walkthrough): dark,
+    on `--color-ai-action` — the one dark surface left in the AI.
   - Secondary (Decline, No thanks, Ask a question): the Notes copy button's
     fill, an 8% tint of the text colour mixed over the surface; 14% on hover.
+    It is translucent (64%, 72% on hover) over a 10px backdrop blur, so it
+    reads as frosted glass instead of a solid grey that can vanish into the
+    page behind it (Matt, 2026-10-19).
   Not capsules — capsules stay with the dock. See `doc/hr-mode-plan.md`.
 - The AI composer (Ask me anything, Follow up) wears the dock's stack: the 1px
   `--shadow-navigation` rim on the surface and `--filter-navigation` on a
@@ -236,12 +253,16 @@ not decorative borders and should remain where required.
 - Do not invent off-scale sizes or weights to create hierarchy.
 - Elevated controls use the theme surface on its warm background without a
   solid border.
-- AI response and contact surfaces are the inverse of the page: black with
-  white text in light mode, warm off-white `#F3F1EC` with near-black text in
-  dark mode (the form a step darker, `#E4E1DA`). Black on a near-black page had
-  no edge, so Matt reversed the old black-in-both rule on 2026-10-18. The
-  sunset beam switches to its light variant on the off-white surface. Do not
-  add an AI accent color.
+- AI answers, the tour checklist and the contact fields are light surfaces:
+  white with black text and the elevated shadow (20px black at 5%, plus the
+  1px rim) in light mode, warm off-white `#F3F1EC` with near-black text in
+  dark mode (the form a step darker, `#E4E1DA`). Only the action buttons stay
+  dark: black with white text in light mode, the off-white in dark mode.
+  History: black in both themes, then black only in light mode
+  (2026-10-18), then white in light mode with only the buttons dark (Matt,
+  2026-10-19). The sunset beam is always its light variant. A squircle's
+  drop shadow goes on a wrapper (`AiLift`), since its own clip path trims a
+  filter. Do not add an AI accent color.
 - Secondary copy and placeholders use the existing muted grays.
 - Interface copy is compact, plain, sentence case, and specific.
 - The AI speaks about Matt in the third person.
@@ -354,7 +375,7 @@ not decorative borders and should remain where required.
   the outgoing half nothing to leave with, and the answer moves from where it
   was to where it now is over the standard 300ms.
 - Unknown, private, and contact-only facts offer an email handoff.
-- Keep 8px between the black response and form.
+- Keep 8px between the response and form.
 - Fields follow the latest `4.2` and `4.2.1` exports.
 - The action reads exactly `Send to Matt`, spans the full surface width, and is
   text only.
@@ -399,6 +420,26 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   supplied a colourful three-panel reference on 2026-10-17; we kept its
   structure (drawing, title, one line) and redrew it in fg, muted and the
   hairline colour on a 1px ground rule. No colour, no framed card.
+- Antique engraving drawings (hatched, one ink, a creature standing on a
+  rule, after JW Anderson references Matt shared on 2026-10-19) are allowed as
+  rare ornament. They are drawn in fg only, on the page background. The same
+  day Matt asked for the Hermes Task point figures in this style too, so
+  explainers may be engraved: simple objects drawn by hand, with lines
+  that waver, taper and swell, left open (never filled) and shaded only by
+  hatching on the shadow side (`components/EngravedFigures.tsx`), still in
+  fg, muted and the hairline colour. Both are covered in `doc/engraving-graphics.md`.
+- Hermes Task’s three Problem graphics now use original generated ink scenes
+  based on the accompanying copy (Matt, 2026-10-19): overflowing contact
+  cards, a slipping follow-up note, and a tired person with a closed laptop
+  and a phone message. Do not use the previous graphics as visual references.
+  These explainers now animate once on viewport entry, then hold their final
+  frame. Reduced motion keeps that final frame. An SVG ink filter follows the
+  theme foreground colour; all three may appear in the Drawn point row.
+
+- Illustration interiors must remain transparent in both themes (Matt,
+  2026-10-19). Use foreground-coloured ink; do not keep white or cream fills
+  or rely on raster inversion. See `doc/illustration-animation-workflow.md`
+  for the 404 tree’s ink filter.
 
 ## 13. Review checklist
 
@@ -413,6 +454,9 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
       as the sole geometry on a capsule, a circle, or an inset-shadowed surface.
 - [ ] Elevated surfaces use a 16px radius input, 0.6 smoothing, and no hard
       decorative border.
+- [ ] A control nested in a corner is inset equally from each edge it is
+      near (Notes copy button: 8px top, bottom and right; video bar buttons
+      2px all round).
 - [ ] Buttons and filled elements have no hard border or wrapper stroke.
 - [ ] Floating surfaces use the shared 20px black-at-5% outer `drop-shadow`; the
       navigation dock uses its own rim, lift, and active-recess stack.

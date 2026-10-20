@@ -80,8 +80,16 @@ Two or three points, each a two-to-four-word title and one sentence.
 ### Drawn point row
 A Point row whose points each carry `figure`, a line drawing in the site's own
 colours (`components/PointFigure.tsx`). Drawings available now: `crowd`,
-`promises`, `message`. A new drawing is made to order: describe the idea and
-it is drawn in the same style.
+`promises`, `message`, plus engraved versions of each, hatched like an old
+plate (`crowd-engraved`, `promises-engraved`, `message-engraved`,
+`components/EngravedFigures.tsx`). Hermes Task uses the original generated ink
+illustrations `contacts-illustrated`, `follow-up-illustrated`, and
+`app-fatigue-illustrated`: overflowing contact cards, a lost follow-up reminder,
+and an exhausted person with a closed laptop and a phone message. These now use nine-frame WebP sprite sheets with CSS frame stepping through
+`components/InkSprite.tsx`. They play once on viewport entry, then hold; reduced
+motion keeps the final frame. An SVG ink filter paints the foreground colour
+in both themes and removes pale source fills.
+A new drawing is made to order from the meaning of the accompanying copy.
 
 ```
 {% point figure="crowd" title="People pile up" text="…" /%}
