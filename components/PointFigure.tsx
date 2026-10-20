@@ -4,7 +4,19 @@
  * 1px ground rule — rather than pasted in as illustrations (doc/taste.md §12).
  * Each one stands on the same ground so a row of them reads as one strip.
  */
-export const POINT_FIGURES = ["crowd", "promises", "message"] as const;
+import { ENGRAVED_FIGURES } from "./EngravedFigures";
+
+export const POINT_FIGURES = [
+  "crowd",
+  "promises",
+  "message",
+  "crowd-engraved",
+  "promises-engraved",
+  "message-engraved",
+  "contacts-illustrated",
+  "follow-up-illustrated",
+  "app-fatigue-illustrated",
+] as const;
 
 export type PointFigureName = (typeof POINT_FIGURES)[number];
 
@@ -85,13 +97,38 @@ function Message() {
   );
 }
 
-const DRAWINGS: Record<PointFigureName, () => React.ReactNode> = {
+const ILLUSTRATIONS = {
+  "contacts-illustrated": "/figures/hermes/people-pen-v3.webp",
+  "follow-up-illustrated": "/figures/hermes/promises-pen-v3.webp",
+  "app-fatigue-illustrated": "/figures/hermes/apps-pen-v3.webp",
+} as const;
+
+type IllustratedFigureName = keyof typeof ILLUSTRATIONS;
+
+const DRAWINGS: Record<Exclude<PointFigureName, IllustratedFigureName>, () => React.ReactNode> = {
   crowd: Crowd,
   promises: Promises,
   message: Message,
+  ...ENGRAVED_FIGURES,
 };
 
 export function PointFigure({ name }: { name: PointFigureName }) {
+  if (
+    name === "contacts-illustrated" ||
+    name === "follow-up-illustrated" ||
+    name === "app-fatigue-illustrated"
+  ) {
+    // These assets contain only ink alpha: no light fills or raster background.
+    // Paint with the theme foreground rather than inverting the source image.
+    const mask = `url("${ILLUSTRATIONS[name]}")`;
+    return (
+      <span
+        className="point-illustration"
+        aria-hidden="true"
+        style={{ maskImage: mask, WebkitMaskImage: mask }}
+      />
+    );
+  }
   const Drawing = DRAWINGS[name];
   return (
     <svg className="point-figure" viewBox="0 0 192 120" aria-hidden="true">

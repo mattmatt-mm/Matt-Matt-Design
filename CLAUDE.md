@@ -17,6 +17,11 @@ Read `doc/taste.md` before proposing, designing, or implementing interface work.
 It records Matt's durable UI taste decisions. A newer explicit instruction from
 Matt overrides that file and should be folded back into it.
 
+Read `doc/engraving-graphics.md` before importing any hand-drawn or engraved
+illustration (hatched line art like the JW Anderson references).
+For generated sprite animations, read `doc/illustration-animation-workflow.md`:
+it covers prompts, frame assembly, reduced motion, and the 404 tree example.
+
 Every non-circular rounded UI element uses the shared `SiteSquircle` component
 from `components/SiteSquircle.tsx` (16px radius input and 0.6 smoothing by
 default). CSS `border-radius` is fallback geometry only. Preserve true circles,
@@ -55,10 +60,14 @@ through the guided tour (HR mode).
 
 The entire site follows the operating-system theme through
 `prefers-color-scheme`; native controls and browser chrome advertise both
-schemes. There is no separate saved preference or theme toggle. AI response and
-contact surfaces are the inverse of the page: black in light mode, warm
-off-white (`#F3F1EC`, near-black text) in dark mode, so they always stand off
-the background. Matt changed this from black-in-both on 2026-10-18.
+schemes. There is no separate saved preference or theme toggle. AI answers, the
+tour checklist and the contact fields are white with the elevated shadow in
+light mode (Matt, 2026-10-19) and warm off-white (`#F3F1EC`, near-black text)
+in dark mode; only the AI's action buttons (Accept, Continue, `Send to Matt`
+…) stay dark, on `--color-ai-action`. The squircle surfaces carry their drop
+shadow on an `AiLift` wrapper, because a squircle's own clip trims a filter.
+While the AI is open the page beneath its white arc is also progressively
+blurred (`.site-content-blur`).
 
 ### Type
 - **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
@@ -131,10 +140,11 @@ app/
   work/[slug]/page.tsx                  experience detail
   tour/[focus]/page.tsx                 HR-mode walkthrough — the chain filtered by discipline, noindex
   writing/[slug]/page.tsx               writing detail
+  not-found.tsx                         404 — growing oak animation with a reduced-motion still
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
   sitemap.ts · robots.ts · feed.xml/route.ts · llms.txt/route.ts
-components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats
+components/  Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats Engraving
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
              effects/ — includes ViewCursor, the dot + "View project" cursor (mounted in app/layout.tsx)
 lib/content.ts                          the ONLY module that reads content

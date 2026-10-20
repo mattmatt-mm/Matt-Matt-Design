@@ -10,9 +10,10 @@ import {
   AiContactForm,
   type ContactStatus,
 } from "@/components/ai/AiContactForm";
+import { AiLift } from "@/components/ai/AiLift";
 import { AiThinking } from "@/components/ai/AiThinking";
 import { MAX_AI_TURNS } from "@/lib/ai/limits";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 
 export type AIPhase =
   | "ask_primary"
@@ -197,11 +198,13 @@ export function AiOverlay({
               ) : null}
               {thinking ? <AiThinking /> : null}
               {answering ? (
-                <SiteSquircle asChild>
-                  <div className="ai-response elevated-surface">
-                    <p>{answer}</p>
-                  </div>
-                </SiteSquircle>
+                <AiLift>
+                  <SiteSquircle asChild>
+                    <div className="ai-response elevated-surface">
+                      <p>{answer}</p>
+                    </div>
+                  </SiteSquircle>
+                </AiLift>
               ) : null}
             </div>
           </div>
@@ -250,39 +253,28 @@ export function AiOverlay({
 }
 
 /**
- * A finished answer: the black response surface with the sunset line beam.
- * The cloud's own unprompted lines use it too, so everything the AI says
- * looks the same.
+ * A finished answer: the response surface with the sunset line beam. The
+ * cloud's own unprompted lines use it too, so everything the AI says looks
+ * the same.
  */
 export function AiAnswer({ children }: { children: React.ReactNode }) {
-  // The surface inverts with the theme (off-white on a dark page), so the
-  // beam is drawn for the surface it sits on, not for the page.
-  const darkPage = useDarkScheme();
+  // The surface is light in both themes (white, or off-white on a dark
+  // page), so the beam is always drawn for a light surface.
   return (
-    <SiteSquircle className="ai-response-squircle elevated-surface">
-      <BorderBeam
-        size="line"
-        colorVariant="sunset"
-        theme={darkPage ? "light" : "dark"}
-        borderRadius={16}
-        className="ai-response-beam"
-      >
-        <div className="ai-response">
-          <p>{children}</p>
-        </div>
-      </BorderBeam>
-    </SiteSquircle>
+    <AiLift>
+      <SiteSquircle className="ai-response-squircle elevated-surface">
+        <BorderBeam
+          size="line"
+          colorVariant="sunset"
+          theme="light"
+          borderRadius={16}
+          className="ai-response-beam"
+        >
+          <div className="ai-response">
+            <p>{children}</p>
+          </div>
+        </BorderBeam>
+      </SiteSquircle>
+    </AiLift>
   );
-}
-
-function useDarkScheme() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-color-scheme: dark)");
-    const update = () => setDark(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  return dark;
 }

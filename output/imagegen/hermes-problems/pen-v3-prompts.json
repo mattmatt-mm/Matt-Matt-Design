@@ -1,0 +1,18 @@
+{
+  "tool": "built-in image_gen",
+  "transparent_background": true,
+  "records": [
+    {
+      "subject": "People",
+      "prompt": "Keep the attached scene and composition: two hands overwhelmed by incoming portrait contact cards. Redraw its line work to match a bold expressive flexible dip pen. Primary contours need more pronounced pressure contrast: on this ~1600px-wide canvas, every long contour should taper from 2px hairline into 10–14px broad ink and narrow again within the SAME continuous stroke. Especially hands, sleeves, card edges and portrait silhouettes. Strengthen lower finger edges and sleeve folds with broad tapering ink strokes, keep top edges finer. Card edges hand drawn and slightly irregular, swelling then thinning instead of ruled rectangles. A few sharp tapering hatch marks only, no dense shading. Preserve human faces and contact-card meaning. Not uniformly bold, not monoline, not rough texture: elegant controlled human variation in each stroke. Pure black ink with transparency, no white/cream fills in cards or hands, no background or grey washes, no words, same landscape 8:5 canvas and margins. Visible pressure variation at 192x120."
+    },
+    {
+      "subject": "Promises",
+      "prompt": "Redraw the attached handshake illustration. Essential correction: the existing result is MUCH TOO THIN, timid and monoline. Increase pressure contrast substantially. Use a bold expressive flexible dip pen, NOT a fine technical pen. Major outer contour strokes of sleeves, fingers and paper must travel from 2px hairline up to 14px broad ink and back to 2px WITHIN each single stroke, measured on this ~1600px-wide canvas. Use conspicuous swelling strokes and tapered flick ends, alternating thick curved shadow edges with fine lifted segments. Hands should have strong ink along undersides of fingers and wrists. Sleeve outlines should have decisive thick sections, thinning on upward turns. Interior hatching lighter, sparse. Moderate drawing density; no solid filled hands. Retain exact handshake and falling note and reaching hand concept, placement, framing and open interiors. Black ink only, fully transparent canvas and ALL interiors transparent, no white/cream fills, no greys. Human hand-drawn irregularity. NO mechanical monoline outlines. Make the pressure variation clearly visible when reduced to 192x120. Same landscape aspect. No text."
+    },
+    {
+      "subject": "Apps",
+      "prompt": "Redraw the attached tired-person illustration. Essential correction: current line work is MUCH TOO THIN, faint and monoline, especially shirt, desk and face. Increase pressure contrast substantially. Use bold expressive flexible dip-pen strokes. Major contours of sleeves, jaw, hair locks, hands, phone, closed laptop and desk must travel from 2px hairline to 14px broad ink and back to 2px WITHIN THE SAME UNBROKEN LINE, measured on the ~1600px-wide canvas. Each stroke has deliberate visibly thick and thin sections and a tapered flick at end, reflecting human pressure. Thick undersides of forearms, wrist, shoulders, jaw and hair curls, thin upward turns. Simplify the number of hair strands and folds: fewer, confident marks, spare interior hatching. Friendly editorial hand-drawn character, not anime polish, not fine technical pen. No uniform digital stroke. Keep the same exhausted person resting their head, closed laptop, held phone and small speech bubble. Same composition and 8:5 canvas, entire scene in margins. NO filled white or cream areas: all interiors truly transparent. Only pure black ink and alpha, no grey wash, background, texture or text. Pressure variation must remain obvious at 192x120 display."
+    }
+  ]
+}
