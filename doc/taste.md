@@ -2,7 +2,7 @@
 
 - Status: authoritative design guidance
 - Owner: Matt
-- Updated: 2026-10-17
+- Updated: 2026-10-21
 
 This file records Matt's reusable interface rules. Read it before proposing or
 building UI. It complements the measured tokens in `CLAUDE.md`.
@@ -440,6 +440,19 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   2026-10-19). Use foreground-coloured ink; do not keep white or cream fills
   or rely on raster inversion. See `doc/illustration-animation-workflow.md`
   for the 404 tree’s ink filter.
+
+- Comments from clients and users travel below the Experience list (Matt,
+  2026-10-21, after Wispr Flow's testimonial wall). Wispr was a reference for
+  the motion only; the card is Matt's: theme surface, elevated drop shadow,
+  16px squircle, half-star rating, the words as written, a hairline, a 40px
+  logo or initials tile with name and muted role. No section heading (Matt
+  removed "Kind words"). The cards run along one straight diagonal, bottom
+  left to top right, while the section stays pinned. The motion is linear, with
+  position tied directly to scroll and no easing or lag. A card is square at
+  the centre and shears as it leaves. Neighbours keep a 128px gap between
+  their edges at every width, never closer. This is the one sanctioned
+  scroll-linked motion besides the chain gate. See
+  `doc/profile-comments-plan.md`.
 
 ## 13. Review checklist
 

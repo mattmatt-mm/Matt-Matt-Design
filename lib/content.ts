@@ -391,3 +391,28 @@ export async function getTourCatalog() {
 }
 
 export type TourCatalog = Awaited<ReturnType<typeof getTourCatalog>>;
+
+export type Comment = {
+  name: string;
+  role: string;
+  comment: string;
+  /** Out of five, in half stars. Absent prints no stars. */
+  rating?: number;
+  logo?: string;
+  initials: string;
+};
+
+/** The floating comments under the Experience list on /profile. */
+export async function getComments(): Promise<Comment[]> {
+  const all = await reader.collections.comments.all();
+  return [...all]
+    .sort((a, b) => (a.entry.order ?? 0) - (b.entry.order ?? 0))
+    .map((e) => ({
+      name: e.entry.name,
+      role: e.entry.role,
+      comment: e.entry.comment,
+      rating: e.entry.rating ? Number(e.entry.rating) : undefined,
+      logo: e.entry.logo ?? undefined,
+      initials: e.entry.initials || e.entry.name.slice(0, 2),
+    }));
+}

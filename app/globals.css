@@ -41,6 +41,11 @@
      ISD dot hero is a piece of their brand, like a photograph. */
   --color-isd-orange: #fcb041;
   --color-isd-cream: #fcfaf6;
+  /* Profile comments (components/Comments.tsx), from Matt's mock. Fixed in
+     both themes: stars and the initials tile are marks, like a logo. */
+  --color-star: #ffa028;
+  --color-avatar: #d9bdf5;
+  --color-on-avatar: #000000;
 
   /* Spacing — px, not rem, so the 4px grid never drifts with root font-size.
      1 = 4px, 2 = 8px, 3 = 12px, 4 = 16px, 6 = 24px, 8 = 32px,
@@ -2992,5 +2997,103 @@
     .not-found-tree-still {
       display: block;
     }
+  }
+}
+
+/* Profile comments — cards travelling below the Experience list
+   (components/Comments.tsx, doc/profile-comments-plan.md). Without
+   JavaScript, or under reduced motion, they stack in the column. With it,
+   CommentsFloat sets data-track: the section grows by the track's length, a
+   full-bleed view pins to the screen, and the cards run along one straight
+   diagonal through its centre via the --float-* variables. */
+@layer components {
+  .comments-stage {
+    display: grid;
+    gap: 24px;
+  }
+
+  .comment-float {
+    --float-x: 0px;
+    --float-y: 0px;
+    --float-lean: 0deg;
+  }
+
+  .comments-track[data-track] {
+    height: calc(100dvh + var(--track-length, 0px));
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    overflow-x: clip;
+  }
+
+  .comments-track[data-track] .comments-view {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+  }
+
+  .comments-track[data-track] .comments-stage {
+    display: block;
+    position: relative;
+    height: 100%;
+  }
+
+  .comments-track[data-track] .comment-slot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(360px, 100vw - 48px);
+  }
+
+  .comments-track[data-track] .comment-float {
+    transform: translate(-50%, -50%) translate3d(var(--float-x), var(--float-y), 0)
+      skewX(var(--float-lean));
+    will-change: transform;
+  }
+
+  .comment-lift {
+    filter: var(--filter-elevated);
+  }
+
+  .comment-card {
+    background: var(--color-surface);
+    padding: 24px;
+  }
+
+  .comment-stars {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    color: var(--color-star);
+  }
+
+  .comment-quote {
+    white-space: pre-line;
+  }
+
+  .comment-by {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .comment-avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: var(--color-avatar);
+    color: var(--color-on-avatar);
+  }
+
+  .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }

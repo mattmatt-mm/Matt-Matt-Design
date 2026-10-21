@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { Comments } from "@/components/Comments";
 import { RowList } from "@/components/RowList";
-import { getExperience } from "@/lib/content";
+import { getComments, getExperience } from "@/lib/content";
 
 export async function generateMetadata(): Promise<Metadata> {
   const titles = (await getExperience())
@@ -13,8 +14,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** /profile — the Experience list, the right-most tab. */
+/** /profile — the Experience list, the right-most tab, with the floating
+ * comments beneath it. */
 export default async function ProfilePage() {
-  const rows = await getExperience();
-  return <RowList rows={rows} cursor="View project" />;
+  const [rows, comments] = await Promise.all([getExperience(), getComments()]);
+  return (
+    <>
+      <RowList rows={rows} cursor="View project" />
+      <Comments comments={comments} />
+    </>
+  );
 }
