@@ -2,13 +2,16 @@ reviewedAt: 2026-09-06
 voiceRules:
   - Speak about Matt in the third person.
   - Match the language used by the visitor.
-  - Stay on Matt and his design work; every answer should be about him, what he
+  - >-
+    Stay on Matt and his design work; every answer should be about him, what he
     makes, or how he works.
-  - Explain the approved fact in your own words rather than reciting it, but
+  - >-
+    Explain the approved fact in your own words rather than reciting it, but
     never claim anything it does not support.
   - Keep the response plain, direct, and free of promotional language.
-unknownFallback: Matt has not made that information available here. The visitor
-  can leave an email for Matt to follow up.
+unknownFallback: >-
+  Matt has not made that information available here. The visitor can leave an
+  email for Matt to follow up.
 facts:
   - id: hkust-ais
     topic: HKUST AIS
@@ -27,9 +30,10 @@ facts:
       - 品牌設計
       - 香港科技大學
     policy: answer
-    answer: Matt has just finished leading the brand design for HKUST AIS,
-      developing the school's brand assets and its office interior. His ongoing
-      work is Incipe Academy, which he co-founded.
+    answer: >-
+      Matt has just finished leading the brand design for HKUST AIS, developing
+      the school's brand assets and its office interior. His ongoing work is
+      Incipe Academy, which he co-founded.
     source: /
     lastReviewed: 2026-08-24
   - id: incipe-academy
@@ -42,7 +46,8 @@ facts:
       - 創業
       - 硬件原型
     policy: answer
-    answer: Matt co-founded Incipe Academy in 2023 and works there as a design
+    answer: >-
+      Matt co-founded Incipe Academy in 2023 and works there as a design
       engineer, building the Incipe Workspace software and leading its UIUX, web
       development and brand identity. It reaches markets in the US, Japan and
       India, and has been recognised by PolyU and HKSTP and won the IET Young
@@ -60,8 +65,9 @@ facts:
       - 設計方法
       - 如何合作
     policy: answer
-    answer: Matt co-designs with founders and senior leaders to build clear
-      product and brand foundations, with an emphasis on highly polished work.
+    answer: >-
+      Matt co-designs with founders and senior leaders to build clear product
+      and brand foundations, with an emphasis on highly polished work.
     source: /
     lastReviewed: 2026-08-23
   - id: availability-and-commercial
@@ -80,7 +86,6 @@ facts:
       - 預算
       - 檔期
     policy: contact_only
-    answer: ''
     source: Matt decides this directly.
     lastReviewed: 2026-08-23
   - id: personal-and-private
@@ -107,7 +112,6 @@ facts:
       - 家人
       - 密碼
     policy: never_answer
-    answer: ''
     source: Private by policy.
     lastReviewed: 2026-08-24
   - id: girlfriend
@@ -121,8 +125,11 @@ facts:
       - 女朋友
       - 伴侶
       - 感情狀況
+      - wife
+      - kitten
+      - mimi
     policy: answer
-    answer: Matt's girlfriend is Vivi.
+    answer: Matt's beloved kitty is Vivi Zheng.
     source: Matt approved sharing this.
     lastReviewed: 2026-08-24
   - id: education
@@ -139,8 +146,9 @@ facts:
       - 大學
       - 讀書
     policy: answer
-    answer: Matt studied at the Hong Kong University of Science and Technology,
-      taking a BSc in Integrative Systems and Design under Computer Science. His
+    answer: >-
+      Matt studied at the Hong Kong University of Science and Technology, taking
+      a BSc in Integrative Systems and Design under Computer Science. His
       strongest results were in branding, interaction design, product management
       and graphics design.
     source: Matt's CV, September 2026.
@@ -158,11 +166,12 @@ facts:
       - 技能
       - 工具
     policy: answer
-    answer: Matt works across frontend engineering, UIUX design and full-stack
+    answer: >-
+      Matt works across frontend engineering, UIUX design and full-stack
       development, alongside AI transformation and multidisciplinary project
-      management. He designs in Figma, models in Shapr3D and Blender, and
-      writes in Obsidian. He builds on Cloudflare, Supabase, Vercel and VPS,
-      wiring up LangChain, OpenRouter, Stripe and Resend.
+      management. He designs in Figma, models in Shapr3D and Blender, and writes
+      in Obsidian. He builds on Cloudflare, Supabase, Vercel and VPS, wiring up
+      LangChain, OpenRouter, Stripe and Resend.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
   - id: ocat-robotics
@@ -177,11 +186,12 @@ facts:
       - 機械人
       - 海洋公園
     policy: answer
-    answer: At Ocat Robotics Matt was the designer engineer behind a
-      biomimicry robotic penguin now deployed in Ocean Park. He crafted its
-      hardware appearance in Shapr3D and Fusion 360, trained a YOLOv8 model
-      with Roboflow for penguin detection and obstacle avoidance and deployed
-      it on a Jetson Orin, and presented the work at IEEE RoboSoft.
+    answer: >-
+      At Ocat Robotics Matt was the designer engineer behind a biomimicry
+      robotic penguin now deployed in Ocean Park. He crafted its hardware
+      appearance in Shapr3D and Fusion 360, trained a YOLOv8 model with Roboflow
+      for penguin detection and obstacle avoidance and deployed it on a Jetson
+      Orin, and presented the work at IEEE RoboSoft.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
   - id: project-melo
@@ -194,8 +204,9 @@ facts:
       - AI agents
       - 設計系統
     policy: answer
-    answer: For Project Melo Matt built an atomic design system in Obsidian
-      paired with AI agents, letting marketing teams generate brand-compliant web
+    answer: >-
+      For Project Melo Matt built an atomic design system in Obsidian paired
+      with AI agents, letting marketing teams generate brand-compliant web
       sections instantly and saving about three hours a day. He also designed a
       membership app and admin portal for event bidding.
     source: Matt's CV, September 2026.
@@ -208,7 +219,8 @@ facts:
       - manufacturing
       - 毛公仔
     policy: answer
-    answer: At Kedonia Matt is a forward deployed engineer working on plush
+    answer: >-
+      At Kedonia Matt is a forward deployed engineer working on plush
       manufacturing, taking products from 2D sketch through to 3D mockup to make
       the process faster to iterate on.
     source: Matt's CV, September 2026.
@@ -221,7 +233,8 @@ facts:
       - booking app
       - 美容
     policy: answer
-    answer: Matt was chief designer at Neardeal, a beauty service app, where he
+    answer: >-
+      Matt was chief designer at Neardeal, a beauty service app, where he
       developed a multi-stakeholder booking flow and an AI marketing platform.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
@@ -236,11 +249,12 @@ facts:
       - 獎項
       - 獎學金
     policy: answer
-    answer: Matt holds an HKSAR Talent Development Scholarship and was a
-      shortlisted presenter at the IEEE International Conference on Soft
-      Robotics. His ventures were top performer in HKSTP Incubation, awarded a
-      PolyU and HKSTP Micro Fund, second runner up in HK Challenge Plus, and
-      champion of the IET Young Professional Exhibition Competition.
+    answer: >-
+      Matt holds an HKSAR Talent Development Scholarship and was a shortlisted
+      presenter at the IEEE International Conference on Soft Robotics. His
+      ventures were top performer in HKSTP Incubation, awarded a PolyU and HKSTP
+      Micro Fund, second runner up in HK Challenge Plus, and champion of the IET
+      Young Professional Exhibition Competition.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
   - id: clients
@@ -254,9 +268,10 @@ facts:
       - ToyZeroPlus
       - 客戶
     policy: answer
-    answer: Matt co-designs digital experiences for senior leaders on their
-      private ventures, including a 2-Sigma CEO, an HSBC PayMe finance manager
-      and a ToyZeroPlus CFO. He prefers working in teams and leading a vision
-      through to product.
+    answer: >-
+      Matt co-designs digital experiences for senior leaders on their private
+      ventures, including a 2-Sigma CEO, an HSBC PayMe finance manager and a
+      ToyZeroPlus CFO. He prefers working in teams and leading a vision through
+      to product.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
