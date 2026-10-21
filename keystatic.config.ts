@@ -172,7 +172,7 @@ export default config({
   ui: {
     brand: { name: "mattmattdesign" },
     navigation: {
-      Content: ["experience", "gallery", "writing"],
+      Content: ["experience", "gallery", "writing", "comments"],
       Site: ["settings", "aiKnowledge"],
     },
   },
