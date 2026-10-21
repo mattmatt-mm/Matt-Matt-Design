@@ -412,6 +412,59 @@ export default config({
       },
     }),
 
+    comments: collection({
+      label: "Comments",
+      path: "content/comments/*",
+      slugField: "name",
+      format: { data: "yaml" },
+      columns: ["name", "role"],
+      schema: {
+        name: fields.slug({
+          name: {
+            label: "Name",
+            description: "First name only, as it appears on the card.",
+          },
+        }),
+        role: fields.text({
+          label: "Role",
+          description: "The grey line under the name, e.g. CEO, Neardeal.",
+        }),
+        comment: fields.text({
+          label: "Comment",
+          multiline: true,
+          description:
+            "In their own words. Line breaks show as typed; an empty line leaves a gap.",
+        }),
+        rating: fields.select({
+          label: "Stars",
+          options: [
+            { label: "None", value: "" },
+            { label: "5", value: "5" },
+            { label: "4.5", value: "4.5" },
+            { label: "4", value: "4" },
+            { label: "3.5", value: "3.5" },
+            { label: "3", value: "3" },
+          ],
+          defaultValue: "5",
+        }),
+        logo: fields.image({
+          label: "Logo",
+          directory: "public/images/comments",
+          publicPath: "/images/comments/",
+          description: "A square logo or picture. Leave empty to show initials.",
+        }),
+        initials: fields.text({
+          label: "Initials",
+          description: "Shown when there is no logo, e.g. Yo.",
+        }),
+        order: fields.integer({
+          label: "Order",
+          description: "Lower comes first.",
+          defaultValue: 1,
+        }),
+      },
+    }),
+
     writing: collection({
       label: "Writing",
       path: "content/writing/*",
