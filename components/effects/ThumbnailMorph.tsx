@@ -12,16 +12,27 @@ import { useEffect } from "react";
  * has no image to land on and simply navigates. No API, reduced motion, or a
  * modified click (new tab, new window) also navigate as normal.
  * See doc/thumbnail-morph-plan.md.
+ *
+ * A Fun tile (`data-morph="fun:<slug>"`) travels the same way into its
+ * piece's page, where it lands on the picture or the looping video
+ * (doc/fun-tab-plan.md).
  */
 
 const NAME = "case-thumb";
 /** Give up waiting for the new page after this long and let it fade in. */
 const WAIT_MS = 1500;
 
-function thumbnailOf(slug: string) {
-  const entry = document.querySelector(`[data-chain-entry="${CSS.escape(slug)}"]`);
+/** The page's landing element once it has rendered, null if it has none. */
+function landingOf(key: string): HTMLElement | null | undefined {
+  if (key.startsWith("fun:")) {
+    const hero = document.querySelector(`[data-fun-hero="${CSS.escape(key.slice(4))}"]`);
+    return hero ? hero.querySelector<HTMLElement>("img, video") : undefined;
+  }
+  const entry = document.querySelector(`[data-chain-entry="${CSS.escape(key)}"]`);
   // The first image before the entry's first section heading.
-  return entry?.querySelector<HTMLImageElement>(".prose > :not(h2 ~ *) img") ?? null;
+  return entry
+    ? entry.querySelector<HTMLImageElement>(".prose > :not(h2 ~ *) img")
+    : undefined;
 }
 
 // Rendering is paused while the transition waits for the new page, so no
@@ -30,14 +41,13 @@ function tick() {
   return new Promise<void>((resolve) => setTimeout(resolve, 16));
 }
 
-async function waitForThumbnail(slug: string) {
+async function waitForLanding(key: string) {
   const until = performance.now() + WAIT_MS;
   while (performance.now() < until) {
     // Once the entry exists the page has rendered: an entry with no image
     // thumbnail will never grow one, so stop looking.
-    if (document.querySelector(`[data-chain-entry="${CSS.escape(slug)}"]`)) {
-      return thumbnailOf(slug);
-    }
+    const landing = landingOf(key);
+    if (landing !== undefined) return landing;
     await tick();
   }
   return null;
@@ -63,7 +73,7 @@ export function ThumbnailMorph() {
       const link = (event.target as Element | null)?.closest<HTMLAnchorElement>(
         "a[data-morph]",
       );
-      const source = link?.querySelector("img");
+      const source = link?.querySelector<HTMLElement>("img, video");
       const slug = link?.dataset.morph;
       if (!link || !source || !slug) return;
 
@@ -72,11 +82,11 @@ export function ThumbnailMorph() {
       const href = link.getAttribute("href")!;
       source.style.viewTransitionName = NAME;
 
-      let target: HTMLImageElement | null = null;
+      let target: HTMLElement | null = null;
       const transition = document.startViewTransition(async () => {
         router.push(href);
-        target = await waitForThumbnail(slug);
-        if (target) {
+        target = await waitForLanding(slug);
+        if (target instanceof HTMLImageElement) {
           // A lazy image may not have loaded yet; the morph should land on
           // pixels, not an empty box.
           target.loading = "eager";
@@ -84,6 +94,8 @@ export function ThumbnailMorph() {
             target.decode().catch(() => {}),
             new Promise((resolve) => setTimeout(resolve, WAIT_MS)),
           ]);
+        }
+        if (target) {
           target.style.viewTransitionName = NAME;
         }
         // Let the router's scroll to the top land before the new capture.

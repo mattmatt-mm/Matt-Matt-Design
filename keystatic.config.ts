@@ -1,6 +1,7 @@
 import { config, fields, collection, singleton } from "@keystatic/core";
 import { block, repeating, wrapper } from "@keystatic/core/content-components";
 import { DISCIPLINES } from "./lib/disciplines";
+import { FUN_CATEGORIES } from "./lib/fun-categories";
 
 /**
  * A row of figures for a case study or post. `stats` holds two to four `stat`
@@ -172,7 +173,7 @@ export default config({
   ui: {
     brand: { name: "mattmattdesign" },
     navigation: {
-      Content: ["experience", "gallery", "writing", "comments"],
+      Content: ["experience", "gallery", "fun", "writing", "comments"],
       Site: ["settings", "aiKnowledge"],
     },
   },
@@ -408,6 +409,91 @@ export default config({
         date: fields.date({
           label: "Date",
           description: "Newest first.",
+        }),
+      },
+    }),
+
+    fun: collection({
+      label: "Fun",
+      path: "content/fun/*",
+      slugField: "title",
+      format: { data: "yaml" },
+      columns: ["title", "date"],
+      schema: {
+        title: fields.slug({
+          name: { label: "Title" },
+          slug: {
+            label: "URL slug",
+            description:
+              "The web address when this piece is open, /fun/… For a Chinese title, type an English slug here yourself.",
+          },
+        }),
+        subtitle: fields.text({
+          label: "Subtitle",
+          description: "The grey line under the title, e.g. 2nd place @ Hack Western 10",
+        }),
+        category: fields.select({
+          label: "Category",
+          description: "Which filter at the top of the Fun tab finds it.",
+          options: FUN_CATEGORIES.map((c) => ({ label: c.label, value: c.value })),
+          defaultValue: "side-project",
+        }),
+        date: fields.date({
+          label: "Date",
+          description: "Newest first. Shown when the piece is open.",
+          validation: { isRequired: true },
+        }),
+        image: fields.image({
+          label: "Image",
+          directory: "public/images/fun",
+          publicPath: "/images/fun/",
+          description:
+            "The picture. For a video, a still from it: the tile's shape and the colour dots are read from this.",
+        }),
+        video: fields.file({
+          label: "Video (.mp4)",
+          directory: "public/videos/fun",
+          publicPath: "/videos/fun/",
+          description:
+            "Optional. Plays silently on a loop in place of the image. Keep it under about 10MB.",
+        }),
+        alt: fields.text({
+          label: "Alt text",
+          multiline: true,
+          description: "Describe the picture for people using a screen reader.",
+        }),
+        more: fields.array(
+          fields.object({
+            image: fields.image({
+              label: "Image",
+              directory: "public/images/fun",
+              publicPath: "/images/fun/",
+            }),
+            alt: fields.text({ label: "Alt text", multiline: true }),
+          }),
+          {
+            label: "More images",
+            description: "Shown under the main one when the piece is open.",
+            itemLabel: (props) => props.fields.alt.value.slice(0, 48) || "Image",
+          },
+        ),
+        tools: fields.text({
+          label: "Tools",
+          description: "Optional line when the piece is open, e.g. Figma, Blender",
+        }),
+        palette: fields.text({
+          label: "Colours",
+          description:
+            "Optional. Up to four hex colours, e.g. #FF7A1A, #8B4513. Leave empty to pick them from the image.",
+        }),
+        project: fields.relationship({
+          label: "Links to case study",
+          collection: "experience",
+          description: "Optional. Adds a View project link when the piece is open.",
+        }),
+        externalUrl: fields.url({
+          label: "External link",
+          description: "Optional. Adds a View website link instead.",
         }),
       },
     }),

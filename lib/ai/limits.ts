@@ -8,34 +8,67 @@ export const MAX_AI_TURNS = 10;
 
 const segmenter = new Intl.Segmenter(undefined, { granularity: "word" });
 
-function truncateWords(value: string, maximum: number) {
+function countWords(value: string) {
   let count = 0;
   for (const segment of segmenter.segment(value)) {
-    if (!segment.isWordLike) continue;
-    count += 1;
-    if (count > maximum) return value.slice(0, segment.index).trimEnd();
+    if (segment.isWordLike) count += 1;
   }
-  return value;
+  return count;
 }
 
-/** Enforce the visible 100-word ceiling without buffering the whole answer. */
+/** Index just past the last sentence end in `value`, or 0 if there is none. */
+function lastSentenceEnd(value: string) {
+  let end = 0;
+  for (const match of value.matchAll(/[.!?。！？](?=\s|$)|[。！？]/gu)) {
+    end = (match.index ?? 0) + match[0].length;
+  }
+  return end;
+}
+
+/** Below this many words text streams straight through. */
+const SOFT_WORDS = 60;
+
+/**
+ * Enforce the visible 100-word ceiling without ever ending mid-sentence.
+ * Short answers stream through untouched. Past the soft mark, text is held
+ * back until its sentence ends and released only if that sentence still fits
+ * under the ceiling; a sentence that would cross it is dropped whole, so a
+ * long answer stops at its last complete sentence instead of on a dangling
+ * word.
+ */
 export function limitTextStream(
   source: ReadableStream<string>,
   maximum = MAX_AI_WORDS,
 ) {
   let emitted = "";
+  let pending = "";
   let capped = false;
 
   return source.pipeThrough(
     new TransformStream<string, string>({
       transform(chunk, controller) {
         if (capped) return;
-        const next = emitted + chunk;
-        const limited = truncateWords(next, maximum);
-        const delta = limited.slice(emitted.length);
-        if (delta) controller.enqueue(delta);
-        emitted = limited;
-        if (limited.length < next.length) capped = true;
+        pending += chunk;
+        if (countWords(emitted + pending) <= SOFT_WORDS) {
+          controller.enqueue(pending);
+          emitted += pending;
+          pending = "";
+          return;
+        }
+        const end = lastSentenceEnd(pending);
+        if (!end) return;
+        const sentence = pending.slice(0, end);
+        if (countWords(emitted + sentence) > maximum) {
+          capped = true;
+          return;
+        }
+        controller.enqueue(sentence);
+        emitted += sentence;
+        pending = pending.slice(end);
+      },
+      flush(controller) {
+        if (capped || !pending) return;
+        if (countWords(emitted + pending) <= maximum) controller.enqueue(pending);
       },
     }),
   );

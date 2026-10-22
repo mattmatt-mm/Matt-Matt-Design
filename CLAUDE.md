@@ -92,6 +92,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 5:3 image (640×384) is exactly 450px.
 - **A case study's thumbnail is the one thing that leaves the column.** Whatever sits before the first `##` heading — an image, a video or a Lottie sequence — opens the page at `min(840px, 100vw - 48px)`, centred on the 640px measure and inside the 24px gutters on a phone. Images, video and animation inside a section sit at the text's own 640px. Use symmetric negative margins, never a transform. To make an image the thumbnail, move it above the first heading.
 - **Profile comments** are the second thing that leaves the column: below the Experience list (no heading), a full-bleed view pins to the screen while the cards travel through it. Without JavaScript or under reduced motion they stack in the column (`components/Comments.tsx`, `doc/profile-comments-plan.md`).
+- **The Fun wall** is the third: `/fun` breaks out to `min(1200px, 100vw - 48px)` centred on the measure, 3 masonry columns with 24px gaps from 688px and 2 with 16px below. The filter row stays in the column. `/fun` has no intro: it lives outside `(site)` (`app/fun/page.tsx`) with the Header alone, at the same 60px, and the wall starts 60px below it (Matt, 2026-10-23). Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.
@@ -99,9 +100,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 ### Interaction
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
-- Tabs are **real links**, not client toggles. Left to right: **Home** `/` (the Gallery, house icon), **Writing** `/writing`, **Profile** `/profile` (the Experience list, person icon). Matt reordered them on 2026-10-17; `/gallery` permanently redirects to `/` (`next.config.ts`).
-- The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `188×48`, capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
-- On a detail page (`/work/*`, `/writing/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/profile` or `/writing`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
+- Tabs are **real links**, not client toggles. Left to right: **Home** `/` (the Gallery, house icon), **Writing** `/writing`, **Fun** `/fun` (side work, sparkle icon), **Profile** `/profile` (the Experience list, person icon). Matt reordered them on 2026-10-17 and added Fun on 2026-10-23; `/gallery` permanently redirects to `/` (`next.config.ts`).
+- The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `248×48` (`count × 60 + 8`), capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
+- On a detail page (`/work/*`, `/writing/*`, `/fun/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/profile`, `/writing` or `/fun`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
 - Tapping a tab hops the icon up `2px` and back over `240ms` and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the icon is `aria-hidden` with an `sr-only` label beside it so the tab is announced once.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
@@ -118,7 +119,8 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Detail pages carry a section rail: the current entry's `##` headings pinned to the screen's left edge (24px in), muted, with the section being read in fg. It follows the detail chain and fades out while breakout imagery passes beneath it (`components/SectionRail.tsx`).
 - Case studies can play Lottie exports in order and loop them with the Lottie sequence block (`{% lottie %}{% clip src /%}…{% /lottie %}`; files in `public/lottie/`). It loads when near the screen, pauses off screen, and under reduced motion holds the last clip's final frame. Re-encode embedded PNGs to WebP before adding a file (Kedonia's went from 3.9MB to 670KB).
 - Case studies and posts can set out figures with the Stats block (`{% stats %}{% stat value label /%}{% /stats %}`): figure in fg, label muted, 16/21 only.
-- Opening a case study from a home gallery card morphs the card's image into the case study's thumbnail over `--ai-open-dur` (View Transitions, `components/effects/ThumbnailMorph.tsx`); the rest of the page cross-fades. Forward only; skipped under reduced motion. Matt asked for it on 2026-10-18.
+- Opening a case study from a home gallery card morphs the card's image into the case study's thumbnail over `--ai-open-dur` (View Transitions, `components/effects/ThumbnailMorph.tsx`); the rest of the page cross-fades. Forward only; skipped under reduced motion. Matt asked for it on 2026-10-18. A Fun tile travels the same way into its piece's page (`data-morph="fun:<slug>"`, landing on `[data-fun-hero]`), 2026-10-23.
+- A Fun piece's page (`/fun/<slug>`, `components/fun/FunPiece.tsx`) is a file inspector: up to four colour dots on the left (picked from the image at build time with sharp, or typed in Keystatic), the work centred as large as the window allows, and title, subtitle, Resolution, Date and Tools on the right, label in fg and value muted. From 1104px the side columns are sticky while a set's further images scroll past; below it everything stacks. Tiles: caption dims on hover, cursor reads "View", press-shrink. A piece with more images is a stack — its next two pictures peek 8px and 16px above the cover and fan out ±16px / ±5° on hover or focus (`.fun-stack` in `app/globals.css`); a stacked tile drops its cover by that 16px so the peek never eats the gap above. On the piece's page both side columns are 192px, so the work sits on the window's centre line.
 - **HR mode** (`doc/hr-mode-plan.md`): about a second after a first visit, the AI opens on its own, asks for cookies (Decline / Accept, asked until answered), then offers a guided tour — No thanks / Walk me through, then a Branding · UI/UX · Frontend development checklist ("I'm hiring" above the composer reopens it), then "Start walkthrough" to `/tour/<focus>`, the case-study chain filtered to the chosen disciplines. On a walkthrough the dock is contracted as on a detail page, with an X that exits to Home; the cloud says "Please enjoy." then "You can change what's shown by pressing me." in a bubble, and pressing it reopens the checklist over any existing conversation. Offered at most once every 24 hours per browser, counted from when it appears (`mmd:tour-offered` holds the time); `?tour` on any URL offers it again. The checklist is one squircle panel on the email form's surface (`components/ai/AiTour.tsx`).
 - Engagement tracking is PostHog, consent-gated: nothing loads until **Accept** on the AI's cookie question (remembered as `mmd:tracking` = `granted`/`denied`), then pageviews, autocaptured clicks, heatmaps, masked session replays and named events (`tour_*`, `walkthrough_message_shown`, `case_study_viewed`, `ai_question_asked` with the question text, `contact_sent`; full list in the plan). `?ref=<name>` tags a visitor. Routed through `/ingest` (`next.config.ts`). Needs `NEXT_PUBLIC_POSTHOG_KEY`; without it every call is a no-op.
 - Start walkthrough plays a ~2.4s splash (`components/ai/WalkthroughSplash.tsx`): the pressed button swelling, blurring and fading as the page background fades up and the selected titles rise in, then a feathered upward wipe while the eyebrow and first title glide onto the page's own. Tap or Esc skips; none under reduced motion. Matt asked for it on 2026-10-18.
@@ -126,7 +128,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - No other page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
 
 ### Responsive
-The page gutters switch at `688px` — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout). Two component-level exceptions: a Stats block stacks below 640px, and the section rail only appears from 1104px, where it clears the 640px text by 48px (it steps aside while an 840px thumbnail passes beneath).
+The page gutters switch at `688px` — `24px` inline padding below it, none above. Row structure is identical at all widths (see Layout). Component-level exceptions: a Stats block stacks below 640px, the Fun wall drops from 3 columns to 2 below 688px, a Fun piece's page stacks below 1104px, and the section rail only appears from 1104px, where it clears the 640px text by 48px (it steps aside while an 840px thumbnail passes beneath).
 
 ---
 
@@ -139,6 +141,8 @@ app/
   (site)/page.tsx                       /          Home: the Gallery
   (site)/profile/page.tsx               /profile   Experience list
   (site)/writing/page.tsx               /writing
+  fun/page.tsx                          /fun       Fun: side work as masonry, ?c= filters, no intro
+  fun/[slug]/page.tsx                   one Fun piece (detail page)
   work/[slug]/page.tsx                  experience detail
   tour/[focus]/page.tsx                 HR-mode walkthrough — the chain filtered by discipline, noindex
   writing/[slug]/page.tsx               writing detail
@@ -149,6 +153,7 @@ app/
 components/  Comments Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats Engraving
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
              effects/ — includes ViewCursor, the dot + "View project" cursor (mounted in app/layout.tsx)
+             fun/ — FunWall (masonry + filters), FunPiece (a piece's page), FunVideo (on-screen silent loop)
 lib/content.ts                          the ONLY module that reads content
 content/     experience/ gallery/ writing/ settings.yaml
 public/images/
@@ -156,7 +161,7 @@ keystatic.config.ts
 ```
 
 Rules:
-- SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). Matt's full name and any photo of him never appear on the site or in code — he is "Matt" of "Matt Matt Design", Hong Kong. See `doc/seo-plan.md`.
+- SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). The site should be found by **"Matt Tam"**, **"Matt Matt Design"** and **"Matt Design"** (Matt, 2026-10-23): the full name goes in metadata only — titles, meta descriptions, keywords, JSON-LD (`name`, `alternateName`) and `llms.txt` — never in the copy a visitor reads, where he stays "Matt". No photo of him anywhere. See `doc/seo-plan.md`.
 - The Header + Intro block is byte-identical across all three tabs and **must not shift** when switching.
 - Everything statically generated; `generateStaticParams` on both detail routes.
 - Server components unless interactivity demands otherwise.
@@ -172,6 +177,7 @@ Case-study prose describes what an interaction feels like, never its measurement
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
 **writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `summary?` (meta description in the post's own language; falls back to the opening paragraph), `cover?` (share image only), `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
 **comments** — `name` (slug, first name only), `role` ("CEO, Neardeal"), `comment` (multiline; line breaks kept), `rating` (half stars, optional), `logo?` (`public/images/comments/`), `initials` (shown when there is no logo), `order` → `content/comments/*.yaml`, shown on `/profile`.
+**fun** — `title` (slug), `subtitle`, `category` (`hackathon` | `side-project` | `motion` | `illustration`, from `lib/fun-categories.ts`; a filter shows only once a piece uses it), `date`, `image` (the picture, or a video's still — layout, palette and Resolution read it), `video?` (.mp4, silent loop), `alt`, `more[]` (`{ image, alt }`, shown under the main one), `tools?`, `palette?` (hex override), `project?`, `externalUrl?` → `content/fun/*.yaml`, media in `public/images/fun/` and `public/videos/fun/`. Newest first.
 **settings** (singleton) — `name`, `role`, `intro[]`, `socials[]`, `email` → **`content/settings.yaml`** (no trailing slash on the singleton path means a file, not a directory)
 
 There is no `group` field. Grouping is derived in `lib/content.ts`: consecutive entries sharing a `label` form a group, only the first keeps the visible label, and the rule before a new group runs full width.

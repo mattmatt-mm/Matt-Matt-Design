@@ -1,10 +1,17 @@
 import type { Settings } from "@/lib/content";
-import { person, siteDescription, siteName, siteUrl } from "@/lib/site";
+import {
+  person,
+  siteAlternateNames,
+  siteDescription,
+  siteName,
+  siteUrl,
+} from "@/lib/site";
 
 /**
  * Schema.org descriptions of the site, for search engines and AI answers. Every
- * value comes from public content: never the AI's CV facts, and never Matt's
- * full name or a photo of him. See doc/seo-plan.md.
+ * value comes from public content: never the AI's CV facts, and never a photo
+ * of Matt. His full name is here because search should find him by it; the
+ * page copy still says "Matt". See doc/seo-plan.md.
  */
 
 const personId = `${siteUrl}/#person`;
@@ -19,6 +26,9 @@ export function homeSchema(settings: Settings) {
       "@type": "Person",
       "@id": personId,
       name: person.name,
+      givenName: person.givenName,
+      familyName: person.familyName,
+      alternateName: person.alternateName,
       jobTitle: person.jobTitle,
       description: siteDescription,
       url: siteUrl,
@@ -36,6 +46,7 @@ export function homeSchema(settings: Settings) {
       "@type": "WebSite",
       "@id": websiteId,
       name: siteName,
+      alternateName: siteAlternateNames,
       url: siteUrl,
       description: siteDescription,
       inLanguage: ["en", "zh-Hant"],

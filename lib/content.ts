@@ -1,6 +1,7 @@
 import { createReader } from "@keystatic/core/reader";
 import type { Node as MarkdocNode } from "@markdoc/markdoc";
 import { imageSize } from "image-size";
+import sharp from "sharp";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -8,6 +9,7 @@ import keystaticConfig from "@/keystatic.config";
 import type { Row } from "@/components/RowList";
 import type { GalleryEntry } from "@/components/GalleryList";
 import type { Discipline } from "@/lib/disciplines";
+import type { FunCategory } from "@/lib/fun-categories";
 
 const reader = createReader(process.cwd(), keystaticConfig);
 
@@ -415,4 +417,148 @@ export async function getComments(): Promise<Comment[]> {
       logo: e.entry.logo ?? undefined,
       initials: e.entry.initials || e.entry.name.slice(0, 2),
     }));
+}
+
+export type FunMedia = {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+};
+
+export type FunPiece = {
+  slug: string;
+  title: string;
+  subtitle: string;
+  category: FunCategory;
+  /** YYYY-MM-DD. */
+  date: string;
+  /** The picture, or the video's still. Absent shows the grey placeholder. */
+  image?: FunMedia;
+  video?: string;
+  more: FunMedia[];
+  tools: string;
+  /** Hex colours, typed in Keystatic or picked from the image. */
+  palette: string[];
+  /** A case study page, or an external site. */
+  href?: string;
+};
+
+const PALETTE_SIZE = 4;
+
+type Rgb = [number, number, number];
+
+function distance(a: Rgb, b: Rgb) {
+  return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+}
+
+/** How far a colour sits from the straight mix of two others. */
+function toSegment(c: Rgb, a: Rgb, b: Rgb) {
+  const ab = b.map((v, i) => v - a[i]);
+  const len = ab.reduce((s, v) => s + v * v, 0);
+  const t = len
+    ? Math.max(0, Math.min(1, ab.reduce((s, v, i) => s + v * (c[i] - a[i]), 0) / len))
+    : 0;
+  return distance(c, a.map((v, i) => v + t * ab[i]) as Rgb);
+}
+
+/**
+ * The colours a picture is made of, most of it first: pixels are binned on a
+ * coarse cube, and a bin only counts if it is far enough from every colour
+ * already picked, so four shades of one orange read as one dot. Transparent
+ * areas are left out rather than counted as white.
+ */
+async function pickPalette(publicPath: string): Promise<string[]> {
+  try {
+    const file = path.join(process.cwd(), "public", publicPath);
+    const { data, info } = await sharp(file)
+      .ensureAlpha()
+      .resize(64, 64, { fit: "inside" })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    const bins = new Map<number, { n: number; r: number; g: number; b: number }>();
+    let total = 0;
+    for (let i = 0; i < data.length; i += info.channels) {
+      if (data[i + 3] < 128) continue;
+      const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
+      const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4);
+      const bin = bins.get(key) ?? { n: 0, r: 0, g: 0, b: 0 };
+      bin.n += 1;
+      bin.r += r;
+      bin.g += g;
+      bin.b += b;
+      bins.set(key, bin);
+      total += 1;
+    }
+
+    const picked: Rgb[] = [];
+    for (const bin of [...bins.values()].sort((a, b) => b.n - a.n)) {
+      if (picked.length === PALETTE_SIZE || bin.n < total * 0.002) break;
+      const c: Rgb = [bin.r / bin.n, bin.g / bin.n, bin.b / bin.n];
+      const distinct = picked.every((p) => distance(p, c) > 56);
+      // The soft edge between two colours already picked is a blend of
+      // them, not a colour of its own.
+      const blend = picked.some((a, i) =>
+        picked.slice(i + 1).some((b) => toSegment(c, a, b) < 32),
+      );
+      if (distinct && !blend) picked.push(c);
+    }
+    return picked.map(
+      (c) => `#${c.map((v) => Math.round(v).toString(16).padStart(2, "0")).join("")}`.toUpperCase(),
+    );
+  } catch {
+    return [];
+  }
+}
+
+function funMedia(src: string | null | undefined, alt: string): FunMedia | undefined {
+  return src ? { src, alt, ...measure(src) } : undefined;
+}
+
+/** The Fun tab, newest first. See doc/fun-tab-plan.md. */
+export async function getFun(): Promise<FunPiece[]> {
+  const [all, experience] = await Promise.all([
+    reader.collections.fun.all(),
+    reader.collections.experience.all(),
+  ]);
+
+  const pageFor = new Map(
+    experience
+      .filter((e) => e.entry.hasPage && !e.entry.externalUrl)
+      .map((e) => [e.slug, `/work/${e.slug}`]),
+  );
+
+  const sorted = [...all].sort((a, b) =>
+    (b.entry.date ?? "").localeCompare(a.entry.date ?? ""),
+  );
+
+  return Promise.all(
+    sorted.map(async ({ slug, entry }) => {
+      const typed = entry.palette
+        .split(/[\s,]+/)
+        .filter((c) => /^#[0-9a-f]{6}$/i.test(c))
+        .slice(0, PALETTE_SIZE)
+        .map((c) => c.toUpperCase());
+      return {
+        slug,
+        title: entry.title,
+        subtitle: entry.subtitle,
+        category: entry.category,
+        date: entry.date ?? "",
+        image: funMedia(entry.image, entry.alt),
+        video: entry.video ?? undefined,
+        more: entry.more.flatMap((m) => funMedia(m.image, m.alt) ?? []),
+        tools: entry.tools,
+        palette: typed.length
+          ? typed
+          : entry.image
+            ? await pickPalette(entry.image)
+            : [],
+        href:
+          entry.externalUrl ||
+          (entry.project ? pageFor.get(entry.project) : undefined),
+      };
+    }),
+  );
 }

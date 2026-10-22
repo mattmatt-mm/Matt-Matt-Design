@@ -16,21 +16,17 @@ const injectionMarkers = [
   "隱藏指令",
 ];
 
+// Pricing is not here: Matt answers it himself, through the pricing fact in
+// the knowledge base (2026-10-22).
 const contactMarkers = [
   "available",
   "availability",
   "hire",
   "freelance",
-  "rate",
-  "pricing",
-  "price",
-  "budget",
   "timeline",
   "meeting",
   "introduction",
   "合作",
-  "報價",
-  "預算",
   "檔期",
   "會面",
 ];

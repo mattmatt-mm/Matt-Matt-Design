@@ -97,10 +97,17 @@ AIs trust a fact more when several independent places agree on it.
 
 Nothing here changes how any page looks.
 
-### 2.1 Identity and audiences — without a full name
+### 2.1 Identity and audiences
 
-Matt's full name never appears on the site or in its code (Matt, 2026-10-19).
-The site is identified instead by four things that always appear together:
+On 2026-10-23 Matt asked to be found by **"Matt Tam"**, **"Matt Matt Design"**
+and **"Matt Design"**. The full name now goes in metadata only: the home title
+("Matt Tam — Matt Matt Design · Design Engineer in Hong Kong"), meta
+descriptions, keywords, the Person schema (`name`, `givenName`, `familyName`,
+`alternateName`), the WebSite schema's `alternateName`, and `llms.txt`. The
+copy a visitor reads still says "Matt". (Until then the full name was kept off
+the site entirely, decided 2026-10-19.)
+
+Alongside the names, four things always appear together:
 
 - **Name**: "Matt", with the brand **"Matt Matt Design"** as the name of the
   site (it matches the domain and the LinkedIn/GitHub handle `mattmatt-mm`).
@@ -203,6 +210,9 @@ and AI answers lag behind the search indexes they draw on.
 ## Decisions
 
 - 2026-10-19 — No full name anywhere on the site or in its code. No headshot.
+- 2026-10-23 — Superseded for metadata: search should find "Matt Tam", "Matt
+  Matt Design" and "Matt Design". Full name in titles, descriptions, keywords,
+  JSON-LD and llms.txt; never in visible copy. Still no headshot.
 - 2026-10-19 — Based in Hong Kong. US audience: Design Engineer. Hong Kong
   audience: UI/UX, Brand, AI Transformation.
 - 2026-10-19 — The site's brand name is "Matt Matt Design".

@@ -2956,6 +2956,164 @@
 }
 
 @layer components {
+  /* Fun tab (components/fun/, doc/fun-tab-plan.md). The filters stay in the
+     640px column; the wall leaves it at up to 1200px (Matt, 2026-10-23),
+     centred on the measure. Below 688px the column already is the
+     window less its gutters, so the margins come to nothing. */
+  .fun-filters {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 16px;
+    row-gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .fun-wall {
+    width: min(1200px, 100vw - 48px);
+    margin-inline: calc((100% - min(1200px, 100vw - 48px)) / 2);
+  }
+
+  /* A set's tile is a stack. At rest its next pictures peek above the
+     cover, each a step smaller; under the pointer (or keyboard focus) they
+     fan out to either side so more of each shows. Only transform moves, on
+     the shared open clock. The hovered tile lifts above its neighbours so a
+     fanned card is never cut by the next column. */
+  .fun-tile {
+    position: relative;
+  }
+
+  .fun-tile:is(:hover, :focus-visible) {
+    z-index: 1;
+  }
+
+  .fun-stack {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* The peek is room the stack owns: it sits below the tile above by the
+     same gap as any other tile, and its cover drops to make way. */
+  .fun-stack[data-stack="1"] {
+    margin-top: 8px;
+  }
+
+  .fun-stack[data-stack="2"] {
+    margin-top: 16px;
+  }
+
+  .fun-stack-card {
+    z-index: -1;
+    object-fit: cover;
+    transition: transform var(--ai-open-dur) var(--ai-ease);
+  }
+
+  /* Scaled about the centre, so each lift adds back half of what the scale
+     took off the top: the edges peek 8px and 16px above the cover. */
+  .fun-stack-card[data-depth="1"] {
+    transform: translateY(calc(-3% - 8px)) scale(0.94);
+  }
+
+  .fun-stack-card[data-depth="2"] {
+    z-index: -2;
+    transform: translateY(calc(-6% - 16px)) scale(0.88);
+  }
+
+  .fun-tile:is(:hover, :focus-visible) .fun-stack-card[data-depth="1"] {
+    transform: translate(-16px, calc(-3% - 12px)) rotate(-5deg) scale(0.94);
+  }
+
+  .fun-tile:is(:hover, :focus-visible) .fun-stack-card[data-depth="2"] {
+    transform: translate(16px, calc(-6% - 20px)) rotate(5deg) scale(0.88);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fun-stack-card {
+      transition: none;
+    }
+  }
+
+  /* A piece's page (components/fun/FunPiece.tsx). Phone and tablet: the
+     work, then its colours, details and the rest of the set, down one column
+     inside the gutters. */
+  .fun-piece {
+    --fun-hero-w: min(calc(var(--fun-w) * 1px), 100vw - 48px);
+    display: grid;
+    grid-template-columns: var(--fun-hero-w);
+    grid-template-areas: "hero" "palette" "details" "more";
+    row-gap: 24px;
+    justify-content: center;
+    padding: 60px 24px 128px;
+  }
+
+  .fun-piece-hero {
+    grid-area: hero;
+  }
+
+  .fun-piece-palette {
+    grid-area: palette;
+    display: flex;
+    gap: 12px;
+  }
+
+  /* A true circle, so plain border-radius; the navigation rim draws the edge
+     of a colour that is close to the page. */
+  .fun-piece-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    box-shadow: var(--shadow-navigation);
+  }
+
+  .fun-piece-details {
+    grid-area: details;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .fun-piece-more {
+    grid-area: more;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* Wide: colours left, work centred, details right, after the reference.
+     The side columns are the same 192px, so the work sits on the window's
+     centre line; the dots stand against the work's left edge. The work
+     rests as large as the window allows inside the 60px top line, never
+     past its own pixels; the side columns hold still while the rest of a
+     set scrolls past. */
+  @media (width >= 1104px) {
+    .fun-piece {
+      --fun-hero-w: min(
+        calc(var(--fun-w) * 1px),
+        100vw - 528px,
+        (100dvh - 120px) * var(--fun-ratio)
+      );
+      grid-template-columns: 192px var(--fun-hero-w) 192px;
+      grid-template-rows: auto 1fr;
+      grid-template-areas:
+        "palette hero details"
+        "palette more details";
+      column-gap: 48px;
+    }
+
+    .fun-piece-palette,
+    .fun-piece-details {
+      position: sticky;
+      top: 60px;
+      align-self: start;
+    }
+
+    .fun-piece-palette {
+      flex-direction: column;
+      justify-self: end;
+    }
+  }
+}
+
+@layer components {
   /* Engraving ornament (components/Engraving.tsx). The SVG is a mask and the
      ink is the text colour, so it follows the theme and the inverted
      surfaces. See doc/engraving-graphics.md. */

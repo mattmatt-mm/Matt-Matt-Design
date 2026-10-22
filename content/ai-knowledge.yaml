@@ -1,4 +1,4 @@
-reviewedAt: 2026-09-06
+reviewedAt: 2026-10-22
 voiceRules:
   - Speak about Matt in the third person.
   - Match the language used by the visitor.
@@ -6,9 +6,12 @@ voiceRules:
     Stay on Matt and his design work; every answer should be about him, what he
     makes, or how he works.
   - >-
-    Explain the approved fact in your own words rather than reciting it, but
-    never claim anything it does not support.
-  - Keep the response plain, direct, and free of promotional language.
+    Speak like a person who knows Matt's work, not like a CV: explain what he
+    did and why it mattered, in your own words, and never claim anything the
+    briefing does not support.
+  - >-
+    Keep it warm and plain. Avoid promotional language, superlatives and
+    buzzwords.
 unknownFallback: >-
   Matt has not made that information available here. The visitor can leave an
   email for Matt to follow up.
@@ -77,17 +80,45 @@ facts:
       - availability
       - hire
       - freelance
-      - rate
-      - price
-      - budget
       - timeline
       - 合作
-      - 報價
-      - 預算
       - 檔期
     policy: contact_only
     source: Matt decides this directly.
     lastReviewed: 2026-08-23
+  - id: pricing
+    topic: Pricing
+    aliases:
+      - price
+      - pricing
+      - prices
+      - rate
+      - rates
+      - charge
+      - charges
+      - cost
+      - costs
+      - fee
+      - fees
+      - quote
+      - budget
+      - subscription
+      - how much does Matt charge
+      - 價錢
+      - 收費
+      - 報價
+      - 預算
+      - 月費
+    policy: answer
+    answer: >-
+      Matt does not hand out a one-off price before he understands a project.
+      He sees quoting a fixed number up front as irresponsible, because a price
+      set before the problem is understood tends to buy a bad result. He works
+      in two ways: a subscription of HK$30,000 a month for unlimited design
+      requests, or customised one-off pricing worked out once he knows what the
+      project needs. For a tailored quote, the visitor can leave an email.
+    source: Matt, 2026-10-22.
+    lastReviewed: 2026-10-22
   - id: personal-and-private
     topic: Personal and private information
     aliases:
@@ -208,7 +239,9 @@ facts:
       For Project Melo Matt built an atomic design system in Obsidian paired
       with AI agents, letting marketing teams generate brand-compliant web
       sections instantly and saving about three hours a day. He also designed a
-      membership app and admin portal for event bidding.
+      membership app and admin portal for event bidding, and the app portal
+      for Melo's events that connect local university students with industry
+      CEOs, where his job was making taking part engaging for the students.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
   - id: kedonia
@@ -275,3 +308,78 @@ facts:
       to product.
     source: Matt's CV, September 2026.
     lastReviewed: 2026-09-06
+  - id: education-mission
+    topic: Teaching and Matt's education mission
+    aliases:
+      - teach
+      - teaching
+      - students
+      - school
+      - schools
+      - education mission
+      - edtech
+      - workshop
+      - 教學
+      - 學生
+      - 學校
+    policy: answer
+    answer: >-
+      Through Incipe Academy, Matt has been bringing AI and hardware
+      prototyping experiences to local schools in Hong Kong. What he cares about
+      most is students building something useful for their own daily lives,
+      rather than reproducing a set outcome, and leaving confident that they
+      can create with technology. After class, students carry on in a
+      technology community where they share news and products they have found.
+      One student said he wanted to turn his project into a startup, which
+      meant a lot to Matt. His wider mission is helping underserved students in
+      Hong Kong gain that confidence.
+    source: Matt's Global Shapers application notes, October 2026.
+    lastReviewed: 2026-10-22
+  - id: hong-kong
+    topic: Hong Kong and the future Matt hopes for
+    aliases:
+      - Hong Kong
+      - community
+      - social impact
+      - why does Matt care
+      - vision
+      - future
+      - young people
+      - 香港
+      - 社區
+      - 年輕人
+    policy: answer
+    answer: >-
+      Matt cares about Hong Kong's young people having the opportunity and
+      confidence to shape their own futures. He has noticed that personalised
+      technology courses, the kind that support a student's own ideas, are
+      often expensive, which puts them out of reach for many families. He
+      believes creativity and critical thinking are becoming more valuable for
+      the next generation in the AI era, and hopes for a Hong Kong where family
+      income does not decide who gets to learn creative technology.
+    source: Matt's Global Shapers application notes, October 2026.
+    lastReviewed: 2026-10-22
+  - id: collaboration-and-learning
+    topic: How Matt collaborates and what he wants to learn
+    aliases:
+      - teamwork
+      - team
+      - collaborate
+      - learn
+      - motivation
+      - what drives Matt
+      - why does Matt do this
+      - 團隊
+      - 學習
+      - 動力
+    policy: answer
+    answer: >-
+      Matt enjoys turning shared ideas into practical experiences, and he looks
+      for collaborators with different perspectives who will challenge his
+      assumptions. He wants to learn from educators and people who work closely
+      with communities, because they spot needs he might overlook as a builder.
+      On a shared project he likes to own a clear deliverable and keep
+      supporting it after it ships. Seeing people benefit from something he
+      helped make is what brings him joy.
+    source: Matt's Global Shapers application notes, October 2026.
+    lastReviewed: 2026-10-22
