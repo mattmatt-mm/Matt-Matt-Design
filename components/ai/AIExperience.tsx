@@ -347,7 +347,11 @@ export function AIExperience({
         body: JSON.stringify({
           question: cleanQuestion,
           turn,
-          firstQuestion: turn === 2 ? firstQuestion : undefined,
+          // Every follow-up names the opening question: the server checks it
+          // against the turn cookie, and leaving it off past the second turn
+          // made every later question fail as "unavailable".
+          firstQuestion: turn > 1 ? firstQuestion : undefined,
+          history: turn > 1 ? exchanges.slice(-3) : undefined,
         }),
       });
       if (!response.ok || !response.body) {

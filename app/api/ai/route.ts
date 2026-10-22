@@ -7,7 +7,12 @@ import {
 } from "@/lib/ai/limits";
 import { getPortfolioModel } from "@/lib/ai/models";
 import { decideKnowledge } from "@/lib/ai/policy";
-import { buildInstructions, buildPrompt } from "@/lib/ai/prompt";
+import {
+  buildInstructions,
+  buildPrompt,
+  type Exchange,
+  type Wall,
+} from "@/lib/ai/prompt";
 import { requestIp, sameOrigin, takeRateLimit } from "@/lib/ai/request";
 import { turnCookie, validateTurn } from "@/lib/ai/turn";
 
@@ -18,7 +23,29 @@ type AIRequest = {
   question?: unknown;
   firstQuestion?: unknown;
   turn?: unknown;
+  history?: unknown;
 };
+
+/** Earlier exchanges the model sees, so a follow-up can lean on what was
+ * said. Visitor-supplied, so it is capped and only ever shapes the answer to
+ * that same visitor. */
+const MAX_HISTORY = 3;
+const MAX_HISTORY_ANSWER_CHARS = 900;
+
+function readHistory(value: unknown): Exchange[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .slice(-MAX_HISTORY)
+    .filter(
+      (item): item is Exchange =>
+        typeof item?.question === "string" && typeof item?.answer === "string",
+    )
+    .map((item) => ({
+      question: item.question.trim().slice(0, MAX_QUESTION_CHARS),
+      answer: item.answer.trim().slice(0, MAX_HISTORY_ANSWER_CHARS),
+    }))
+    .filter((item) => item.question && item.answer);
+}
 
 function error(message: string, status: number) {
   return Response.json(
@@ -77,7 +104,7 @@ export async function POST(request: Request) {
   }
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 2_000) return error("Question is too large.", 413);
+  if (contentLength > 8_000) return error("Question is too large.", 413);
 
   const ip = requestIp(request);
   // A whole session has to fit inside the short window, or the ceiling meant
@@ -128,15 +155,20 @@ export async function POST(request: Request) {
     return error("Matt's AI is unavailable right now. Please try again later.", 429);
   }
 
+  const history = readHistory(body.history);
+
   try {
     const knowledge = await getAIKnowledge();
-    const currentDecision = decideKnowledge(question, knowledge.facts);
-    const decision =
-      currentDecision.outcome === "contact" &&
-      currentDecision.reason === "unknown" &&
-      firstQuestion
-        ? decideKnowledge(`${firstQuestion} ${question}`, knowledge.facts)
-        : currentDecision;
+    const decision = decideKnowledge(question, knowledge.facts);
+    // Private, contact-only and prompt-injection questions are walled off here,
+    // before the model, so no wording can talk it into answering them. Anything
+    // else goes to the model with the whole briefing, including questions no
+    // alias matched: the briefing decides what it can say, not a keyword.
+    const wall: Wall =
+      decision.outcome === "contact" && decision.reason !== "unknown"
+        ? decision.reason
+        : null;
+    const outcome = wall ? "contact" : "answer";
 
     // Local visual QA remains usable before Matt adds his server key. This
     // branch is unreachable in production and never pretends to be a model.
@@ -154,7 +186,7 @@ export async function POST(request: Request) {
           "Cache-Control": "no-store",
           "Content-Type": "text/plain; charset=utf-8",
           "Set-Cookie": turnCookie(turn, question, firstQuestion),
-          "X-AI-Outcome": decision.outcome,
+          "X-AI-Outcome": outcome,
           "X-AI-Preview": "static-approved-copy",
         },
       });
@@ -162,10 +194,16 @@ export async function POST(request: Request) {
 
     const result = streamText({
       model: getPortfolioModel(),
-      instructions: buildInstructions(knowledge, decision),
-      prompt: buildPrompt({ question, firstQuestion }),
-      maxOutputTokens: 180,
-      temperature: 0.2,
+      instructions: buildInstructions(knowledge, wall),
+      prompt: buildPrompt({ question, history }),
+      // GLM thinks before it writes, and its reasoning (about 200 tokens) is
+      // billed against this budget. At 320 a longer answer ran out mid-sentence;
+      // 800 leaves room for the thinking plus 100 words in Chinese or English.
+      // The stream limit below still holds the visible ceiling.
+      maxOutputTokens: 800,
+      // Enough variety to sound like a person rather than a recited fact; the
+      // briefing, not the temperature, is what keeps it truthful.
+      temperature: 0.7,
       abortSignal: AbortSignal.any([
         request.signal,
         AbortSignal.timeout(20_000),
@@ -181,7 +219,7 @@ export async function POST(request: Request) {
       headers: {
         "Cache-Control": "no-store",
         "Set-Cookie": turnCookie(turn, question, firstQuestion),
-        "X-AI-Outcome": decision.outcome,
+        "X-AI-Outcome": outcome,
       },
     });
   } catch (cause) {

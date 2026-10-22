@@ -368,6 +368,11 @@ must never be inserted into model context.
 
 ### Prompt contract
 
+> Updated 2026-10-22: the model now receives every approved fact as one
+> briefing rather than a single keyword-matched fact, with conversation
+> memory and a warmer voice. Private and contact walls are unchanged. See
+> `doc/ai-voice-plan.md`.
+
 The server-owned system instruction should require the assistant to:
 
 - speak about Matt only in the third person;
