@@ -5,7 +5,7 @@ import { getWriting } from "@/lib/content";
 export const metadata: Metadata = {
   title: "Writing",
   description:
-    "Writing by Matt, a Hong Kong–based design engineer, on interface design, motion and taste. In English and Chinese.",
+    "Writing by Matt Tam of Matt Matt Design, a Hong Kong–based design engineer, on interface design, motion and taste. In English and Chinese.",
   alternates: { canonical: "/writing" },
 };
 

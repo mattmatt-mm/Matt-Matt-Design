@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { SquircleNoScript } from "@squircle-js/react";
 import {
+  person,
   siteDescription,
+  siteKeywords,
   siteName,
   siteShortName,
   siteSocialImage,
@@ -23,6 +25,11 @@ export const metadata: Metadata = {
     template: `%s — ${siteName}`,
   },
   description: siteDescription,
+  applicationName: siteName,
+  keywords: siteKeywords,
+  authors: [{ name: person.name, url: siteUrl }],
+  creator: person.name,
+  publisher: siteName,
   manifest: "/manifest.webmanifest",
   openGraph: {
     title: siteTitle,

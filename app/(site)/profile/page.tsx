@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     .join(", ");
   return {
     title: "Profile",
-    description: `Work by Matt, a Hong Kong–based design engineer for UI/UX, brand design and AI transformation: ${titles}.`,
+    description: `Work by Matt Tam of Matt Matt Design, a Hong Kong–based design engineer for UI/UX, brand design and AI transformation: ${titles}.`,
     alternates: { canonical: "/profile" },
   };
 }

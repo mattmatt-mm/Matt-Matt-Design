@@ -3,6 +3,7 @@
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { House } from "@phosphor-icons/react/dist/ssr/House";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
+import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import { X } from "@phosphor-icons/react/dist/ssr/X";
 import Link from "next/link";
@@ -12,15 +13,19 @@ import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 import { track } from "@/lib/analytics";
 
-// Home (the Gallery) on the left, Writing in the middle, Profile (the
+// Home (the Gallery) on the left, then Writing and Fun, Profile (the
 // Experience list) on the right.
 const tabs = [
   { href: "/", label: "Home", icon: House },
   { href: "/writing", label: "Writing", icon: PenNib },
+  { href: "/fun", label: "Fun", icon: Sparkle },
   { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 
 const TAP_VOLUME = 0.5;
+
+/** Pages that contract the bar into the back arrow. */
+const DETAIL = /^\/(work|writing|fun)\/[^/]+/;
 
 
 export function AiDock({
@@ -45,17 +50,21 @@ export function AiDock({
   // A guided walkthrough (doc/hr-mode-plan.md) wears the same contracted bar,
   // but its circle is the way out of the walkthrough rather than a step back.
   const walkthrough = pathname.startsWith("/tour/");
-  const detail = walkthrough || /^\/(work|writing)\/[^/]+/.test(pathname);
+  const detail = walkthrough || DETAIL.test(pathname);
   const backHref = walkthrough
     ? "/"
     : pathname.startsWith("/writing/")
       ? "/writing"
-      : "/profile";
+      : pathname.startsWith("/fun/")
+        ? "/fun"
+        : "/profile";
   const backLabel = walkthrough
     ? "Exit walkthrough"
     : backHref === "/profile"
       ? "Back to Profile"
-      : "Back to Writing";
+      : backHref === "/fun"
+        ? "Back to Fun"
+        : "Back to Writing";
   const tabsHidden = aiOpen || detail;
 
   // The arrow means "back to where I was": a gallery item returns to the
@@ -79,7 +88,7 @@ export function AiDock({
   useEffect(() => {
     const previous = previousPath.current;
     const previousWasDetail =
-      previous !== null && /^\/(work|writing)\/[^/]+/.test(previous);
+      previous !== null && DETAIL.test(previous);
     // Moving between entries of one detail page (the scroll tour replacing
     // the URL) keeps whatever the arrow already knew.
     if (!detail) setCanStepBack(false);

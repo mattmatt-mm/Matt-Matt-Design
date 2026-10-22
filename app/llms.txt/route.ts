@@ -52,7 +52,7 @@ export async function GET() {
     "",
     `> ${siteDescription}`,
     "",
-    `${person.name} is a ${person.jobTitle.toLowerCase()} based in ${person.locality}, working with clients in ${person.areaServed.map((place) => (place === "United States" ? "the United States" : place)).join(" and ")}. Areas of work: ${person.knowsAbout.join(", ")}.`,
+    `${person.name}, who works as ${siteName} (also known as ${person.alternateName.filter((n) => n !== siteName).join(" and ")}), is a ${person.jobTitle.toLowerCase()} based in ${person.locality}, working with clients in ${person.areaServed.map((place) => (place === "United States" ? "the United States" : place)).join(" and ")}. Areas of work: ${person.knowsAbout.join(", ")}.`,
     "",
     "## Case studies",
     "",

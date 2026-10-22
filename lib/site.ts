@@ -10,22 +10,44 @@ export const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://mattmattdesign.com";
 
 /**
- * How search engines and AI answers identify the site. Matt's full name never
- * appears anywhere on it, so "Matt" is always paired with the brand, the city
- * and the specialities instead. US visitors search for a design engineer, Hong
- * Kong visitors for UI/UX, brand and AI transformation; one set of words serves
- * both. See doc/seo-plan.md.
+ * How search engines and AI answers identify the site. People should find it
+ * by "Matt Tam", "Matt Matt Design" or "Matt Design" (Matt, 2026-10-23), so
+ * all three are stated here, paired with the city and the specialities. US
+ * visitors search for a design engineer, Hong Kong visitors for UI/UX, brand
+ * and AI transformation; one set of words serves both.
+ *
+ * Metadata only: the full name lives in titles, descriptions, structured data
+ * and llms.txt, never in the copy a visitor reads on the page, which still
+ * says "Matt". See doc/seo-plan.md.
  */
 export const siteName = "Matt Matt Design";
+/** Other names the site is searched by. */
+export const siteAlternateNames = ["Matt Design", "Matt Tam", "mattmattdesign"];
 /** The home-screen label, where the brand name is too long to fit. */
 export const siteShortName = "Matt";
 export const siteTitle =
-  "Matt — Design Engineer in Hong Kong · UI/UX, Brand & AI";
+  "Matt Tam — Matt Matt Design · Design Engineer in Hong Kong";
 export const siteDescription =
-  "Matt is a Hong Kong–based design engineer for UI/UX, brand design and AI transformation, most recently the brand system for HKUST ISD.";
+  "Matt Tam (Matt Matt Design) is a Hong Kong–based design engineer for UI/UX, brand design and AI transformation, most recently the brand system for HKUST ISD.";
+/** Searches the site should answer to, most specific first. */
+export const siteKeywords = [
+  "Matt Tam",
+  "Matt Matt Design",
+  "Matt Design",
+  "Matt Tam designer",
+  "design engineer Hong Kong",
+  "UI/UX designer Hong Kong",
+  "brand designer Hong Kong",
+  "AI transformation",
+  "HKUST ISD brand",
+];
 
 export const person = {
-  name: "Matt",
+  name: "Matt Tam",
+  givenName: "Matt",
+  familyName: "Tam",
+  /** What the site itself calls him, and the brand he works under. */
+  alternateName: ["Matt", "Matt Matt Design", "Matt Design"],
   jobTitle: "Design Engineer",
   locality: "Hong Kong",
   knowsAbout: [

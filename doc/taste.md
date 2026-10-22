@@ -454,6 +454,21 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   scroll-linked motion besides the chain gate. See
   `doc/profile-comments-plan.md`.
 
+- Fun (Matt, 2026-10-23, after a hackathon portfolio grid and a file
+  inspector view of one poster): side work as a masonry wall that breaks out
+  to 1200px, three columns, two on a phone, under the name alone — no
+  intro. Filters are text links in the
+  column, active in fg, never filled chips — the site has no accent colour.
+  A tile morphs into its piece's page, like a gallery card into a case
+  study, and the dock contracts to the back arrow. That page is the work
+  centred with its colours as 32px dots on the left and its details on the
+  right, label in fg and value muted, in Helvetica at 16/21 — the
+  reference's uppercase monospace was declined. A piece with more than one
+  picture is a stack on the wall: its next two peek above the cover and fan
+  out to either side under the pointer — the one place a wall picture moves
+  on hover, because Matt asked for it to reveal more of the set. See
+  `doc/fun-tab-plan.md`.
+
 ## 13. Review checklist
 
 - [ ] Latest written instruction and latest `raw/` source were checked first.
