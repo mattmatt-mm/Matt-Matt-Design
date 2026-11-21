@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Column } from "@/components/Column";
 import { FunWall } from "@/components/fun/FunWall";
-import { Header } from "@/components/Header";
-import { getFun, getSettings } from "@/lib/content";
+import { getFun } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Fun",
@@ -11,20 +10,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "/fun" },
 };
 
-/**
- * /fun — side work as a masonry wall. Outside the (site) layout because Matt
- * wanted the wall without the intro (2026-10-23): the name and role stay
- * exactly where every other tab has them, and the wall follows 60px below.
- * See doc/fun-tab-plan.md.
- */
+/** Side work as a masonry wall. See doc/fun-tab-plan.md. */
 export default async function FunPage() {
-  const [pieces, settings] = await Promise.all([getFun(), getSettings()]);
+  const pieces = await getFun();
   return (
     <Column>
-      <Header name={settings.name} role={settings.role} />
-      <div className="mt-15 pt-3">
+      <main>
+        <h1 className="mb-6 text-title">Fun</h1>
         <FunWall pieces={pieces} />
-      </div>
+      </main>
     </Column>
   );
 }

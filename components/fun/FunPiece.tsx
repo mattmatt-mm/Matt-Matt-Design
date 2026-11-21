@@ -83,10 +83,10 @@ export function FunPiece({ piece }: { piece: Piece }) {
       )}
 
       <div className="fun-piece-details">
-        <h1>
-          <span className="block">{piece.title}</span>
-          <span className="text-muted block">{piece.subtitle}</span>
-        </h1>
+        <div>
+          <h1 className="text-title">{piece.title}</h1>
+          {piece.subtitle ? <p className="text-muted">{piece.subtitle}</p> : null}
+        </div>
         {details.length > 0 && (
           <dl className="flex flex-col gap-4">
             {details.map((d) => (

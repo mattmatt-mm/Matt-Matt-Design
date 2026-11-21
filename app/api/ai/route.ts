@@ -24,6 +24,7 @@ type AIRequest = {
   firstQuestion?: unknown;
   turn?: unknown;
   history?: unknown;
+  projectSlug?: unknown;
 };
 
 /** Earlier exchanges the model sees, so a follow-up can lean on what was
@@ -159,7 +160,18 @@ export async function POST(request: Request) {
 
   try {
     const knowledge = await getAIKnowledge();
-    const decision = decideKnowledge(question, knowledge.facts);
+    // The slug is only a lookup key. Use the approved summary already in the
+    // briefing, without trusting page text or instructions from the browser.
+    const slug = body.projectSlug;
+    const project = typeof slug === "string"
+      ? knowledge.facts.find((fact) =>
+          fact.id === `experience-${slug}` &&
+          fact.source === `/work/${slug}` &&
+          fact.policy === "answer" &&
+          fact.answer.trim(),
+        )
+      : undefined;
+    const decision = decideKnowledge(question, knowledge.facts, project);
     // Private, contact-only and prompt-injection questions are walled off here,
     // before the model, so no wording can talk it into answering them. Anything
     // else goes to the model with the whole briefing, including questions no
@@ -194,7 +206,7 @@ export async function POST(request: Request) {
 
     const result = streamText({
       model: getPortfolioModel(),
-      instructions: buildInstructions(knowledge, wall),
+      instructions: buildInstructions(knowledge, wall, project),
       prompt: buildPrompt({ question, history }),
       // GLM thinks before it writes, and its reasoning (about 200 tokens) is
       // billed against this budget. At 320 a longer answer ran out mid-sentence;

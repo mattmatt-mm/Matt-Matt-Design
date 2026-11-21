@@ -384,6 +384,11 @@ export default config({
           label: "Project name",
           description: "The grey second line under the caption.",
         }),
+        disciplines: fields.multiselect({
+          label: "Feed filters",
+          description: "Leave blank to use the linked case study’s disciplines.",
+          options: DISCIPLINES.map((d) => ({ label: d.label, value: d.value })),
+        }),
         project: fields.relationship({
           label: "Links to case study",
           collection: "experience",

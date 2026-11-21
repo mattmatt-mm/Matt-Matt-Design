@@ -4,12 +4,10 @@ import { notFound } from "next/navigation";
 import { ChainGate } from "@/components/ChainGate";
 import { Column } from "@/components/Column";
 import { DetailChain } from "@/components/DetailChain";
-import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { Prose } from "@/components/Prose";
 import { SectionRail } from "@/components/SectionRail";
 import {
-  getSettings,
   getWritingEntry,
   getWritingTour,
   listWritingSlugs,
@@ -47,10 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WritingPost({ params }: Props) {
   const { slug } = await params;
-  const [entry, tour, settings] = await Promise.all([
+  const [entry, tour] = await Promise.all([
     getWritingEntry(slug),
     getWritingTour(slug),
-    getSettings(),
   ]);
 
   if (!entry) notFound();
@@ -67,7 +64,6 @@ export default async function WritingPost({ params }: Props) {
           cover: entry.cover,
         })}
       />
-      <Header name={settings.name} role={settings.role} href="/" />
       <SectionRail />
 
       {/* The other posts follow, newest first as on the list, so reaching
@@ -81,7 +77,7 @@ export default async function WritingPost({ params }: Props) {
               key={post.slug}
               data-chain-entry={post.slug}
               data-title={`${post.title} — ${siteName}`}
-              className={i === 0 ? "mt-15" : "mt-32"}
+              className={i > 0 ? "mt-32" : undefined}
             >
               {i === 0 ? (
                 <h1 className="text-title" lang={lang}>

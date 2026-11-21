@@ -28,7 +28,7 @@ export function CaseStudyChain({
           key={study.slug}
           data-chain-entry={study.slug}
           data-title={`${study.title} — ${siteName}`}
-          className={i === 0 ? "mt-15" : "mt-32"}
+          className={i > 0 ? "case-study mt-32" : "case-study"}
         >
           {i === 0 ? (
             <>
@@ -54,23 +54,26 @@ export function CaseStudyChain({
               `cover` is the social-preview image; the body already opens
               with it, so rendering it again would duplicate the lead. */}
           <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
-            {/* When the project ran and who did what, as figures under
-                its name. */}
-            {study.start || study.end || study.role || study.team ? (
-              <div className="mb-12">
-                <Stats>
-                  {study.start || study.end ? (
-                    <Stat
-                      value={[study.start, study.end].filter(Boolean).join(" – ")}
-                      label="Timeline"
-                    />
-                  ) : null}
-                  {study.role ? <Stat value={study.role} label="Role" /> : null}
-                  {study.team ? <Stat value={study.team} label="Team" /> : null}
-                </Stats>
-              </div>
-            ) : null}
-            <Prose node={study.body} idPrefix={study.slug} />
+            <Prose
+              node={study.body}
+              idPrefix={study.slug}
+              afterThumbnail={
+                study.start || study.end || study.role || study.team ? (
+                  <div className="case-study-details">
+                    <Stats>
+                      {study.start || study.end ? (
+                        <Stat
+                          value={[study.start, study.end].filter(Boolean).join(" – ")}
+                          label="Timeline"
+                        />
+                      ) : null}
+                      {study.role ? <Stat value={study.role} label="Role" /> : null}
+                      {study.team ? <Stat value={study.team} label="Team" /> : null}
+                    </Stats>
+                  </div>
+                ) : null
+              }
+            />
           </div>
         </article>
       ))}

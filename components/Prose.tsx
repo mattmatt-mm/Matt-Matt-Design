@@ -1,5 +1,10 @@
 import * as React from "react";
-import Markdoc, { type Config, type Node } from "@markdoc/markdoc";
+import Markdoc, {
+  type Config,
+  type Node,
+  type RenderableTreeNode,
+  type RenderableTreeNodes,
+} from "@markdoc/markdoc";
 import { Demo } from "./Demo";
 import { Flow, Flows } from "./Flows";
 import { IsdDotHero } from "./isd/IsdDotHero";
@@ -200,15 +205,52 @@ const config = {
   },
 };
 
+const components = {
+  Demo,
+  Flow,
+  Flows,
+  IsdDotHero,
+  LottieSequence,
+  Notes,
+  Point,
+  Points,
+  Recording,
+  Stat,
+  Stats,
+  VideoPlayer,
+};
+
+const thumbnailTags = new Set(["IsdDotHero", "LottieSequence", "Recording", "VideoPlayer"]);
+
+function thumbnailEnd(content: RenderableTreeNode[]) {
+  const firstHeading = content.findIndex(
+    (item) => Markdoc.Tag.isTag(item) && /^h[1-6]$/.test(item.name),
+  );
+  const lead = firstHeading === -1 ? content : content.slice(0, firstHeading);
+
+  // Only media in the lead counts. A study with no thumbnail keeps its
+  // details at the start, before the first section.
+  return lead.findLastIndex((item) => {
+    if (!Markdoc.Tag.isTag(item)) return false;
+    return thumbnailTags.has(item.name) ||
+      (item.name === "p" && item.children.some(
+        (child) => Markdoc.Tag.isTag(child) && child.name === "img",
+      ));
+  }) + 1;
+}
+
 export function Prose({
   node,
   lang,
   idPrefix,
+  afterThumbnail,
 }: {
   node: Node;
   lang?: "en" | "zh";
   /** The entry's slug; gives its headings page-unique ids. */
   idPrefix?: string;
+  /** Optional content between the opening media and the body. */
+  afterThumbnail?: React.ReactNode;
 }) {
   const transformed = Markdoc.transform(node, {
     ...config,
@@ -220,26 +262,26 @@ export function Prose({
   const content = Markdoc.Tag.isTag(transformed)
     ? transformed.children
     : transformed;
+  let thumbnail: RenderableTreeNode[] = [];
+  let body = content;
+  if (afterThumbnail && Array.isArray(content)) {
+    const end = thumbnailEnd(content);
+    if (end > 0) {
+      thumbnail = content.slice(0, end);
+      body = content.slice(end);
+    }
+  }
+  const render = (tree: RenderableTreeNodes) =>
+    Markdoc.renderers.react(tree, React, { components });
 
   return (
     <div
       className={`prose ${lang === "zh" ? "prose-zh" : ""}`}
       lang={lang === "zh" ? "zh-Hant" : undefined}
     >
-      {Markdoc.renderers.react(content, React, { components: {
-          Demo,
-          Flow,
-          Flows,
-          IsdDotHero,
-          LottieSequence,
-          Notes,
-          Point,
-          Points,
-          Recording,
-          Stat,
-          Stats,
-          VideoPlayer,
-        } })}
+      {thumbnail.length ? render(thumbnail) : null}
+      {afterThumbnail}
+      {render(body)}
     </div>
   );
 }

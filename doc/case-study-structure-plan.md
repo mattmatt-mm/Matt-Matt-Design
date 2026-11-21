@@ -42,7 +42,7 @@ or look. Everything stays in the site's 16/21 type, tokens and hairlines.
 
 | Reference | Here |
 |---|---|
-| Metadata row | Start / End / Role / Team figures under the title (`start`, `end`, `role`, `team` fields) |
+| Metadata row | Timeline, Role, and Team figures below the thumbnail (`start`, `end`, `role`, `team` fields) |
 | Eyebrow + claim heading | `#### Problem` directly above `## <claim>`; h4 is already muted 16/21. The pair sits 4px apart. The section rail shows the eyebrow, so the rail stays short |
 | Title + one-liner columns | New **Points** block: `{% points %}{% point title="…" text="…" /%}…{% /points %}` |
 | Drawn problem | New **Flows** block: two step lists side by side meeting in one shared outcome, drawn with the list rows' hairlines. Used for Incipe's six steps versus two |

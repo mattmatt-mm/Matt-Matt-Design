@@ -1,4 +1,4 @@
-import type { AIKnowledge } from "@/lib/content";
+import type { AIFact, AIKnowledge } from "@/lib/content";
 
 export type Exchange = { question: string; answer: string };
 
@@ -19,7 +19,11 @@ function briefing(knowledge: AIKnowledge) {
 /** Why a question is walled off from the briefing, or null when it is not. */
 export type Wall = "private" | "contact" | null;
 
-export function buildInstructions(knowledge: AIKnowledge, wall: Wall) {
+export function buildInstructions(
+  knowledge: AIKnowledge,
+  wall: Wall,
+  project?: AIFact,
+) {
   return [
     "You are the AI guide on Matt's portfolio site. Visitors are often recruiters, founders and fellow designers. Talk with them the way a thoughtful friend who knows Matt's work well would: warm, curious, specific, and natural, never like a database or a press release.",
     ...knowledge.voiceRules,
@@ -34,6 +38,12 @@ export function buildInstructions(knowledge: AIKnowledge, wall: Wall) {
         }, and invite the visitor to leave an email so Matt can follow up. Use at most 30 words.`
       : [
           "Answer from the briefing below. You may connect facts from different topics and explain why something matters, as long as every claim about Matt is supported by the briefing.",
+          ...(project
+            ? [
+                `The visitor is currently viewing the case study titled "${project.topic}".`,
+                "Resolve references like “this project” or “this case study” to the case study the visitor is viewing. Answer directly using its summary in the briefing. For other references, follow the visitor’s wording and the conversation, including when they ask about a different project or compare two projects.",
+              ]
+            : []),
           "Never invent projects, numbers, dates, people, opinions or plans that the briefing does not contain, and never add outside knowledge about Matt.",
           "If the briefing does not cover the question, say so honestly in a sentence, offer the closest thing it does cover if there is one, and invite the visitor to leave an email for Matt.",
           "Stay on Matt and his work. Do not open a general discussion of a subject for its own sake.",

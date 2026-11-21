@@ -3,13 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseStudyChain } from "@/components/CaseStudyChain";
 import { Column } from "@/components/Column";
-import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { SectionRail } from "@/components/SectionRail";
 import {
   getCaseStudyTour,
   getExperienceEntry,
-  getSettings,
   listExperienceSlugs,
 } from "@/lib/content";
 import { DISCIPLINES } from "@/lib/disciplines";
@@ -43,10 +41,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function WorkPage({ params }: Props) {
   const { slug } = await params;
-  const [entry, tour, settings] = await Promise.all([
+  const [entry, tour] = await Promise.all([
     getExperienceEntry(slug),
     getCaseStudyTour(slug),
-    getSettings(),
   ]);
 
   if (!entry || !entry.hasPage || entry.externalUrl) notFound();
@@ -65,7 +62,6 @@ export default async function WorkPage({ params }: Props) {
           ).map((d) => d.label),
         })}
       />
-      <Header name={settings.name} role={settings.role} href="/" />
       <SectionRail />
 
       {/* The rest of the case studies follow in list order, so reaching the
@@ -75,7 +71,7 @@ export default async function WorkPage({ params }: Props) {
 
       <p className="mt-15">
         <Link href="/profile" className="text-muted hover:text-fg no-underline">
-          Back to Profile
+          Back to Experience
         </Link>
       </p>
     </Column>
