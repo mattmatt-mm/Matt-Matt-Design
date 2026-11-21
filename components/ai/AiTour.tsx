@@ -10,7 +10,7 @@ export type TourStep = "cookies" | "offer" | "pick" | "ready";
 
 
 /**
- * The guided tour the AI offers a first-time visitor: an offer, a choice of
+ * The guided walkthrough the AI offers a first-time visitor: an offer, a choice of
  * the kinds of work to see, then the walkthrough itself. It sits where the
  * conversation would, built from the same surfaces — the black response and
  * squircle buttons 8px beneath it. See doc/hr-mode-plan.md.
@@ -60,16 +60,12 @@ export function AiTour({
                 </>
               ) : step === "offer" ? (
                 <p>
-                  Hiring? I can walk you through the case studies that match the
-                  role you&rsquo;re filling.
+                  Want a guided walkthrough of Matt&rsquo;s case studies?
                 </p>
               ) : step === "pick" ? (
-                <p>Which skills does the role need? Pick as many as apply.</p>
+                <p>Which kinds of work would you like to see? Pick as many as apply.</p>
               ) : (
-                <p>
-                  Here is the customised case study walkthrough that may interest
-                  you.
-                </p>
+                <p>Your guided walkthrough is ready.</p>
               )}
             </div>
           </SiteSquircle>
@@ -82,7 +78,7 @@ export function AiTour({
           <AiLift>
             <SiteSquircle asChild>
               <fieldset className="ai-tour-checklist elevated-surface">
-                <legend className="sr-only">Skills the role needs</legend>
+                <legend className="sr-only">Kinds of work to see</legend>
                 {DISCIPLINES.map((d) => {
                   const on = picks.includes(d.value);
                   return (

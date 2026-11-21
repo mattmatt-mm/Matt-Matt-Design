@@ -11,7 +11,7 @@ import {
   listExperienceSlugs,
 } from "@/lib/content";
 import { DISCIPLINES } from "@/lib/disciplines";
-import { siteName, siteSocialImage } from "@/lib/site";
+import { profileTitle, siteName, siteSocialImage } from "@/lib/site";
 import { caseStudySchema } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -71,7 +71,7 @@ export default async function WorkPage({ params }: Props) {
 
       <p className="mt-15">
         <Link href="/profile" className="text-muted hover:text-fg no-underline">
-          Back to Experience
+          Back to {profileTitle}
         </Link>
       </p>
     </Column>

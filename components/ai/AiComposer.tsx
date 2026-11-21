@@ -1,10 +1,11 @@
 "use client";
 
-import { Briefcase } from "@phosphor-icons/react/dist/ssr/Briefcase";
+import { Compass } from "@phosphor-icons/react/dist/ssr/Compass";
 import { Info } from "@phosphor-icons/react/dist/ssr/Info";
 import { KeyReturn } from "@phosphor-icons/react/dist/ssr/KeyReturn";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SiteSquircle } from "@/components/SiteSquircle";
+import { GUIDED_WALKTHROUGH_LABEL } from "@/components/ai/PortfolioActions";
 import { MAX_QUESTION_CHARS } from "@/lib/ai/limits";
 
 const COMPACT_COMPOSER_MIN_HEIGHT = 40;
@@ -19,10 +20,9 @@ export function AiComposer({
   placeholder = "Ask me anything",
   compact = false,
   showDisclosure = true,
-  onHiring,
+  onWalkthrough,
 }: {
-  /** Opens the recruiter walkthrough. */
-  onHiring?: () => void;
+  onWalkthrough?: () => void;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
@@ -123,33 +123,33 @@ export function AiComposer({
           {error}
         </p>
       ) : showDisclosure ? (
-        <ComposerAside onHiring={onHiring} />
+        <ComposerAside onWalkthrough={onWalkthrough} />
       ) : null}
     </div>
   );
 }
 
 /**
- * The row above the field: the way into the recruiter walkthrough on the left
+ * The row above the field: the way into the guided walkthrough on the left
  * (doc/hr-mode-plan.md), and the review notice folded into an info button on
  * the right, opening as a tooltip on hover, focus or tap. Floats over the
  * first question's composer; `inline` takes its place in the flow above a
  * follow-up, so it is still there once a conversation exists.
  */
 export function ComposerAside({
-  onHiring,
+  onWalkthrough,
   inline = false,
 }: {
-  onHiring?: () => void;
+  onWalkthrough?: () => void;
   inline?: boolean;
 }) {
   const [infoOpen, setInfoOpen] = useState(false);
   return (
     <div className="ai-composer-aside" data-inline={inline ? "true" : "false"}>
-      {onHiring ? (
-        <button type="button" className="ai-hiring" onClick={onHiring}>
-          <Briefcase size={16} weight="regular" aria-hidden="true" />
-          I&rsquo;m hiring
+      {onWalkthrough ? (
+        <button type="button" className="ai-walkthrough" onClick={onWalkthrough}>
+          <Compass size={16} weight="regular" aria-hidden="true" />
+          {GUIDED_WALKTHROUGH_LABEL}
         </button>
       ) : (
         <span />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FunPiece } from "@/components/fun/FunPiece";
-import { getFun } from "@/lib/content";
+import { getFun, getFunBookPages } from "@/lib/content";
 import { siteName, siteSocialImage } from "@/lib/site";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -38,7 +38,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * contracts to the back arrow, which returns to the wall.
  */
 export default async function FunPiecePage({ params }: Props) {
-  const piece = await pieceFor((await params).slug);
+  const { slug } = await params;
+  const [piece, bookPages] = await Promise.all([pieceFor(slug), getFunBookPages(slug)]);
   if (!piece) notFound();
-  return <FunPiece piece={piece} />;
+  return <FunPiece piece={piece} bookPages={bookPages} />;
 }

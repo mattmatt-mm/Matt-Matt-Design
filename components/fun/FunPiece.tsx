@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { FunVideo } from "@/components/fun/FunVideo";
-import type { FunPiece as Piece } from "@/lib/content";
+import { Photobook } from "@/components/photobook/Photobook";
+import type { FunMedia, FunPiece as Piece } from "@/lib/content";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -21,11 +22,13 @@ function longDate(date: string) {
  * shared on 2026-10-23. The tile's picture travels in from the wall
  * (`data-fun-hero` is where it lands). See doc/fun-tab-plan.md.
  */
-export function FunPiece({ piece }: { piece: Piece }) {
+export function FunPiece({ piece, bookPages }: { piece: Piece; bookPages: FunMedia[] }) {
   const { image } = piece;
+  const cover = bookPages[0];
+  const hero = cover ?? image;
   const external = piece.href?.startsWith("http");
   const details = [
-    image && { label: "Resolution", value: `${image.width} × ${image.height}` },
+    hero && { label: "Resolution", value: `${hero.width} × ${hero.height}` },
     piece.date && { label: "Date", value: longDate(piece.date) },
     piece.tools && { label: "Tools", value: piece.tools },
   ].filter((d): d is { label: string; value: string } => Boolean(d));
@@ -33,15 +36,18 @@ export function FunPiece({ piece }: { piece: Piece }) {
   return (
     <article
       className="fun-piece"
+      data-photobook={cover ? "" : undefined}
       style={
         {
-          "--fun-w": image?.width ?? 1200,
-          "--fun-ratio": image ? image.width / image.height : 4 / 3,
+          "--fun-w": hero?.width ?? 1200,
+          "--fun-ratio": hero ? hero.width / hero.height : 4 / 3,
         } as CSSProperties
       }
     >
       <div className="fun-piece-hero" data-fun-hero={piece.slug}>
-        {piece.video ? (
+        {cover ? (
+          <Photobook id="photobook" pages={bookPages} />
+        ) : piece.video ? (
           <FunVideo
             src={piece.video}
             poster={image?.src}
@@ -84,7 +90,7 @@ export function FunPiece({ piece }: { piece: Piece }) {
 
       <div className="fun-piece-details">
         <div>
-          <h1 className="text-title">{piece.title}</h1>
+          <h1 className="text-section font-bold">{piece.title}</h1>
           {piece.subtitle ? <p className="text-muted">{piece.subtitle}</p> : null}
         </div>
         {details.length > 0 && (

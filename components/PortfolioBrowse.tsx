@@ -12,8 +12,13 @@ import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import { X } from "@phosphor-icons/react/dist/ssr/X";
 import Link from "next/link";
 import { useContext, useMemo, useRef, useState } from "react";
-import { PortfolioActions, type PortfolioAction } from "@/components/ai/PortfolioActions";
+import {
+  GUIDED_WALKTHROUGH_LABEL,
+  PortfolioActions,
+  type PortfolioAction,
+} from "@/components/ai/PortfolioActions";
 import type { PortfolioSearchEntry } from "@/lib/content";
+import { profileTitle } from "@/lib/site";
 
 type Shortcut = {
   title: string;
@@ -23,11 +28,11 @@ type Shortcut = {
 
 const shortcuts: Shortcut[] = [
   { href: "/", title: "Selected work", icon: ImagesSquare, tone: "blue" },
-  { href: "/profile", title: "Experience", icon: UserCircle, tone: "peach" },
+  { href: "/profile", title: profileTitle, icon: UserCircle, tone: "peach" },
   { href: "/writing", title: "Writing", icon: PenNib, tone: "gold" },
   { href: "/fun", title: "Fun", icon: Sparkle, tone: "violet" },
   { action: "chat", title: "Ask Matt’s AI", icon: ChatCircleDots, tone: "neutral" },
-  { action: "walkthrough", title: "Guided walkthrough", icon: Compass, tone: "teal" },
+  { action: "walkthrough", title: GUIDED_WALKTHROUGH_LABEL, icon: Compass, tone: "teal" },
 ];
 
 function searchText(value: string) {

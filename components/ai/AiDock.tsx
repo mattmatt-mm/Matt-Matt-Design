@@ -12,6 +12,7 @@ import { type CSSProperties, type Ref, useEffect, useRef, useState } from "react
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 import { track } from "@/lib/analytics";
+import { profileTitle } from "@/lib/site";
 
 const tabs = [
   { href: "/", label: "Home", icon: House },
@@ -57,7 +58,7 @@ export function AiDock({
   const backLabel = walkthrough
     ? "Exit walkthrough"
     : backHref === "/profile"
-      ? "Back to Experience"
+      ? `Back to ${profileTitle}`
       : backHref === "/fun"
         ? "Back to Fun"
         : "Back to Writing";
