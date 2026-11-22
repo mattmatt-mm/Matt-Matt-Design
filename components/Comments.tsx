@@ -47,7 +47,7 @@ export function Comments({ comments }: { comments: Comment[] }) {
   if (comments.length === 0) return null;
 
   return (
-    <section aria-label="Comments" className="mt-24">
+    <section id="comments" aria-label="Comments" className="mt-24 scroll-mt-6">
       <CommentsFloat>
         {comments.map((c) => (
           <li key={c.name} className="comment-slot" data-float>

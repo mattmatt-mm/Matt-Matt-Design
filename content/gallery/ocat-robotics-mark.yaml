@@ -1,5 +1,7 @@
 caption: A single feather, for a robot that swims
 projectName: OCAT Robotics
+disciplines:
+  - branding
 externalUrl: https://ocatrobotics.com
 image: /images/gallery/ocat-robotics.webp
 alt: The OCAT Robotics logo on white — a white stylised feather inside a black

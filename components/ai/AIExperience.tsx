@@ -10,6 +10,7 @@ import {
   type AIPhase,
 } from "@/components/ai/AiOverlay";
 import { AiTour, type TourStep } from "@/components/ai/AiTour";
+import { PortfolioActions, type PortfolioAction } from "@/components/ai/PortfolioActions";
 import {
   denyTracking,
   grantTracking,
@@ -72,6 +73,20 @@ function tourOfferedRecently() {
   }
 }
 
+function currentProjectSlug() {
+  const path = window.location.pathname;
+  const workSlug = path.match(/^\/work\/([^/]+)\/?$/)?.[1];
+  if (workSlug) return workSlug;
+  if (path.startsWith("/tour/")) {
+    // The tour URL stays fixed as the reader moves between case studies.
+    const chain = document.querySelector<HTMLElement>('[data-chain-source="tour"]');
+    return (
+      chain?.dataset.activeChainEntry ??
+      chain?.querySelector<HTMLElement>("[data-chain-entry]")?.dataset.chainEntry
+    );
+  }
+}
+
 async function responseError(response: Response) {
   try {
     const body = (await response.json()) as { error?: string };
@@ -91,6 +106,7 @@ export function AIExperience({
 }) {
   const pathname = usePathname();
   const trigger = useRef<HTMLButtonElement | null>(null);
+  const actionOpener = useRef<HTMLButtonElement | null>(null);
   const requestInFlight = useRef(false);
   const contactInFlight = useRef(false);
   const [open, setOpen] = useState(false);
@@ -133,7 +149,12 @@ export function AIExperience({
   const close = useCallback(() => {
     setTourStep(null);
     setOpen(false);
-    requestAnimationFrame(() => trigger.current?.focus());
+    const opener = actionOpener.current;
+    actionOpener.current = null;
+    requestAnimationFrame(() => {
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+      else trigger.current?.focus({ preventScroll: true });
+    });
   }, []);
 
   // Whether the tour offer follows the cookie question on this visit.
@@ -225,6 +246,7 @@ export function AIExperience({
   // The cloud. On a walkthrough it opens the picks the walkthrough was made
   // from, so they can be changed — over any conversation already had here.
   function openAi() {
+    if (splash) return;
     hideBubble();
     const picks = pathname.startsWith("/tour/")
       ? parseFocus(pathname.slice("/tour/".length))
@@ -240,10 +262,33 @@ export function AIExperience({
 
   // "I'm hiring" above the composer: back into the walkthrough at any time,
   // straight to the chips — saying "I'm hiring" already answers the offer.
-  function openTour() {
+  const openTour = useCallback(() => {
     track("tour_reopened");
     setConfiguring(true);
     setTourStep("pick");
+    setOpen(true);
+  }, []);
+
+  const openPortfolioAction = useCallback(
+    (action: PortfolioAction, opener: HTMLButtonElement) => {
+      if (splash) return;
+      actionOpener.current = opener;
+      hideBubble();
+      if (action === "walkthrough") {
+        openTour();
+      } else {
+        setConfiguring(false);
+        setTourStep(null);
+        setOpen(true);
+      }
+    },
+    [hideBubble, openTour, splash],
+  );
+
+  function toggleDiscipline(value: Discipline) {
+    setTourPicks((picks) =>
+      picks.includes(value) ? picks.filter((pick) => pick !== value) : [...picks, value],
+    );
   }
 
   function declineTour() {
@@ -270,6 +315,7 @@ export function AIExperience({
   }
 
   function startTour(button: HTMLElement) {
+    if (splash) return;
     const focus = focusSlug(tourPicks);
     const href = `/tour/${focus}`;
     track("tour_started", { focus, disciplines: tourPicks });
@@ -281,8 +327,8 @@ export function AIExperience({
       window.setTimeout(showBubble, 600);
       return;
     }
-    // The AI stays up beneath the fading sheet; the route change closes it once the
-    // screen is covered (components/ai/WalkthroughSplash.tsx).
+    // The wave captures the page with the AI still open, then the route change
+    // closes it once the splash covers the screen.
     const picks = parseFocus(focus) ?? tourPicks;
     setSplash({
       id: Date.now(),
@@ -297,6 +343,7 @@ export function AIExperience({
 
 
   useEffect(() => {
+    actionOpener.current = null;
     setOpen(false);
     setTourStep(null);
     setConfiguring(false);
@@ -311,13 +358,13 @@ export function AIExperience({
   );
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || splash) return;
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape") close();
     };
     window.addEventListener("keydown", escape);
     return () => window.removeEventListener("keydown", escape);
-  }, [close, open]);
+  }, [close, open, splash]);
 
   async function ask() {
     if (requestInFlight.current) return;
@@ -347,6 +394,7 @@ export function AIExperience({
         body: JSON.stringify({
           question: cleanQuestion,
           turn,
+          projectSlug: currentProjectSlug(),
           // Every follow-up names the opening question: the server checks it
           // against the turn cookie, and leaving it off past the second turn
           // made every later question fail as "unavailable".
@@ -465,7 +513,9 @@ export function AIExperience({
 
   return (
     <>
-      {children}
+      <PortfolioActions.Provider value={openPortfolioAction}>
+        {children}
+      </PortfolioActions.Provider>
       {open ? (
         <AiOverlay
           phase={phase}
@@ -504,13 +554,7 @@ export function AIExperience({
                 onDecline={declineTour}
                 onAcceptCookies={() => answerCookies(true)}
                 onDeclineCookies={() => answerCookies(false)}
-                onToggle={(value) =>
-                  setTourPicks((picks) =>
-                    picks.includes(value)
-                      ? picks.filter((p) => p !== value)
-                      : [...picks, value],
-                  )
-                }
+                onToggle={toggleDiscipline}
                 onContinue={continueTour}
                 onAskInstead={configuring ? backToConversation : undefined}
                 onStart={startTour}

@@ -4,11 +4,12 @@ import { usePathname } from "next/navigation";
 import { useRef } from "react";
 
 /** Left to right in the tab bar. The index is what decides the direction. */
-const order = ["/", "/writing", "/fun", "/profile"];
+const order = ["/", "/writing", "/fun", "/browse"];
 
 function indexOf(pathname: string) {
+  const section = pathname === "/profile" ? "/browse" : pathname;
   const i = order.findIndex((href) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href),
+    section === href || (href !== "/" && section.startsWith(`${href}/`)),
   );
   return i === -1 ? 0 : i;
 }

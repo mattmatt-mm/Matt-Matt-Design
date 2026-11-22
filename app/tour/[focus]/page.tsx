@@ -3,9 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaseStudyChain } from "@/components/CaseStudyChain";
 import { Column } from "@/components/Column";
-import { Header } from "@/components/Header";
 import { SectionRail } from "@/components/SectionRail";
-import { getDisciplineTour, getSettings } from "@/lib/content";
+import { getDisciplineTour } from "@/lib/content";
 import {
   allFocusSlugs,
   parseFocus,
@@ -35,15 +34,11 @@ export default async function TourPage({ params }: Props) {
   const picks = parseFocus(focus);
   if (!picks) notFound();
 
-  const [studies, settings] = await Promise.all([
-    getDisciplineTour(picks),
-    getSettings(),
-  ]);
+  const studies = await getDisciplineTour(picks);
   if (!studies.length) notFound();
 
   return (
     <Column>
-      <Header name={settings.name} role={settings.role} href="/" />
       <SectionRail />
 
       <CaseStudyChain

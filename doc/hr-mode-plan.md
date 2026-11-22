@@ -58,16 +58,14 @@ content that already has a canonical home.
 
 ## Walkthrough splash
 
-`components/ai/WalkthroughSplash.tsx`, decided with Matt on 2026-10-18 (the opening ripple was replaced the same day by the button dissolving into a fade). About
-2.4s from tap to a fully visible case study, every curve `--ai-ease`:
+`components/ai/WalkthroughSplash.tsx` uses the official `distortion-waves`
+package for the opening, then hands off to the original title animation.
 
-| Time | What happens |
-|---|---|
-| 0 → 0.45s | The Start walkthrough button stays where it is, swells to 108%, blurs to 8px and fades away (its fade on a gentler ease-in-out, so the swell is seen). |
-| 0 → 0.5s | At the same time the page background fades up over the whole screen. The walkthrough page loads underneath once it is covered. |
-| 0.2 → ~1.2s | On the 640px column, at the height the page's own lines will sit: the eyebrow, then each selected title, rising 12px out of a 3px blur and fading in, 90ms apart. |
-| → 1.8s | Hold, to read. |
-| 1.8 → 2.4s | The sheet wipes upward behind a 160px feather, uncovering the walkthrough from the bottom up. The other titles lift 8px and blur away; the eyebrow glides onto the page's eyebrow and the first title glides and grows onto the page heading. Over the last 35% the copies cross-fade into the page's own lines on a linear clock, so the total never dips. |
+- The colourful vertical wave starts from the button and bends a snapshot of
+  the page into the splash. The button swells, blurs and fades above it.
+- The eyebrow and selected titles rise 12px out of a 3px blur, 90ms apart.
+- Once the wave covers the page, the walkthrough loads underneath. The sheet
+  wipes upward while the eyebrow and first title glide onto the real heading.
 
 - The sheet is `--color-bg`, so it follows the system theme rather than
   flashing white in dark mode.

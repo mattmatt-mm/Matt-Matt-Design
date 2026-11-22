@@ -71,10 +71,10 @@ blurred (`.site-content-blur`).
 
 ### Type
 - **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
-- **16px / 21px** everywhere. Keep the established line box and do not create hierarchy with off-scale type.
-- `32px / 42px` for detail-page headings — the only second size.
+- **16px / 21px** for body text and labels, including case study eyebrows.
+- **18px / 24px, bold** for case study section headings. **32px / 42px** for page titles.
 - Pixel fonts must render at multiples of their design size. Never 15px, 17px, rem fractions, or `clamp()` on text.
-- Hierarchy comes from **color and position**, never scale or weight.
+- Use **color and position** for hierarchy within each type size.
 - Chinese body copy gets `28px` leading (`.prose-zh`, `.leading-cjk`) — 1.6 would land on 25.6px and break the grid.
 
 ### Spacing
@@ -83,7 +83,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 ### Layout — all values measured from `raw/*.svg`, not guessed
 - Content column **640px** on every page, centered (`--container-column`). `24px` inline gutters below 688px (`--breakpoint-column`, the column plus both gutters), none above. Matt widened it from 500px on 2026-10-17.
 - Page padding: top `60`, bottom `128`.
-- Header → intro `60`. Intro paragraph gap `16`. Intro → tab bar `60`.
+- Home shows the name, role, and intro, followed by the overview and the two actions. Customise feed opens the same guided walkthrough as I’m hiring, including its checklist, confirmation, and Distortion Waves transition onto the first matching case study. Let’s work opens the address in site settings.
 - Tab bar: `12` top padding, label, `12` bottom padding, `1px` `--color-line` rule. Each tab has `4px` horizontal padding and tabs are `8px` apart; the active tab's `2px` fg marker spans the **padded** box and overlaps the hairline.
 - List row: `12` top padding, `21` line, `12` bottom padding, `1px` divider = **46px pitch**. Label column **100px**.
 - The divider is **inset to the title column** between rows of the same group and runs **full width** before a row that starts a new group. No divider after the last row.
@@ -92,7 +92,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 5:3 image (640×384) is exactly 450px.
 - **A case study's thumbnail is the one thing that leaves the column.** Whatever sits before the first `##` heading — an image, a video or a Lottie sequence — opens the page at `min(840px, 100vw - 48px)`, centred on the 640px measure and inside the 24px gutters on a phone. Images, video and animation inside a section sit at the text's own 640px. Use symmetric negative margins, never a transform. To make an image the thumbnail, move it above the first heading.
 - **Profile comments** are the second thing that leaves the column: below the Experience list (no heading), a full-bleed view pins to the screen while the cards travel through it. Without JavaScript or under reduced motion they stack in the column (`components/Comments.tsx`, `doc/profile-comments-plan.md`).
-- **The Fun wall** is the third: `/fun` breaks out to `min(1200px, 100vw - 48px)` centred on the measure, 3 masonry columns with 24px gaps from 688px and 2 with 16px below. The filter row stays in the column. `/fun` has no intro: it lives outside `(site)` (`app/fun/page.tsx`) with the Header alone, at the same 60px, and the wall starts 60px below it (Matt, 2026-10-23). Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
+- **The Fun wall** is the third: `/fun` breaks out to `min(1200px, 100vw - 48px)` centred on the measure, 3 masonry columns with 24px gaps from 688px and 2 with 16px below. Its title and filters stay in the column. Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.
@@ -100,11 +100,11 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 ### Interaction
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
-- Tabs are **real links**, not client toggles. Left to right: **Home** `/` (the Gallery, house icon), **Writing** `/writing`, **Fun** `/fun` (side work, sparkle icon), **Profile** `/profile` (the Experience list, person icon). Matt reordered them on 2026-10-17 and added Fun on 2026-10-23; `/gallery` permanently redirects to `/` (`next.config.ts`).
-- The bottom dock is icon-only: `60×40` tabs inside `4px` padding, so the bar is `248×48` (`count × 60 + 8`), capsule ends (`24px` / `20px` radius), beside a `48px` circular AI trigger with an `8px` gap. Sizes derive from the `--dock-*` tokens in `app/globals.css`; the AI back row reads the same tokens to hold one centre line.
-- On a detail page (`/work/*`, `/writing/*`, `/fun/*`) the bar contracts like a Dynamic Island into a `48px` circle holding a back arrow, beside the AI trigger. The arrow steps back to the previous page when the visitor came from within the site, and otherwise links to the list (`/profile`, `/writing` or `/fun`). Width morphs over `300ms`; the route is resolved during render, so detail pages ship contracted.
+- The dock links to **Home** `/` (the Gallery), **Writing** `/writing`, **Fun** `/fun`, and **Browse** `/browse`. Browse links to **Experience** `/profile` and provides search across case studies, posts, and Fun pieces.
+- The dock is icon-only. Tabs are `60×40` on desktop inside `4px` padding. On phones the columns narrow to fit, and the tabs are `44px` tall. The circular AI trigger sits beside the capsule with an `8px` gap. The dock and AI overlay share the `--dock-*` tokens.
+- On detail pages the dock contracts to a circular Back control. Back uses history when the visitor came from within the site and falls back to the section list. On a walkthrough, the X exits to Home. The width morphs over `300ms`.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
-- Tapping a tab hops the icon up `2px` and back over `240ms` and plays `public/sounds/tap.wav` at volume `0.5`. CSS keyframes on `transform`; no animation library. The hop honours `prefers-reduced-motion`; the icon is `aria-hidden` with an `sr-only` label beside it so the tab is announced once.
+- Dock tabs use the shared `press-shrink` interaction and play `public/sounds/tap.wav` at volume `0.5`. Each icon has an `sr-only` label.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
   sunset gradient sweep from `components/effects/SunsetShimmer.tsx`. The intro
   links run one sweep on a visitor's **first** landing — the
@@ -123,7 +123,7 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - A Fun piece's page (`/fun/<slug>`, `components/fun/FunPiece.tsx`) is a file inspector: up to four colour dots on the left (picked from the image at build time with sharp, or typed in Keystatic), the work centred as large as the window allows, and title, subtitle, Resolution, Date and Tools on the right, label in fg and value muted. From 1104px the side columns are sticky while a set's further images scroll past; below it everything stacks. Tiles: caption dims on hover, cursor reads "View", press-shrink. A piece with more images is a stack — its next two pictures peek 8px and 16px above the cover and fan out ±16px / ±5° on hover or focus (`.fun-stack` in `app/globals.css`); a stacked tile drops its cover by that 16px so the peek never eats the gap above. On the piece's page both side columns are 192px, so the work sits on the window's centre line.
 - **HR mode** (`doc/hr-mode-plan.md`): about a second after a first visit, the AI opens on its own, asks for cookies (Decline / Accept, asked until answered), then offers a guided tour — No thanks / Walk me through, then a Branding · UI/UX · Frontend development checklist ("I'm hiring" above the composer reopens it), then "Start walkthrough" to `/tour/<focus>`, the case-study chain filtered to the chosen disciplines. On a walkthrough the dock is contracted as on a detail page, with an X that exits to Home; the cloud says "Please enjoy." then "You can change what's shown by pressing me." in a bubble, and pressing it reopens the checklist over any existing conversation. Offered at most once every 24 hours per browser, counted from when it appears (`mmd:tour-offered` holds the time); `?tour` on any URL offers it again. The checklist is one squircle panel on the email form's surface (`components/ai/AiTour.tsx`).
 - Engagement tracking is PostHog, consent-gated: nothing loads until **Accept** on the AI's cookie question (remembered as `mmd:tracking` = `granted`/`denied`), then pageviews, autocaptured clicks, heatmaps, masked session replays and named events (`tour_*`, `walkthrough_message_shown`, `case_study_viewed`, `ai_question_asked` with the question text, `contact_sent`; full list in the plan). `?ref=<name>` tags a visitor. Routed through `/ingest` (`next.config.ts`). Needs `NEXT_PUBLIC_POSTHOG_KEY`; without it every call is a no-op.
-- Start walkthrough plays a ~2.4s splash (`components/ai/WalkthroughSplash.tsx`): the pressed button swelling, blurring and fading as the page background fades up and the selected titles rise in, then a feathered upward wipe while the eyebrow and first title glide onto the page's own. Tap or Esc skips; none under reduced motion. Matt asked for it on 2026-10-18.
+- Start walkthrough uses the official `distortion-waves` package to carry the current view into the splash (`components/ai/WalkthroughSplash.tsx`). The selected titles rise in, then the sheet wipes upward while the eyebrow and first title glide onto the walkthrough page. Tap or Esc skips. Reduced motion opens the page directly.
 - Profile comment cards run along one straight diagonal, bottom left to top right, after a Wispr Flow recording Matt shared on 2026-10-21. The motion is linear: card position follows the scroll one to one with no easing, while the section stays pinned for the track's length (28° at every width, with a 128px gap between neighbouring cards' edges, after the ~133pt Wispr holds on desktop and phone). A card is square at the centre and shears up to 8° as it moves away (`components/effects/CommentsFloat.tsx`).
 - No other page transitions, scroll effects, or parallax. The one exception: a case study or writing post scrolls on into the next one through a sticky "gate" banner whose progress line fills with the scroll, and the URL follows once it is passed (`components/DetailChain.tsx`, `.chain-gate`). The page itself only ever moves with the reader's scroll.
 
@@ -162,7 +162,7 @@ keystatic.config.ts
 
 Rules:
 - SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). The site should be found by **"Matt Tam"**, **"Matt Matt Design"** and **"Matt Design"** (Matt, 2026-10-23): the full name goes in metadata only — titles, meta descriptions, keywords, JSON-LD (`name`, `alternateName`) and `llms.txt` — never in the copy a visitor reads, where he stays "Matt". No photo of him anywhere. See `doc/seo-plan.md`.
-- The Header + Intro block is byte-identical across all three tabs and **must not shift** when switching.
+- The name and intro belong on Home. Other portfolio pages lead with their own title in the shared `text-title` style.
 - Everything statically generated; `generateStaticParams` on both detail routes.
 - Server components unless interactivity demands otherwise.
 - Drafts hidden when `VERCEL_ENV === 'production'`, visible on previews.
@@ -171,7 +171,7 @@ Rules:
 
 ## Content model (Keystatic collections)
 
-**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). These print under the title on the case-study page as Timeline (`start – end`, e.g. "Sep 2025 – Feb 2026"), Role and Team figures; any that are empty are left out.
+**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). Timeline (`start – end`), Role, and Team appear below the opening thumbnail, or above the body when there is no thumbnail. Empty figures are left out.
 
 Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a `caption` (two to four words) and are filed under it as a folder tab, the recording at full width (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
@@ -208,7 +208,7 @@ Do not merge steps 3 and 4.
 ## Verify before calling anything done
 
 - Measure the live DOM at 1280px against the numbers in the Layout section above — the column lands at x=320 and is 640px wide; rows keep a 46px pitch (with the current intro copy, row tops 454/500/546/…, dividers 499/545/…).
-- Switch tabs — the masthead must not move by a single pixel.
+- Switch tabs and check that each page starts with its own heading, with the name and intro on Home.
 - 375px — no horizontal scroll, labels stack above titles, dividers run full width.
 - `pnpm build` — zero type errors, all detail routes prerendered.
 - Keyboard tab-through — visible focus ring on every link.

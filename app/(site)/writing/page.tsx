@@ -11,5 +11,10 @@ export const metadata: Metadata = {
 
 export default async function WritingPage() {
   const rows = await getWriting();
-  return <RowList rows={rows} />;
+  return (
+    <main>
+      <h1 className="mb-6 text-title">Writing</h1>
+      <RowList rows={rows} />
+    </main>
+  );
 }

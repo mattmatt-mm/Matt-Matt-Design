@@ -42,6 +42,7 @@ export function DetailChain({
       const slug = article.dataset.chainEntry ?? "";
       if (!slug || slug === reached) return;
       reached = slug;
+      root.dataset.activeChainEntry = slug;
       window.dispatchEvent(
         new CustomEvent("mmd:chain-entry", {
           detail: { basePath, slug, source },
@@ -107,5 +108,5 @@ export function DetailChain({
     };
   }, [basePath, followUrl, source]);
 
-  return <div ref={ref}>{children}</div>;
+  return <div ref={ref} data-chain-source={source}>{children}</div>;
 }

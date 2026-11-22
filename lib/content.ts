@@ -86,7 +86,7 @@ export async function getAIKnowledge(): Promise<AIKnowledge> {
       aliases: [entry.entry.title, entry.slug.replaceAll("-", " ")],
       policy: "answer",
       answer: entry.entry.summary ?? "",
-      source: entry.entry.hasPage
+      source: entry.entry.hasPage && !entry.entry.externalUrl
         ? `/work/${entry.slug}`
         : (entry.entry.externalUrl ?? ""),
       lastReviewed: knowledge?.reviewedAt ?? "",
@@ -192,27 +192,30 @@ export async function getGallery(): Promise<GalleryEntry[]> {
     reader.collections.experience.all(),
   ]);
 
-  // an image only links out if the case study it points at actually has a page
-  const pageFor = new Map(
-    experience
-      .filter((e) => e.entry.hasPage && !e.entry.externalUrl)
-      .map((e) => [e.slug, `/work/${e.slug}`]),
-  );
+  const projectBySlug = new Map(experience.map((e) => [e.slug, e.entry]));
 
   const sorted = [...all].sort((a, b) =>
     (b.entry.date ?? "").localeCompare(a.entry.date ?? ""),
   );
 
-  return sorted.map((e) => ({
-    caption: e.entry.caption,
-    projectName: e.entry.projectName ?? "",
-    image: e.entry.image ?? undefined,
-    alt: e.entry.alt ?? "",
-    href:
-      e.entry.externalUrl ||
-      (e.entry.project ? pageFor.get(e.entry.project) : undefined),
-    ...(e.entry.image ? measure(e.entry.image) : {}),
-  }));
+  return sorted.map(({ slug, entry }) => {
+    const project = entry.project ? projectBySlug.get(entry.project) : undefined;
+    const disciplines = entry.disciplines.length
+      ? entry.disciplines
+      : (project?.disciplines ?? []);
+    return {
+      slug,
+      caption: entry.caption,
+      projectName: entry.projectName ?? "",
+      disciplines: [...disciplines],
+      image: entry.image ?? undefined,
+      alt: entry.alt ?? "",
+      href:
+        entry.externalUrl ||
+        (project?.hasPage && !project.externalUrl ? `/work/${entry.project}` : undefined),
+      ...(entry.image ? measure(entry.image) : {}),
+    };
+  });
 }
 
 export async function getExperienceEntry(slug: string) {
@@ -377,6 +380,43 @@ export async function listWritingSlugs() {
   return all.filter((e) => !(hideDrafts && e.entry.draft));
 }
 
+export type PortfolioSearchEntry = {
+  href: string;
+  title: string;
+  kind: "Case study" | "Writing" | "Fun";
+  keywords: string;
+};
+
+/** Search the public card descriptions without reading bodies or rendering media. */
+export async function getPortfolioSearchEntries(): Promise<PortfolioSearchEntry[]> {
+  const [work, writing, fun] = await Promise.all([
+    listExperienceSlugs(),
+    listWritingSlugs(),
+    reader.collections.fun.all(),
+  ]);
+
+  return [
+    ...work.map(({ slug, entry }) => ({
+      href: `/work/${slug}`,
+      title: entry.title,
+      kind: "Case study" as const,
+      keywords: [entry.role, entry.summary, ...entry.disciplines].filter(Boolean).join(" "),
+    })),
+    ...writing.map(({ slug, entry }) => ({
+      href: `/writing/${slug}`,
+      title: entry.title,
+      kind: "Writing" as const,
+      keywords: entry.summary ?? "",
+    })),
+    ...fun.map(({ slug, entry }) => ({
+      href: `/fun/${slug}`,
+      title: entry.title,
+      kind: "Fun" as const,
+      keywords: [entry.subtitle, entry.category, entry.tools].filter(Boolean).join(" "),
+    })),
+  ];
+}
+
 /**
  * What the walkthrough splash needs to list a recruiter's selection before
  * the page arrives: every case study with a page, in list order.
@@ -395,6 +435,7 @@ export async function getTourCatalog() {
 export type TourCatalog = Awaited<ReturnType<typeof getTourCatalog>>;
 
 export type Comment = {
+  slug: string;
   name: string;
   role: string;
   comment: string;
@@ -410,6 +451,7 @@ export async function getComments(): Promise<Comment[]> {
   return [...all]
     .sort((a, b) => (a.entry.order ?? 0) - (b.entry.order ?? 0))
     .map((e) => ({
+      slug: e.slug,
       name: e.entry.name,
       role: e.entry.role,
       comment: e.entry.comment,

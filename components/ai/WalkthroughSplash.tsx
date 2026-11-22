@@ -1,30 +1,34 @@
 "use client";
 
+import {
+  DistortionWave,
+  snapshot,
+  type CaptureFunction,
+  type DistortionWaveHandle,
+} from "distortion-waves";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 export type SplashRun = {
-  /** The Start walkthrough button, which swells and dissolves as it goes. */
+  /** The confirmation button, which swells and dissolves as it goes. */
   button: HTMLElement;
   eyebrow: string;
   titles: string[];
   href: string;
 };
 
-/*
- * The timeline, in ms from the tap. ~2.4s end to end, chosen by Matt on
- * 2026-10-18; see doc/hr-mode-plan.md.
- */
-/** The page background fades up over the whole screen. */
-const COVER = 500;
-/** The pressed button swells a little, blurs and fades, in the same breath. */
+type SplashTargets = { eyebrow: HTMLElement; title: HTMLElement };
+
+/** The pressed button swells a little, blurs and fades as the wave opens. */
 const BUTTON_EXIT = 450;
 const BUTTON_SCALE = 1.08;
 const BUTTON_BLUR = "8px";
-const LINES_FROM = 200;
+const LINES_FROM = 1050;
 const LINE_STEP = 90;
 const LINE_DUR = 500;
 const HANDOFF_AT = 1800;
+/** Let the library play even if a slow image delays the first snapshot. */
+const CAPTURE_WAIT = 750;
 const REVEAL = 600;
 const EXIT = 300;
 /** How long to wait for the walkthrough page before revealing regardless. */
@@ -36,21 +40,20 @@ const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const HIDDEN = { opacity: 0, transform: "translateY(12px)", filter: "blur(3px)" };
 const SHOWN = { opacity: 1, transform: "translateY(0)", filter: "blur(0)" };
 
-/**
- * Pressing Start walkthrough: the button swells, blurs and fades away while
- * the page background fades up over everything and the walkthrough's titles
- * rise in on the page column,
- * then the sheet wipes upward to uncover the walkthrough while its eyebrow and
- * first title glide onto the page's own. A tap or Escape skips to the reveal.
- * The walkthrough page loads underneath as soon as the screen is covered.
- */
+function snapshotStyles(node: Element, overrides?: Record<string, string>) {
+  // The snapshot can keep Tailwind's solid border style while omitting its
+  // zero width. Copy the actual widths so the SVG also preserves real borders.
+  return { "border-width": getComputedStyle(node).borderWidth, ...overrides };
+}
+
+/** The wave covers the old view, then the title copies hand off to the new one. */
 export function WalkthroughSplash({
   run,
   onCovered,
   onDone,
 }: {
   run: SplashRun;
-  /** The screen is covered and the walkthrough is on its way underneath. */
+  /** The screen is covered and the next view is on its way underneath. */
   onCovered: () => void;
   onDone: () => void;
 }) {
@@ -58,38 +61,89 @@ export function WalkthroughSplash({
   const root = useRef<HTMLDivElement>(null);
   const sheet = useRef<HTMLDivElement>(null);
   const lines = useRef<HTMLDivElement>(null);
+  const wave = useRef<DistortionWaveHandle>(null);
+  const waveFinished = useRef<() => void>(() => {});
   const skip = useRef<() => void>(() => {});
+
+  // The splash is fixed above the current page. Use the library's DOM capture
+  // on the underlying viewport for the first texture, including its scroll.
+  const capture: CaptureFunction = async ({
+    slot, element, width, height, scale, background, ignore,
+  }) => {
+    const box = {
+      position: "absolute",
+      inset: "0",
+      margin: "0",
+      width: `${width}px`,
+      height: `${height}px`,
+    };
+    if (slot === "revealed") {
+      const { canvas } = await snapshot(element, {
+        width, height, scale, background,
+        skip: ignore,
+        force: (node) => {
+          if (node === element) return snapshotStyles(node, box);
+          if (node.getAttribute("data-dw-layer") === "revealed") {
+            return snapshotStyles(node, { opacity: "1", visibility: "visible" });
+          }
+          return snapshotStyles(node);
+        },
+      });
+      return canvas;
+    }
+
+    const body = document.body;
+    const { scrollX, scrollY } = window;
+    const { canvas } = await snapshot(body, {
+      width, height, scale, background,
+      skip: (node) => node === root.current || node.matches("nextjs-portal, [data-dw-skip]"),
+      force: (node) => {
+        if (node === body) return snapshotStyles(node, box);
+        if (node.hasAttribute("data-lens-content") && (scrollX || scrollY)) {
+          return snapshotStyles(node, {
+            position: "relative",
+            top: `${-scrollY}px`,
+            left: `${-scrollX}px`,
+          });
+        }
+        return snapshotStyles(node);
+      },
+    });
+    return canvas;
+  };
 
   useEffect(() => {
     const layer = root.current;
     const cover = sheet.current;
     const list = lines.current;
-    if (!layer || !cover || !list) return;
+    const effect = wave.current;
+    if (!layer || !cover || !list || !effect) return;
 
+    const { href } = run;
     const timers: number[] = [];
-    let navigated = false;
+    const hiddenTargets: HTMLElement[] = [];
+    let covered = false;
     let handedOff = false;
     let finished = false;
+    let startedAt = 0;
 
-    const navigate = () => {
-      if (navigated) return;
-      navigated = true;
-      // Changing the picks can land on the walkthrough already open: no route
-      // change, so start it from the top here instead.
-      if (window.location.pathname === run.href) window.scrollTo(0, 0);
-      else router.push(run.href);
+    const coverPage = () => {
+      if (covered) return;
+      covered = true;
+      // Swap the library's revealed surface for the original feathered sheet
+      // before updating the page underneath it.
+      cover.style.opacity = "1";
+      if (effect.element) effect.element.style.visibility = "hidden";
+      if (window.location.pathname === href) {
+        // The visitor picked the walkthrough that was already open.
+        window.scrollTo(0, 0);
+      } else {
+        router.push(href);
+      }
       onCovered();
     };
 
-    cover
-      .animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: COVER,
-        easing: EASE,
-        fill: "forwards",
-      })
-      .finished.then(navigate, navigate);
-
-    // The button has to stay above the fading sheet to be seen leaving, but it
+    // The button has to stay above the wave to be seen leaving, but it
     // lives in the AI layer beneath it. A copy takes its exact place up here
     // (squircle clip path and all) and the original steps out of sight.
     const pressed = run.button;
@@ -97,6 +151,7 @@ export function WalkthroughSplash({
     const ghost = pressed.cloneNode(true) as HTMLElement;
     ghost.classList.add("walkthrough-splash-button");
     ghost.setAttribute("aria-hidden", "true");
+    ghost.inert = true;
     Object.assign(ghost.style, {
       left: `${rect.left}px`,
       top: `${rect.top}px`,
@@ -104,31 +159,35 @@ export function WalkthroughSplash({
       height: `${rect.height}px`,
     });
     layer.append(ghost);
-    pressed.style.setProperty("visibility", "hidden");
-    ghost.animate(
-      [
-        { transform: "scale(1)", filter: "blur(0)" },
-        { transform: `scale(${BUTTON_SCALE})`, filter: `blur(${BUTTON_BLUR})` },
-      ],
-      { duration: BUTTON_EXIT, easing: EASE, fill: "forwards" },
-    );
-    // Its own, gentler curve: on the shared ease-out it was mostly gone before
-    // the swell could be seen.
-    ghost.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: BUTTON_EXIT,
-      easing: "cubic-bezier(0.4, 0, 0.2, 1)",
-      fill: "forwards",
-    });
-
+    pressed.style.visibility = "hidden";
     const items = [...list.children] as HTMLElement[];
-    items.forEach((item, i) => {
-      item.animate([HIDDEN, SHOWN], {
-        duration: LINE_DUR,
-        delay: LINES_FROM + i * LINE_STEP,
-        easing: EASE,
-        fill: "both",
+    const entrances: Animation[] = [];
+
+    const play = () => {
+      if (finished || handedOff) return;
+      startedAt = performance.now();
+      effect.play({ source: pressed });
+      ghost.animate(
+        [
+          { transform: "scale(1)", filter: "blur(0)" },
+          { transform: `scale(${BUTTON_SCALE})`, filter: `blur(${BUTTON_BLUR})` },
+        ],
+        { duration: BUTTON_EXIT, easing: EASE, fill: "forwards" },
+      );
+      ghost.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: BUTTON_EXIT,
+        easing: "cubic-bezier(0.4, 0, 0.2, 1)",
+        fill: "forwards",
       });
-    });
+      items.forEach((item, i) => {
+        entrances.push(item.animate([HIDDEN, SHOWN], {
+          duration: LINE_DUR,
+          delay: LINES_FROM + i * LINE_STEP,
+          easing: EASE,
+          fill: "both",
+        }));
+      });
+    };
 
     const finish = () => {
       if (finished) return;
@@ -136,33 +195,34 @@ export function WalkthroughSplash({
       onDone();
     };
 
+    const readTargets = (): SplashTargets | undefined => {
+      if (window.location.pathname !== href) return;
+      const walkthrough = document.querySelector('[data-chain-source="tour"]');
+      const eyebrow = walkthrough?.querySelector<HTMLElement>('[data-splash-target="eyebrow"]');
+      const title = walkthrough?.querySelector<HTMLElement>('[data-splash-target="title"]');
+      if (eyebrow && title) return { eyebrow, title };
+    };
+
     const pageReady = () =>
-      new Promise<{ eyebrow: HTMLElement; title: HTMLElement } | null>(
-        (resolve) => {
-          const started = performance.now();
-          const look = () => {
-            const eyebrow = document.querySelector<HTMLElement>(
-              '[data-splash-target="eyebrow"]',
-            );
-            const title = document.querySelector<HTMLElement>(
-              '[data-splash-target="title"]',
-            );
-            if (window.location.pathname === run.href && eyebrow && title) {
-              resolve({ eyebrow, title });
-            } else if (performance.now() - started > PAGE_WAIT) {
-              resolve(null);
-            } else {
-              requestAnimationFrame(look);
-            }
-          };
-          look();
-        },
-      );
+      new Promise<SplashTargets | null>((resolve) => {
+        const started = performance.now();
+        const look = () => {
+          const targets = readTargets();
+          if (targets) {
+            resolve(targets);
+          } else if (finished || performance.now() - started > PAGE_WAIT) {
+            resolve(null);
+          } else {
+            requestAnimationFrame(look);
+          }
+        };
+        look();
+      });
 
     const handOff = async () => {
       if (handedOff) return;
       handedOff = true;
-      navigate();
+      coverPage();
       layer.dataset.revealing = "true";
       const targets = await pageReady();
       if (finished) return;
@@ -170,8 +230,9 @@ export function WalkthroughSplash({
 
       // Hidden until the gliding copies arrive, so the wipe never uncovers a
       // second eyebrow and title beneath the moving ones.
-      targets?.eyebrow.style.setProperty("opacity", "0");
-      targets?.title.style.setProperty("opacity", "0");
+      if (eyebrowLine && targets?.eyebrow) hiddenTargets.push(targets.eyebrow);
+      if (titleLine && targets?.title) hiddenTargets.push(targets.title);
+      for (const target of hiddenTargets) target.style.setProperty("opacity", "0");
 
       const wipe = cover.animate(
         {
@@ -194,7 +255,8 @@ export function WalkthroughSplash({
         });
       });
 
-      const glide = (line: HTMLElement, target: HTMLElement | undefined) => {
+      const glide = (line: HTMLElement | undefined, target: HTMLElement | undefined) => {
+        if (!line) return;
         if (!target) {
           line.animate(exit, { duration: EXIT, easing: EASE, fill: "forwards" });
           return;
@@ -236,22 +298,54 @@ export function WalkthroughSplash({
       wipe.finished.then(finish, finish);
     };
 
-    timers.push(window.setTimeout(handOff, HANDOFF_AT));
-    skip.current = () => void handOff();
+    waveFinished.current = () => {
+      if (finished || handedOff) return;
+      coverPage();
+      const titlesReady = LINES_FROM + (items.length - 1) * LINE_STEP + LINE_DUR;
+      const remaining = Math.max(0, Math.max(HANDOFF_AT, titlesReady) - (performance.now() - startedAt));
+      timers.push(window.setTimeout(handOff, remaining));
+    };
+    skip.current = () => {
+      if (handedOff) return;
+      effect.reset();
+      ghost.remove();
+      if (entrances.length) {
+        for (const entrance of entrances) entrance.finish();
+      } else {
+        for (const item of items) item.style.opacity = "1";
+      }
+      void handOff();
+    };
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") skip.current();
     };
     window.addEventListener("keydown", onKey);
+    router.prefetch(href);
+    // Defer the first capture until after the mount, including Strict Mode's
+    // setup/cleanup cycle. Start as soon as both textures are ready.
+    const captureFrame = requestAnimationFrame(() => {
+      let timeout = 0;
+      const deadline = new Promise<void>((resolve) => {
+        timeout = window.setTimeout(resolve, CAPTURE_WAIT);
+        timers.push(timeout);
+      });
+      void Promise.race([effect.prepare(), deadline])
+        .catch(() => {})
+        .then(() => {
+          window.clearTimeout(timeout);
+          play();
+        });
+    });
 
     return () => {
+      finished = true;
+      cancelAnimationFrame(captureFrame);
       timers.forEach(window.clearTimeout);
       ghost.remove();
       pressed.style.removeProperty("visibility");
       window.removeEventListener("keydown", onKey);
-      document
-        .querySelectorAll<HTMLElement>("[data-splash-target]")
-        .forEach((el) => el.style.removeProperty("opacity"));
+      for (const target of hiddenTargets) target.style.removeProperty("opacity");
     };
     // One run per mount: AIExperience keys this component by run.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -264,6 +358,21 @@ export function WalkthroughSplash({
       style={{ "--splash-feather": `${FEATHER}px` } as React.CSSProperties}
       onClick={() => skip.current()}
     >
+      <DistortionWave
+        ref={wave}
+        className="walkthrough-splash-wave"
+        type="vertical"
+        palette="colorful"
+        capture={capture}
+        live={false}
+        prewarm={false}
+        resolution={1}
+        revealedContent={<div className="walkthrough-splash-fill" />}
+        onFinish={(revealed) => {
+          if (revealed) waveFinished.current();
+        }}
+        aria-hidden="true"
+      />
       <div ref={sheet} className="walkthrough-splash-sheet" aria-hidden="true" />
       <div className="walkthrough-splash-column">
         <div ref={lines} role="status">

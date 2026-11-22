@@ -1,10 +1,10 @@
 "use client";
 
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
+import { GridFour } from "@phosphor-icons/react/dist/ssr/GridFour";
 import { House } from "@phosphor-icons/react/dist/ssr/House";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
-import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import { X } from "@phosphor-icons/react/dist/ssr/X";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -13,18 +13,16 @@ import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 import { track } from "@/lib/analytics";
 
-// Home (the Gallery) on the left, then Writing and Fun, Profile (the
-// Experience list) on the right.
 const tabs = [
   { href: "/", label: "Home", icon: House },
   { href: "/writing", label: "Writing", icon: PenNib },
   { href: "/fun", label: "Fun", icon: Sparkle },
-  { href: "/profile", label: "Profile", icon: UserCircle },
+  { href: "/browse", label: "Browse", icon: GridFour },
 ];
 
 const TAP_VOLUME = 0.5;
 
-/** Pages that contract the bar into the back arrow. */
+/** Pages that contract the bar into the back control. */
 const DETAIL = /^\/(work|writing|fun)\/[^/]+/;
 
 
@@ -42,11 +40,9 @@ export function AiDock({
   triggerRef?: Ref<HTMLButtonElement>;
 }) {
   const pathname = usePathname();
-  const [tapped, setTapped] = useState<{ href: string; plays: number } | null>(null);
   const tapSound = useRef<HTMLAudioElement | null>(null);
 
-  // On a detail page the bar contracts, Dynamic Island style, into one circle
-  // holding the way back to the list the page belongs to.
+  // Detail pages contract the bar to Back.
   // A guided walkthrough (doc/hr-mode-plan.md) wears the same contracted bar,
   // but its circle is the way out of the walkthrough rather than a step back.
   const walkthrough = pathname.startsWith("/tour/");
@@ -61,7 +57,7 @@ export function AiDock({
   const backLabel = walkthrough
     ? "Exit walkthrough"
     : backHref === "/profile"
-      ? "Back to Profile"
+      ? "Back to Experience"
       : backHref === "/fun"
         ? "Back to Fun"
         : "Back to Writing";
@@ -99,12 +95,9 @@ export function AiDock({
     previousPath.current = pathname;
   }, [pathname, detail]);
 
+  const section = pathname === "/profile" ? "/browse" : pathname;
   const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
-      : href === "/profile"
-        ? pathname.startsWith("/profile") || pathname.startsWith("/work/")
-        : pathname.startsWith(href);
+    section === href || (href !== "/" && section.startsWith(`${href}/`));
 
   // The pill slides to this column. Resolved during render, so the server sends
   // it already in place — there is no first-paint snap to suppress.
@@ -120,16 +113,12 @@ export function AiDock({
     };
   }, []);
 
-  function tap(href: string) {
+  function tap() {
     const audio = tapSound.current;
     if (audio) {
       audio.currentTime = 0;
       void audio.play().catch(() => {});
     }
-    setTapped((previous) => ({
-      href,
-      plays: (previous?.href === href ? previous.plays : 0) + 1,
-    }));
     onNavigate();
   }
 
@@ -164,49 +153,19 @@ export function AiDock({
           <nav
             className="site-dock navigation-surface"
             aria-label="Portfolio sections"
+            aria-hidden={aiOpen || undefined}
             data-has-active={activeIndex === -1 ? "false" : "true"}
           >
             {/* One pill for the whole bar, not a surface per tab: it travels
                 between columns so the recess slides rather than jumps. */}
             <div className="site-dock-pill" aria-hidden="true" />
-            {tabs.map((tab) => {
-              const active = isActive(tab.href);
-              const Icon = tab.icon;
-              const hopping = tapped?.href === tab.href;
-
-              return (
-                <Link
-                  key={tab.href}
-                  href={tab.href}
-                  aria-current={active ? "page" : undefined}
-                  aria-hidden={tabsHidden ? "true" : undefined}
-                  tabIndex={tabsHidden ? -1 : undefined}
-                  className="site-dock-tab press-shrink"
-                  data-active={active ? "true" : "false"}
-                  onClick={() => tap(tab.href)}
-                >
-                  {/* The tap hop used to run letter by letter across the label.
-                      With the label gone the icon carries it, so a tap still
-                      answers in the same voice. Remounting on `plays` restarts
-                      the animation for repeated taps. */}
-                  <span
-                    key={hopping ? tapped?.plays : 0}
-                    className={hopping ? "site-dock-icon tab-hop" : "site-dock-icon"}
-                    aria-hidden="true"
-                  >
-                    <Icon size={20} weight="regular" />
-                  </span>
-                  <span className="sr-only">{tab.label}</span>
-                </Link>
-              );
-            })}
             <Link
               href={backHref}
               aria-hidden={detail && !aiOpen ? undefined : "true"}
               tabIndex={detail && !aiOpen ? undefined : -1}
               className="site-dock-back press-shrink"
               onClick={(event) => {
-                tap(backHref);
+                tap();
                 if (walkthrough) {
                   track("tour_exited", { focus: pathname.slice(6) });
                 } else if (canStepBack) {
@@ -215,15 +174,7 @@ export function AiDock({
                 }
               }}
             >
-              <span
-                key={tapped?.href === backHref ? tapped.plays : 0}
-                className={
-                  tapped?.href === backHref && detail
-                    ? "site-dock-icon tab-hop"
-                    : "site-dock-icon"
-                }
-                aria-hidden="true"
-              >
+              <span className="site-dock-icon" aria-hidden="true">
                 {walkthrough ? (
                   <X size={20} weight="regular" />
                 ) : (
@@ -234,6 +185,28 @@ export function AiDock({
                 {canStepBack && !walkthrough ? "Back" : backLabel}
               </span>
             </Link>
+            {tabs.map((tab) => {
+              const active = isActive(tab.href);
+              const Icon = tab.icon;
+
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  aria-current={active ? (pathname === tab.href ? "page" : "location") : undefined}
+                  aria-hidden={tabsHidden ? "true" : undefined}
+                  tabIndex={tabsHidden ? -1 : undefined}
+                  className="site-dock-tab press-shrink"
+                  data-active={active ? "true" : "false"}
+                  onClick={tap}
+                >
+                  <span className="site-dock-icon" aria-hidden="true">
+                    <Icon size={20} weight="regular" />
+                  </span>
+                  <span className="sr-only">{tab.label}</span>
+                </Link>
+              );
+            })}
           </nav>
         </div>
         <div className="ai-trigger-shell">
@@ -243,7 +216,7 @@ export function AiDock({
           <button
             ref={triggerRef}
             type="button"
-            className="ai-trigger"
+            className="ai-trigger press-shrink"
             aria-label="Ask Matt's AI"
             aria-hidden={aiOpen ? "true" : undefined}
             tabIndex={aiOpen ? -1 : 0}

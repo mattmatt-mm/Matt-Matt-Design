@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Column } from "@/components/Column";
-import { Header } from "@/components/Header";
-import { getSettings } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Not found",
@@ -13,19 +11,14 @@ export const metadata: Metadata = {
  * A little oak grows and drops a leaf beside the missing-page message.
  * Reduced motion uses the final still frame instead of the animated asset.
  */
-export default async function NotFound() {
-  const settings = await getSettings();
-
+export default function NotFound() {
   return (
     <Column>
-      <Header name={settings.name} role={settings.role} href="/" />
-
-      <div className="not-found-ground mt-15">
-        <p className="pb-3">
-          Nothing here. Yet.
-          <br />
-          <span className="text-muted">It may have moved, or never existed.</span>
-        </p>
+      <div className="not-found-ground">
+        <div className="pb-3">
+          <h1 className="text-title">Nothing here. Yet.</h1>
+          <p className="text-muted">It may have moved, or never existed.</p>
+        </div>
         <svg
           className="not-found-tree"
           viewBox="0 0 320 320"

@@ -274,6 +274,8 @@ requirement.
 The browser sends only:
 
 - the current question;
+- the current case study slug on a project page or guided walkthrough, which
+  the server matches against its approved project summaries;
 - whether this is the primary or follow-up turn;
 - the first question when sending the one follow-up; and
 - an automatically attached short-lived signed HTTP-only turn cookie used to

@@ -94,6 +94,8 @@ function containsMarker(question: string, markers: string[]) {
 
 /** A whole alias present in the question. Anything less is a partial score. */
 const EXPLICIT_MATCH = 100;
+const currentProjectReferences =
+  /\b(?:this|the current) (?:case study|project|work|app|design|page)\b|這(?:個|項)(?:專案|項目|作品|設計)|这(?:个|项)(?:项目|作品|设计)/gu;
 
 function aliasScore(question: string, alias: string) {
   const candidate = normalize(alias);
@@ -108,6 +110,7 @@ function aliasScore(question: string, alias: string) {
 export function decideKnowledge(
   question: string,
   facts: AIFact[],
+  project?: AIFact,
 ): KnowledgeDecision {
   const normalized = normalize(question);
 
@@ -116,10 +119,15 @@ export function decideKnowledge(
     return { outcome: "contact", reason: "private" };
   }
 
+  // "Project" in "this project" should not look like a mention of Project
+  // Melo. Keep the rest of the question available for explicit topic matches.
+  const topic = project
+    ? normalized.replace(currentProjectReferences, " ").replaceAll(/\s+/g, " ").trim()
+    : normalized;
   const ranked = facts
     .map((fact) => ({
       fact,
-      score: Math.max(0, ...fact.aliases.map((alias) => aliasScore(normalized, alias))),
+      score: Math.max(0, ...fact.aliases.map((alias) => aliasScore(topic, alias))),
     }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score);
@@ -142,15 +150,15 @@ export function decideKnowledge(
   if (containsMarker(normalized, contactMarkers)) {
     return { outcome: "contact", reason: "contact" };
   }
-  if (!selected) return { outcome: "contact", reason: "unknown" };
-  if (selected.policy === "never_answer") {
+  if (selected?.policy === "never_answer") {
     return { outcome: "contact", fact: selected, reason: "private" };
   }
-  if (selected.policy === "contact_only") {
+  if (selected?.policy === "contact_only") {
     return { outcome: "contact", fact: selected, reason: "contact" };
   }
-  if (!selected.answer.trim()) {
-    return { outcome: "contact", fact: selected, reason: "unknown" };
+  const fact = project && topic !== normalized ? project : selected;
+  if (!fact?.answer.trim()) {
+    return { outcome: "contact", fact, reason: "unknown" };
   }
-  return { outcome: "answer", fact: selected };
+  return { outcome: "answer", fact };
 }

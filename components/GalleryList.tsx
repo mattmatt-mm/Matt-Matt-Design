@@ -1,9 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Discipline } from "@/lib/disciplines";
 
 export type GalleryEntry = {
+  slug: string;
   caption: string;
   projectName: string;
+  disciplines: Discipline[];
   image?: string;
   alt?: string;
   width?: number;
@@ -41,8 +44,8 @@ function Figure({ entry }: { entry: GalleryEntry }) {
 export function GalleryList({ entries }: { entries: GalleryEntry[] }) {
   return (
     <div className="flex flex-col gap-3">
-      {entries.map((entry, i) => (
-        <figure key={`${entry.caption}-${i}`}>
+      {entries.map((entry) => (
+        <figure key={entry.slug}>
           {entry.href ? (
             // the image and its caption are one target; the caption carries
             // the hover on its own — the same restraint as a list row. Only

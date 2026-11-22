@@ -46,6 +46,8 @@
   --color-star: #ffa028;
   --color-avatar: #d9bdf5;
   --color-on-avatar: #000000;
+  --color-browse-blue: #72b8fa;
+  --color-browse-teal: #60c5ae;
 
   /* Spacing — px, not rem, so the 4px grid never drifts with root font-size.
      1 = 4px, 2 = 8px, 3 = 12px, 4 = 16px, 6 = 24px, 8 = 32px,
@@ -89,9 +91,11 @@
     color-mix(in srgb, var(--color-bg) 2.8%, transparent) 90%,
     transparent 100%;
 
-  /* Type — 16/21 everywhere; 32/42 is the only second size. */
+  /* Type — body copy, case study section headings, and page titles. */
   --text-base: 16px;
   --text-base--line-height: 21px;
+  --text-section: 18px;
+  --text-section--line-height: 24px;
   --text-title: 32px;
   --text-title--line-height: 42px;
 
@@ -182,18 +186,20 @@
   }
 
   .site-dock-row {
+    --dock-inset: 24px;
     /* Tabs are a fixed 60px, so the row is sized by its contents rather than
        stretched to a round number. --dock-count comes from the component. */
     --dock-w: calc(
       var(--dock-count) * var(--dock-tab-w) + 2 * var(--dock-pad)
     );
     --dock-row-w: calc(var(--dock-w) + var(--dock-gap) + var(--dock-trigger));
+    --dock-fit-w: min(var(--dock-row-w), calc(100vw - 2 * var(--dock-inset)));
     position: fixed;
     z-index: 70;
     bottom: var(--ai-control-bottom);
     left: 50%;
     display: flex;
-    width: min(var(--dock-row-w), calc(100vw - 48px));
+    width: var(--dock-fit-w);
     height: var(--dock-h);
     gap: var(--dock-gap);
     transform: translateX(-50%);
@@ -201,12 +207,20 @@
     transition: width var(--ai-open-dur) var(--ai-ease);
   }
 
-  /* Detail page: the bar contracts to a circle the size of the AI trigger,
-     Dynamic Island style. Everything sized from --dock-w (the row, and the AI
-     trigger's travel to centre) follows. A capsule, not a squircle, so the
-     width can animate without a clip path regenerating every frame. */
+  /* The detail bar contracts to a circle around the back control. */
   .site-dock-row[data-detail="true"] {
     --dock-w: var(--dock-h);
+  }
+
+  @media (max-width: 480px) {
+    :root {
+      --dock-tab-h: 44px;
+      --dock-trigger: 52px;
+    }
+
+    .site-dock-row {
+      --dock-inset: 12px;
+    }
   }
 
   /* Sits above the page and the scroll lens so the fade covers both, but
@@ -337,7 +351,7 @@
     min-width: 0;
     height: var(--dock-tab-h);
     place-items: center;
-    color: var(--color-muted);
+    color: var(--color-muted-readable);
     text-decoration: none;
     /* Paced with the pill, so the icon arrives at full contrast as the recess
        does rather than snapping ahead of it. The press is not paced with it —
@@ -379,6 +393,10 @@
     opacity: 1;
     filter: none;
     pointer-events: auto;
+  }
+
+  .site-dock-row[data-ai-open="true"] .site-dock-back {
+    pointer-events: none;
   }
 
   .site-dock-back:hover {
@@ -472,7 +490,7 @@
     transform: translateX(
       calc(
         var(--dock-trigger) / 2 -
-          min(var(--dock-row-w), calc(100vw - 48px)) / 2
+          var(--dock-fit-w) / 2
       )
     );
     filter: none;
@@ -497,6 +515,153 @@
     height: 40px;
   }
 
+  .browse-page {
+    display: grid;
+    gap: 16px;
+  }
+
+  .browse-search {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 12px;
+    padding-inline: 16px 4px;
+    border-radius: 24px;
+    color: var(--color-muted-readable);
+  }
+
+  .browse-search:focus-within {
+    outline: 1px solid var(--color-fg);
+    outline-offset: 2px;
+  }
+
+  .browse-search > svg,
+  .browse-search-clear {
+    flex: none;
+  }
+
+  .browse-search input {
+    flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--color-fg);
+    font: inherit;
+  }
+
+  .browse-search input::placeholder {
+    color: var(--color-muted-readable);
+  }
+
+  .browse-search input::-webkit-search-cancel-button {
+    appearance: none;
+  }
+
+  .browse-search-clear {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-muted-readable);
+    cursor: pointer;
+  }
+
+  .browse-search-clear:hover {
+    background: var(--color-surface-active);
+    color: var(--color-fg);
+  }
+
+  .browse-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  @media (min-width: 688px) {
+    .browse-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .browse-card {
+    --browse-accent: var(--color-line);
+    display: grid;
+    width: 100%;
+    min-height: 108px;
+    height: 100%;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto 1fr;
+    align-items: start;
+    gap: 12px;
+    padding: 16px;
+    border-radius: var(--ai-radius);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-navigation);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .browse-card:hover {
+    background: color-mix(in srgb, var(--browse-accent) 12%, var(--color-surface));
+  }
+
+  .browse-card[data-tone="blue"] { --browse-accent: var(--color-browse-blue); }
+  .browse-card[data-tone="peach"] { --browse-accent: var(--color-shimmer-sunset-rose); }
+  .browse-card[data-tone="gold"] { --browse-accent: var(--color-note-band); }
+  .browse-card[data-tone="violet"] { --browse-accent: var(--color-avatar); }
+  .browse-card[data-tone="teal"] { --browse-accent: var(--color-browse-teal); }
+
+  .browse-card-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--browse-accent) 32%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-fg) 78%, var(--browse-accent));
+  }
+
+  .browse-card-label {
+    grid-column: 1 / -1;
+    align-self: end;
+  }
+
+  .browse-card-arrow,
+  .browse-result > svg {
+    align-self: center;
+    color: var(--color-muted-readable);
+  }
+
+  .browse-results {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .browse-result {
+    display: grid;
+    min-height: 48px;
+    grid-template-columns: minmax(0, 1fr) auto 16px;
+    align-items: center;
+    gap: 12px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-fg);
+    text-decoration: none;
+  }
+
+  .browse-result:hover,
+  .browse-result-kind,
+  .browse-empty {
+    color: var(--color-muted-readable);
+  }
+
   .ai-layer,
   .ai-viewport {
     position: fixed;
@@ -506,6 +671,7 @@
   .ai-layer {
     z-index: 60;
     pointer-events: none;
+    --ai-content-width: 345px;
   }
 
   .ai-viewport {
@@ -519,7 +685,7 @@
     position: absolute;
     bottom: var(--ai-surface-bottom);
     left: 50%;
-    width: 345px;
+    width: var(--ai-content-width);
     height: 96px;
     transform: translateX(-50%);
     transition:
@@ -533,12 +699,12 @@
   }
 
   .ai-morph-surface[data-kind="answer"] {
-    width: 345px;
+    width: var(--ai-content-width);
     height: auto;
   }
 
   .ai-morph-surface[data-kind="answer-followup"] {
-    width: 345px;
+    width: var(--ai-content-width);
     height: auto;
   }
 
@@ -845,7 +1011,7 @@
     position: absolute;
     bottom: var(--ai-control-bottom);
     left: 50%;
-    width: 345px;
+    width: var(--ai-content-width);
     height: var(--dock-h);
     transform: translateX(-50%);
     pointer-events: auto;
@@ -879,7 +1045,7 @@
     position: absolute;
     inset: auto auto var(--ai-contact-bottom) 50%;
     display: flex;
-    width: 345px;
+    width: var(--ai-content-width);
     flex-direction: column;
     gap: 8px;
     transform: translateX(-50%);
@@ -903,7 +1069,7 @@
        off the control row. */
     bottom: calc(var(--ai-control-bottom) + var(--dock-h) + var(--dock-gap));
     left: 50%;
-    width: 345px;
+    width: var(--ai-content-width);
     transform: translateX(-50%);
     cursor: pointer;
     animation: ai-contact-enter var(--ai-open-dur) var(--ai-ease) both;
@@ -1126,7 +1292,7 @@
 
   .ai-contact-submit-shell {
     position: relative;
-    width: 345px;
+    width: var(--ai-content-width);
     min-height: 41px;
   }
 
@@ -1185,6 +1351,13 @@
     pointer-events: auto;
   }
 
+  /* Keep backdrop sampling on the unclipped box. Some browsers fail to sample
+     through the squircle clip when backdrop-filter is applied to that shape. */
+  .ai-tour-button[data-tone="secondary"] {
+    backdrop-filter: blur(10px) saturate(1.4);
+    -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  }
+
   .ai-tour-button-surface {
     position: absolute;
     inset: 0;
@@ -1212,8 +1385,6 @@
       color-mix(in srgb, var(--color-fg) 8%, var(--color-surface)) 64%,
       transparent
     );
-    backdrop-filter: blur(10px) saturate(1.4);
-    -webkit-backdrop-filter: blur(10px) saturate(1.4);
   }
 
   .ai-tour-button[data-tone="secondary"]:hover .ai-tour-button-surface {
@@ -1307,6 +1478,17 @@
     pointer-events: none;
   }
 
+  .walkthrough-splash-wave,
+  .walkthrough-splash-fill {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .walkthrough-splash-fill {
+    background: var(--color-bg);
+  }
+
   /* The wipe: a mask twice the screen tall plus the feather, opaque on top and
      clear below. Sliding it from 0% to 100% carries the soft edge from below
      the screen to above it, uncovering the page from the bottom up. */
@@ -1330,8 +1512,6 @@
     mask-position: 0 0%;
   }
 
-  /* The page column, with the eyebrow at the height the walkthrough's own
-     lands: page top padding, the two-line masthead, then the article's 60px. */
   /* A copy of the pressed button, laid over its original so it can be seen
      leaving above the sheet. */
   .walkthrough-splash-button {
@@ -1341,13 +1521,13 @@
     pointer-events: none;
   }
 
+  /* Match Column so the eyebrow and title start above their landing spots. */
   .walkthrough-splash-column {
     position: relative;
     width: 100%;
     max-width: var(--container-column);
     margin: 0 auto;
-    padding: calc(var(--spacing) * 30 + var(--text-base--line-height) * 2)
-      calc(var(--spacing) * 6) 0;
+    padding: calc(var(--spacing) * 15) calc(var(--spacing) * 6) 0;
     color: var(--color-fg);
   }
 
@@ -1357,21 +1537,16 @@
   }
 
   @media (min-width: 688px) {
-    /* A copy of the pressed button, laid over its original so it can be seen
-     leaving above the sheet. */
-  .walkthrough-splash-button {
-    position: fixed;
-    z-index: 1;
-    margin: 0;
-    pointer-events: none;
-  }
-
-  .walkthrough-splash-column {
+    .walkthrough-splash-column {
       padding-inline: 0;
     }
   }
 
   @media (max-width: 399px) {
+    .ai-layer {
+      --ai-content-width: calc(100vw - 56px);
+    }
+
     .ai-morph-surface,
     .ai-morph-surface[data-kind="answer"],
     .ai-morph-surface[data-kind="answer-followup"],
@@ -1379,7 +1554,7 @@
     .ai-exchange,
     .ai-cloud-says,
     .ai-contact-submit-shell {
-      width: calc(100vw - 56px);
+      width: var(--ai-content-width);
     }
 
   }
@@ -1595,6 +1770,16 @@
   .prose h3 {
     font-size: var(--text-title);
     line-height: var(--text-title--line-height);
+  }
+
+  .case-study .prose h2 {
+    font-size: var(--text-section);
+    line-height: var(--text-section--line-height);
+    font-weight: 700;
+  }
+
+  .prose > * + .case-study-details {
+    margin-top: 24px;
   }
 
   .prose > * + :is(h1, h2, h3) {
@@ -1889,41 +2074,126 @@
 }
 
 @layer components {
-  /* Tab tap: each letter hops 2px and settles. Rise eases out, fall eases in,
-     so it reads as a hop rather than a slide. */
-  @keyframes tab-letter-hop {
-    0% {
-      transform: translateY(0);
-      animation-timing-function: ease-out;
-    }
-    50% {
-      transform: translateY(-2px);
-      animation-timing-function: ease-in;
-    }
-    100% {
-      transform: translateY(0);
-    }
+  .home-overview {
+    display: grid;
+    gap: 8px;
+    color: var(--color-muted-readable);
   }
 
-  .tab-letter {
-    display: inline-block;
-    animation: tab-letter-hop 240ms both;
+  .home-overview-meta,
+  .home-overview-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
   }
 
-  /* Same hop, one element: the dock icon stands in for the label's letters. */
-  .tab-hop {
-    animation: tab-letter-hop 240ms both;
+  .home-overview-meta > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .tab-letter,
-    .tab-hop {
-      animation: none;
-    }
+  .home-overview-meta svg {
+    flex: none;
   }
-}
 
-@layer components {
+  .home-overview-stats strong {
+    color: var(--color-fg);
+  }
+
+  .home-overview-comments {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-self: start;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .home-overview-comments:where(:hover, :focus-visible) {
+    color: var(--color-fg);
+    text-decoration: underline;
+  }
+
+  .home-overview-avatars {
+    display: inline-flex;
+    flex: none;
+    isolation: isolate;
+  }
+
+  .home-overview-avatar {
+    position: relative;
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-avatar);
+    box-shadow: 0 0 0 2px var(--color-bg);
+    color: var(--color-on-avatar);
+    font-weight: 600;
+  }
+
+  .home-overview-avatar + .home-overview-avatar {
+    margin-inline-start: -8px;
+  }
+
+  .home-overview-avatar:first-child {
+    z-index: 2;
+  }
+
+  .home-overview-avatar:nth-child(2) {
+    z-index: 1;
+  }
+
+  .home-overview-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .home-feed-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .home-feed-action {
+    display: grid;
+    min-height: 44px;
+    place-items: center;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 24px;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--color-line);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .home-feed-action:not(.home-feed-primary):hover {
+    background: var(--color-surface-active);
+  }
+
+  .home-feed-primary {
+    background: var(--color-ai-action);
+    box-shadow: none;
+    color: var(--color-on-ai-action);
+    transition:
+      background-color 120ms ease-out,
+      transform 120ms ease-out;
+  }
+
+  .home-feed-primary:hover {
+    background-color: color-mix(in srgb, var(--color-ai-action) 85%, var(--color-bg));
+  }
+
   /* Tab-to-tab page change. The incoming page slides in from the side of the
      bar it was tapped on; the outgoing one is gone before the frame is drawn,
      so there is nothing to animate out.

@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   // running in the same workspace. Production continues to use `.next`.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   reactStrictMode: true,
+  // Keep the dev badge clear of the dock in phone previews.
+  devIndicators: { position: "top-right" },
 
   // The AI routes read `content/` at request time through the Keystatic
   // reader, which resolves its paths at runtime — so file tracing cannot see
