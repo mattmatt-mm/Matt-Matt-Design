@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { Suspense, useContext } from "react";
-import { PortfolioActions } from "@/components/ai/PortfolioActions";
+import { GUIDED_WALKTHROUGH_LABEL, PortfolioActions } from "@/components/ai/PortfolioActions";
 import { GalleryList, type GalleryEntry } from "@/components/GalleryList";
 import { parseFocus, type Discipline } from "@/lib/disciplines";
 
@@ -37,7 +37,7 @@ function FeedView({
           disabled={!openAction}
           onClick={(event) => openAction?.("walkthrough", event.currentTarget)}
         >
-          Customise feed
+          {GUIDED_WALKTHROUGH_LABEL}
         </button>
         <a
           className="home-feed-action home-feed-primary press-shrink"

@@ -18,14 +18,13 @@ can see which work actually gets read.
    visitors use his site?", with a muted line on what he sees and why.
    **Decline** / **Accept**. Asked until answered, then never again (Matt,
    2026-10-18). Either answer moves straight on to the offer, if one is due.
-1. **Offer.** "Hiring? I can walk you through the case studies that match the
-   role you're filling." Two buttons: **No thanks** and **Walk me through**.
+1. **Offer.** "Want a guided walkthrough of Matt’s case studies?" Choose
+   **No thanks** or **Walk me through**.
    Nothing is focused on arrival, so no focus ring shows until someone tabs.
-2. **Pick.** "Which skills does the role need?" with a three-row checklist — Branding, UI/UX,
+2. **Pick.** "Which kinds of work would you like to see?" with a three-row checklist — Branding, UI/UX,
    Frontend development. Any number can be selected; **Continue** waits for at
    least one.
-3. **Ready.** "Here is the customised case study walkthrough that may interest
-   you." with one button, **Start walkthrough**.
+3. **Ready.** "Your guided walkthrough is ready." Press **Start walkthrough**.
 4. **Walkthrough.** `/tour/<focus>` — the case-study chain (the same scroll-on
    reading as `/work/*`) holding only the case studies tagged with a chosen
    discipline, in list order. A muted line over the first title says what the
@@ -40,7 +39,7 @@ can see which work actually gets read.
 6. **Exit.** The dock is contracted, exactly as on a case study, but the circle
    holds an **X** instead of the back arrow. It leaves the walkthrough for Home.
 
-**I'm hiring** sits above the first-question composer, on the left — and above the follow-up composer once a conversation exists, between the answer and the field — so the
+**Guided walkthrough** sits above the first-question composer, on the left — and above the follow-up composer once a conversation exists, between the answer and the field — so the
 walkthrough can be found again at any time. Someone who has already said yes
 goes straight to the checklist. The composer's review notice moved into an info
 button on the right of the same row, shown as a tooltip on hover, focus or tap.
@@ -108,7 +107,7 @@ Once granted:
 - Named events:
   - `cookies_accepted`
   - `tour_offered`, `tour_accepted`, `tour_declined`, `tour_reopened`
-    ("I'm hiring"), `tour_disciplines_selected`, `tour_started`,
+    ("Guided walkthrough"), `tour_disciplines_selected`, `tour_started`,
     `tour_configure_opened` (the cloud on a walkthrough), `tour_exited`
   - `walkthrough_message_shown` — each of the cloud's lines (`line`, `step`)
   - `case_study_viewed` / `post_viewed` each time the chain reaches a new entry

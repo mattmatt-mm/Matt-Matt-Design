@@ -25,6 +25,7 @@ export const siteName = "Matt Matt Design";
 export const siteAlternateNames = ["Matt Design", "Matt Tam", "mattmattdesign"];
 /** The home-screen label, where the brand name is too long to fit. */
 export const siteShortName = "Matt";
+export const profileTitle = "Profile";
 export const siteTitle =
   "Matt Tam — Matt Matt Design · Design Engineer in Hong Kong";
 export const siteDescription =

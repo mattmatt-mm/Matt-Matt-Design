@@ -46,10 +46,10 @@ export function AiOverlay({
   onContactNoteChange,
   onContactSubmit,
   tour,
-  onHiring,
+  onWalkthrough,
 }: {
-  /** Opens the recruiter walkthrough from the first question's composer. */
-  onHiring?: () => void;
+  /** Opens the guided walkthrough from the composer. */
+  onWalkthrough?: () => void;
   /** The guided tour, shown in place of the conversation while it runs. */
   tour?: React.ReactNode;
   phase: AIPhase;
@@ -145,7 +145,7 @@ export function AiOverlay({
                 // Still there once a conversation exists: the walkthrough
                 // must stay reachable after a first answer.
                 <>
-                  <ComposerAside inline onHiring={onHiring} />
+                  <ComposerAside inline onWalkthrough={onWalkthrough} />
                   {turnsLeft > 0 ? (
                     <AiComposer
                       value={question}
@@ -191,7 +191,7 @@ export function AiOverlay({
                 <AiComposer
                   value={question}
                   error={composerError}
-                  onHiring={phase === "ask_primary" ? onHiring : undefined}
+                  onWalkthrough={phase === "ask_primary" ? onWalkthrough : undefined}
                   onChange={onQuestionChange}
                   onSubmit={onQuestionSubmit}
                 />

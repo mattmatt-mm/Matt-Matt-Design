@@ -177,8 +177,8 @@ not decorative borders and should remain where required.
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
 
-- The guided tour asks its pick question as a checklist, not chips — chips
-  were one button too many (Matt, 2026-10-18). One squircle panel on the email
+- The guided walkthrough asks visitors what work they want to see with a checklist.
+  Use one squircle panel on the email
   form's surface (`--color-ai-form`), a 44px row per skill with the label left
   and a 20px Phosphor Square / CheckSquare (fill) right, the form's hairline
   between rows. Real checkboxes, hidden, with the focus ring drawn inside the
@@ -197,9 +197,9 @@ not decorative borders and should remain where required.
   `--shadow-navigation` rim on the surface and `--filter-navigation` on a
   wrapper around it, since the squircle's clip path would cut a drop shadow off
   the surface itself (Matt, 2026-10-18). The row above it lines up with the
-  field: "I'm hiring" starts at the text's 16px inset, the info icon centres on
+  field: "Guided walkthrough" starts at the text's 16px inset, the info icon centres on
   the send icon.
-- Above the first-question composer: **I'm hiring** (Phosphor Briefcase,
+- Above the first-question composer, show **Guided walkthrough** (Phosphor Compass,
   muted, fg on hover) on the left, and a 16px Phosphor Info button on the right
   whose tooltip carries the review notice. Do not print that notice as a line of
   text. Do not auto-focus a control when an AI surface appears unprompted — the

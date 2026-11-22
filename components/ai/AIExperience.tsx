@@ -260,8 +260,7 @@ export function AIExperience({
     setOpen(true);
   }
 
-  // "I'm hiring" above the composer: back into the walkthrough at any time,
-  // straight to the chips — saying "I'm hiring" already answers the offer.
+  // The walkthrough shortcut opens the checklist directly.
   const openTour = useCallback(() => {
     track("tour_reopened");
     setConfiguring(true);
@@ -544,7 +543,7 @@ export function AIExperience({
             if (contactStatus === "error") setContactStatus("idle");
           }}
           onContactSubmit={sendContact}
-          onHiring={openTour}
+          onWalkthrough={openTour}
           tour={
             tourStep ? (
               <AiTour

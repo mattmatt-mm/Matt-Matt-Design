@@ -826,9 +826,9 @@
     color: var(--color-fg);
   }
 
-  /* The row above the first question: the recruiter walkthrough on the left,
+  /* The row above the first question: the guided walkthrough on the left,
      the privacy notice behind an info button on the right. */
-  /* Lined up with the field below: "I'm hiring" starts where its text does
+  /* Lined up with the field below: the walkthrough button starts where its text does
      (16px in) and the info icon sits over the send icon's centre. The send
      button is 8px in on the first composer and flush on a follow-up, so the
      row's end inset follows it. */
@@ -854,7 +854,7 @@
     margin-bottom: 8px;
   }
 
-  .ai-hiring {
+  .ai-walkthrough {
     display: inline-flex;
     /* 44px hit area around a 21px line. */
     margin: -12px 0 -12px -4px;
@@ -869,7 +869,7 @@
     transition: color 120ms ease-out;
   }
 
-  .ai-hiring:hover {
+  .ai-walkthrough:hover {
     color: var(--color-fg);
   }
 
