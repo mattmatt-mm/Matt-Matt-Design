@@ -1,10 +1,11 @@
 "use client";
 
 import { Squircle, type SquircleProps } from "@squircle-js/react";
-import type { ComponentPropsWithoutRef } from "react";
+import type { ComponentPropsWithoutRef, ReactElement } from "react";
 
 export const SITE_SQUIRCLE_SMOOTHING = 0.6;
 export const SITE_SQUIRCLE_RADIUS = 16;
+const THUMBNAIL_SQUIRCLE_RADIUS = 4;
 
 type SiteSquircleProps = SquircleProps & ComponentPropsWithoutRef<"div">;
 
@@ -24,5 +25,13 @@ export function SiteSquircle({
       cornerSmoothing={cornerSmoothing}
       {...props}
     />
+  );
+}
+
+export function ThumbnailSquircle({ children }: { children: ReactElement }) {
+  return (
+    <SiteSquircle asChild cornerRadius={THUMBNAIL_SQUIRCLE_RADIUS}>
+      {children}
+    </SiteSquircle>
   );
 }

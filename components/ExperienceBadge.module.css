@@ -1,0 +1,151 @@
+.stage {
+  --lanyard-height: clamp(412px, min(64svh, 132vw), 544px);
+  --lanyard-width: min(100cqw, 960px);
+  width: var(--lanyard-width);
+  margin-block-start: -60px;
+  margin-inline: calc((100% - var(--lanyard-width)) / 2);
+}
+
+.stage[data-launch] {
+  --lanyard-height: var(--launch-frame-height);
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+}
+
+.viewport {
+  position: relative;
+  height: calc(var(--lanyard-height) + var(--lanyard-swing-room));
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.viewport::before {
+  position: absolute;
+  inset: 0 auto auto 50%;
+  width: 16px;
+  height: calc(var(--lanyard-height) * 0.2);
+  background: var(--color-fg);
+  translate: -50% 0;
+  content: "";
+}
+
+.stage[data-launch] .viewport {
+  height: 100%;
+}
+
+.launchFrame {
+  position: absolute;
+  height: var(--lanyard-height);
+  pointer-events: none;
+}
+
+.viewport:has(.face[data-lanyard-face])::before {
+  display: none;
+}
+
+.viewport .scene {
+  position: absolute;
+  inset: 0;
+}
+
+.face {
+  position: absolute;
+  inset: calc(var(--lanyard-height) * 0.192) auto auto 50%;
+  width: min(72%, calc(var(--lanyard-height) * 0.53));
+  aspect-ratio: 32 / 45;
+  color: var(--color-fg);
+  font-size: 10px;
+  line-height: 16px;
+  translate: -50% 0;
+}
+
+.face[data-lanyard-face] {
+  inset: 0 auto auto 0;
+  transform-origin: 0 0;
+  translate: none;
+  pointer-events: none;
+}
+
+.face[data-lanyard-face="front"] a {
+  pointer-events: auto;
+}
+
+.stage:not([data-launch]) .face[data-lanyard-face="front"] {
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.viewport:has(.scene canvas[data-dragging]) .face a {
+  pointer-events: none;
+}
+
+.face[data-lanyard-face="back"] {
+  visibility: hidden;
+}
+
+.back {
+  visibility: hidden;
+}
+
+.back[data-lanyard-face="back"] {
+  visibility: visible;
+}
+
+.back :global(.signature) {
+  width: 64%;
+  height: auto;
+}
+
+.back:not([data-signing][data-lanyard-face="back"]) :global(.signature-trace) {
+  animation-play-state: paused;
+}
+
+.paper.signaturePaper {
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.paper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 36px 20px 24px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.face[data-lanyard-face] .paper {
+  border-color: transparent;
+  background: transparent;
+}
+
+.heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heading p {
+  text-align: end;
+}
+
+.history {
+  margin-block-start: auto;
+}
+
+.hint {
+  display: grid;
+  place-items: center;
+  width: fit-content;
+  min-height: 44px;
+  margin-inline: auto;
+  color: var(--color-muted-readable);
+  text-decoration: none;
+}
+
+.hint:is(:hover, :focus-visible) {
+  text-decoration: underline;
+}

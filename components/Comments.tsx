@@ -39,8 +39,8 @@ function Avatar({ logo, initials }: Pick<Comment, "logo" | "initials">) {
 }
 
 /**
- * Comments from clients and users, floating below the Experience list on
- * /profile. They travel in a straight line, bottom left to top right, as the
+ * Comments from clients and users, floating below the badge on /browse/profile.
+ * They travel in a straight line, bottom left to top right, as the
  * page scrolls (`CommentsFloat`); see doc/profile-comments-plan.md.
  */
 export function Comments({ comments }: { comments: Comment[] }) {

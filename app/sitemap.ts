@@ -5,7 +5,7 @@ import {
   listExperienceSlugs,
   listWritingSlugs,
 } from "@/lib/content";
-import { siteUrl } from "@/lib/site";
+import { profilePath, siteUrl } from "@/lib/site";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [work, writing, fun] = await Promise.all([
@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: siteUrl },
     { url: `${siteUrl}/writing` },
     { url: `${siteUrl}/fun` },
-    { url: `${siteUrl}/profile` },
+    { url: `${siteUrl}${profilePath}` },
     { url: `${siteUrl}/browse` },
     ...fun.map((p) => ({ url: `${siteUrl}/fun/${p.slug}` })),
     ...work.map((e) => ({

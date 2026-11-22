@@ -1,0 +1,174 @@
+.dialog {
+  --launch-frame-height: min(72svh, clamp(412px, min(64svh, 132vw), 544px));
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  touch-action: none;
+  background: transparent;
+  color: var(--color-fg);
+}
+
+:global(html[data-portfolio-launch="pending"]) .dialog,
+.dialog[open] {
+  display: block;
+}
+
+.dialog::backdrop {
+  background: transparent;
+}
+
+.wave,
+.intro,
+.home {
+  position: absolute;
+  inset: 0;
+}
+
+.intro {
+  background: var(--color-bg);
+}
+
+.home {
+  pointer-events: none;
+}
+
+.scene {
+  z-index: 2;
+  background: transparent;
+  opacity: 1;
+  pointer-events: none;
+}
+
+.dialog[data-badge-phase="loading"] .scene {
+  opacity: 0;
+}
+
+.dialog[data-badge-phase="dropping"] .scene {
+  animation: lower-badge 640ms cubic-bezier(0.24, 0.72, 0.34, 1) both;
+}
+
+.actions {
+  position: absolute;
+  inset: min(calc(var(--launch-frame-height) + 32px), calc(100% - 68px)) 24px auto;
+  display: grid;
+  justify-items: center;
+  pointer-events: none;
+}
+
+.enter {
+  --copy-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --copy-blur: 0px;
+  --copy-travel: 0px;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  min-width: 176px;
+  padding-inline: 16px;
+  color: var(--color-muted-readable);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.copy,
+.prompts > span {
+  grid-area: 1 / 1;
+}
+
+.copy {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(var(--copy-travel));
+  filter: blur(var(--copy-blur));
+  transition:
+    opacity 180ms var(--copy-ease),
+    transform 180ms var(--copy-ease),
+    filter 180ms var(--copy-ease),
+    visibility 0s 180ms;
+}
+
+.dialog:is([data-badge-phase="loading"], [data-badge-phase="dropping"]) .percentage[data-current],
+.dialog[data-badge-phase="signing"]:not(:has([data-lanyard-face="front"])) .hello,
+.dialog[data-badge-phase="signing"]:has([data-lanyard-face="front"]) .prompts {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  filter: none;
+  transition-delay: 0s;
+}
+
+.percentage {
+  font-variant-numeric: tabular-nums;
+}
+
+.prompts {
+  display: grid;
+  place-items: center;
+}
+
+.pull {
+  display: none;
+}
+
+.enter:focus-visible {
+  outline: none;
+}
+
+.enter:is(:hover, :focus-visible) span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@keyframes lower-badge {
+  0% { transform: translateY(calc(-1 * var(--launch-frame-height))); }
+  78% { transform: translateY(8px); }
+  92% { transform: translateY(-2px); }
+  100% { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog[data-badge-phase="dropping"] .scene {
+    animation-duration: 1ms;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter {
+    --copy-blur: 2px;
+    --copy-travel: 2px;
+  }
+
+  .prompts > span {
+    animation: 4.8s var(--copy-ease) infinite both;
+  }
+
+  .dialog[data-badge-phase="signing"]:has([data-lanyard-face="front"]) .prompts > span {
+    display: block;
+    animation-name: launch-copy;
+  }
+
+  .prompts > .tap {
+    animation-delay: -2.4s;
+  }
+
+  .dialog:has(canvas[data-dragging]) .prompts > span,
+  .actions[inert] .prompts > span {
+    animation-play-state: paused;
+  }
+
+  .dialog:has(canvas[data-pull-ready]) .enter {
+    scale: 1.025;
+  }
+
+  @keyframes launch-copy {
+    0%, 46.25%, 100% { opacity: 1; transform: translateY(0); filter: none; }
+    50% { opacity: 0; transform: translateY(-2px); filter: blur(2px); }
+    50.01%, 96.25% { opacity: 0; transform: translateY(2px); filter: blur(2px); }
+  }
+}

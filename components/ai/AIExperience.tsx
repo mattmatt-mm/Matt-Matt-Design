@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_AI_TURNS } from "@/lib/ai/limits";
+import { PORTFOLIO_LAUNCH_END } from "@/lib/portfolio-launch";
 import { AiDock } from "@/components/ai/AiDock";
 import {
   AiAnswer,
@@ -173,24 +174,36 @@ export function AIExperience({
   // guided tour. `?tour` on any URL offers the tour regardless.
   useEffect(() => {
     resumeTracking();
-    const path = window.location.pathname;
-    if (path.startsWith("/keystatic")) return;
-    const askCookies = trackingDecision() === null;
-    const forced = new URLSearchParams(window.location.search).has("tour");
-    tourDue.current =
-      !path.startsWith("/tour/") && (forced || !tourOfferedRecently());
-    if (!askCookies && !tourDue.current) return;
-    const timer = window.setTimeout(() => {
-      // Someone who has already opened the AI is busy with it.
-      if (openRef.current) return;
-      if (askCookies) {
-        setTourStep("cookies");
-        setOpen(true);
-      } else {
-        offerTour();
-      }
-    }, TOUR_OFFER_DELAY_MS);
-    return () => window.clearTimeout(timer);
+    let timer: number | undefined;
+    const welcome = () => {
+      const path = window.location.pathname;
+      if (path.startsWith("/keystatic")) return;
+      const askCookies = trackingDecision() === null;
+      const forced = new URLSearchParams(window.location.search).has("tour");
+      tourDue.current =
+        !path.startsWith("/tour/") && (forced || !tourOfferedRecently());
+      if (!askCookies && !tourDue.current) return;
+      timer = window.setTimeout(() => {
+        // Someone who has already opened the AI is busy with it.
+        if (openRef.current) return;
+        if (askCookies) {
+          setTourStep("cookies");
+          setOpen(true);
+        } else {
+          offerTour();
+        }
+      }, TOUR_OFFER_DELAY_MS);
+    };
+
+    if (document.documentElement.dataset.portfolioLaunch) {
+      window.addEventListener(PORTFOLIO_LAUNCH_END, welcome, { once: true });
+    } else {
+      welcome();
+    }
+    return () => {
+      window.removeEventListener(PORTFOLIO_LAUNCH_END, welcome);
+      window.clearTimeout(timer);
+    };
   }, [offerTour]);
 
   // Either answer moves on to the tour, if one is due today.

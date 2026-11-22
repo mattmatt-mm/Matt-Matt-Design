@@ -7,9 +7,8 @@ import { useRef } from "react";
 const order = ["/", "/writing", "/fun", "/browse"];
 
 function indexOf(pathname: string) {
-  const section = pathname === "/profile" ? "/browse" : pathname;
   const i = order.findIndex((href) =>
-    section === href || (href !== "/" && section.startsWith(`${href}/`)),
+    pathname === href || (href !== "/" && pathname.startsWith(`${href}/`)),
   );
   return i === -1 ? 0 : i;
 }

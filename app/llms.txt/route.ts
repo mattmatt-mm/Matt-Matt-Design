@@ -4,7 +4,7 @@ import {
   listExperienceSlugs,
   listWritingSlugs,
 } from "@/lib/content";
-import { person, siteDescription, siteName, siteUrl } from "@/lib/site";
+import { person, profilePath, siteDescription, siteName, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
@@ -40,7 +40,7 @@ export async function GET() {
   );
 
   const links = [
-    `- [Profile](${siteUrl}/profile): every project, newest first`,
+    `- [Profile](${siteUrl}${profilePath}): project history and client comments`,
     ...settings.socials
       .filter((s) => s.url)
       .map((s) => `- [${s.label}](${s.url})`),

@@ -2,3 +2,5 @@ allowBuilds:
   # posthog-js pulls it in; its postinstall only prints a donation notice.
   core-js: false
   sharp: true
+patchedDependencies:
+  distortion-waves@0.1.0: patches/distortion-waves@0.1.0.patch

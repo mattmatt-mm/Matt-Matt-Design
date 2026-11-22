@@ -1,0 +1,48 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 74d4e442d843e2f7ef6850ddd0519829ec5e8bf4..58152bd567cae5039402736d0450566a8119740e 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -374,0 +374,9 @@
++exports.WaveController.prototype.moveSource = function (source) {
++    if (this.destroyed || !this.scrubbing || !this.geom) return;
++    const { k } = this.geom;
++    this.srcEl = null;
++    this.srcCss = source;
++    this.focusCss = this.focus = null;
++    this.src = { x: source.x / k, y: source.y / k, w: source.w / k, h: source.h / k };
++    this.invalidate();
++};
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 51887b38b83e5ee1a8600089561a51bd4ec4cd0a..7b935bf39d3f28306eb6c103a1189b6a088762c9 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -356,6 +356,8 @@ export declare class WaveController {
+     update(next: WaveOptions): void;
+     /** The second view's element, when it comes or goes. */
+     setRevealedLayer(revealed: HTMLElement | null): void;
++    /** Moves the source of a held wave, preserving its progress. */
++    moveSource(source: Rect): void;
+     /** Runs the wave from the start, whatever was showing. */
+     play(options?: PlayOptions): void;
+     /** Runs it back to the first view. */
+diff --git a/dist/index.es.js b/dist/index.es.js
+index ddef5414a5ca6306e5a625b74aba7812928986b7..83b321bab794eb224b253833c1cbda1dec95030d 100644
+--- a/dist/index.es.js
++++ b/dist/index.es.js
+@@ -1659,6 +1659,16 @@ class Fi {
+     }
+     e === this.p && this.shown === this.shown && !this.styleDirty && !this.geomDirty || (this.p = e, this.invalidate());
+   }
++  /** Moves the source of a held wave, preserving its progress. */
++  moveSource(source) {
++    if (this.destroyed || !this.scrubbing || !this.geom) return;
++    const { k } = this.geom;
++    this.srcEl = null;
++    this.srcCss = source;
++    this.focusCss = this.focus = null;
++    this.src = { x: source.x / k, y: source.y / k, w: source.w / k, h: source.h / k };
++    this.invalidate();
++  }
+   /** One frame of the wave at `this.p`. */
+   draw(t) {
+     const e = this.renderer;

@@ -16,7 +16,6 @@ import { siteName, siteSocialImage } from "@/lib/site";
 import { postSchema } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
-const articleTitleClassName = "text-section font-bold";
 
 export async function generateStaticParams() {
   const entries = await listWritingSlugs();
@@ -81,18 +80,13 @@ export default async function WritingPost({ params }: Props) {
               className={i > 0 ? "mt-32" : undefined}
             >
               {i === 0 ? (
-                <h1 className={articleTitleClassName} lang={lang}>
+                <h1 className="text-title" lang={lang}>
                   {post.title}
                 </h1>
               ) : (
-                <ChainGate
-                  title={post.title}
-                  lang={lang}
-                  titleClassName={articleTitleClassName}
-                />
+                <ChainGate title={post.title} lang={lang} />
               )}
 
-              {/* `label` groups rows in the list only — it is not shown here. */}
               <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
                 <Prose node={post.body} lang={post.lang} idPrefix={post.slug} />
               </div>

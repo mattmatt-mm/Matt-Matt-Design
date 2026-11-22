@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useMemo } from "react";
 import { FunVideo } from "@/components/fun/FunVideo";
+import { ThumbnailSquircle } from "@/components/SiteSquircle";
 import type { FunPiece } from "@/lib/content";
 import { FUN_CATEGORIES, type FunCategory } from "@/lib/fun-categories";
 
@@ -54,37 +55,42 @@ function Tile({ piece }: { piece: FunPiece }) {
             fan out under the pointer. The cover comes first in the markup, so
             it is the one the morph carries into the piece's page. */}
         <div className="fun-stack" data-stack={stack.length || undefined}>
-          {piece.video ? (
-            <FunVideo
-              src={piece.video}
-              poster={image?.src}
-              width={image?.width}
-              height={image?.height}
-              aria-label={image?.alt || piece.title}
-              className="block h-auto w-full"
-            />
-          ) : image ? (
-            <Image
-              src={image.src}
-              alt={image.alt}
-              width={image.width}
-              height={image.height}
-              sizes="(min-width: 1248px) 384px, (min-width: 688px) 33vw, calc(50vw - 32px)"
-              className="block h-auto w-full"
-            />
-          ) : (
-            <div className="bg-line aspect-[4/3] w-full" />
-          )}
+          <ThumbnailSquircle>
+            {piece.video ? (
+              <div className="overflow-hidden">
+                <FunVideo
+                  src={piece.video}
+                  poster={image?.src}
+                  width={image?.width}
+                  height={image?.height}
+                  aria-label={image?.alt || piece.title}
+                  className="block h-auto w-full"
+                />
+              </div>
+            ) : image ? (
+              <Image
+                src={image.src}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                sizes="(min-width: 1248px) 384px, (min-width: 688px) 33vw, calc(50vw - 32px)"
+                className="block h-auto w-full"
+              />
+            ) : (
+              <div className="bg-line aspect-[4/3] w-full" />
+            )}
+          </ThumbnailSquircle>
           {stack.map((m, i) => (
-            <Image
-              key={m.src}
-              src={m.src}
-              alt=""
-              fill
-              sizes="(min-width: 1248px) 384px, (min-width: 688px) 33vw, calc(50vw - 32px)"
-              className="fun-stack-card"
-              data-depth={i + 1}
-            />
+            <ThumbnailSquircle key={m.src}>
+              <Image
+                src={m.src}
+                alt=""
+                fill
+                sizes="(min-width: 1248px) 384px, (min-width: 688px) 33vw, calc(50vw - 32px)"
+                className="fun-stack-card h-full w-full"
+                data-depth={i + 1}
+              />
+            </ThumbnailSquircle>
           ))}
         </div>
         {/* As on the Home gallery, only the caption dims. */}

@@ -213,6 +213,7 @@ and AI answers lag behind the search indexes they draw on.
 - 2026-10-23 — Superseded for metadata: search should find "Matt Tam", "Matt
   Matt Design" and "Matt Design". Full name in titles, descriptions, keywords,
   JSON-LD and llms.txt; never in visible copy. Still no headshot.
+- 2026-11-22 — The new Profile badge displays "Matt Tam" as in Matt's sketch.
 - 2026-10-19 — Based in Hong Kong. US audience: Design Engineer. Hong Kong
   audience: UI/UX, Brand, AI Transformation.
 - 2026-10-19 — The site's brand name is "Matt Matt Design".

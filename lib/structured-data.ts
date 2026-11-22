@@ -1,6 +1,8 @@
 import type { Settings } from "@/lib/content";
 import {
   person,
+  profilePath,
+  profileTitle,
   siteAlternateNames,
   siteDescription,
   siteName,
@@ -96,7 +98,7 @@ export function caseStudySchema(study: {
     },
     breadcrumb([
       { name: "Home", path: "/" },
-      { name: "Profile", path: "/profile" },
+      { name: profileTitle, path: profilePath },
       { name: study.title, path },
     ]),
   ];

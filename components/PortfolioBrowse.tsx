@@ -4,6 +4,7 @@ import type { Icon } from "@phosphor-icons/react";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
 import { Compass } from "@phosphor-icons/react/dist/ssr/Compass";
+import { Gear } from "@phosphor-icons/react/dist/ssr/Gear";
 import { ImagesSquare } from "@phosphor-icons/react/dist/ssr/ImagesSquare";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
@@ -18,7 +19,7 @@ import {
   type PortfolioAction,
 } from "@/components/ai/PortfolioActions";
 import type { PortfolioSearchEntry } from "@/lib/content";
-import { profileTitle } from "@/lib/site";
+import { profilePath, profileTitle } from "@/lib/site";
 
 type Shortcut = {
   title: string;
@@ -28,11 +29,12 @@ type Shortcut = {
 
 const shortcuts: Shortcut[] = [
   { href: "/", title: "Selected work", icon: ImagesSquare, tone: "blue" },
-  { href: "/profile", title: profileTitle, icon: UserCircle, tone: "peach" },
+  { href: profilePath, title: profileTitle, icon: UserCircle, tone: "peach" },
   { href: "/writing", title: "Writing", icon: PenNib, tone: "gold" },
   { href: "/fun", title: "Fun", icon: Sparkle, tone: "violet" },
   { action: "chat", title: "Ask Matt’s AI", icon: ChatCircleDots, tone: "neutral" },
   { action: "walkthrough", title: GUIDED_WALKTHROUGH_LABEL, icon: Compass, tone: "teal" },
+  { href: "/browse/settings", title: "Settings", icon: Gear, tone: "neutral" },
 ];
 
 function searchText(value: string) {
