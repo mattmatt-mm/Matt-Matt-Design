@@ -482,6 +482,21 @@ export default config({
             itemLabel: (props) => props.fields.alt.value.slice(0, 48) || "Image",
           },
         ),
+        bookPages: fields.array(
+          fields.object({
+            image: fields.image({
+              label: "Page image",
+              directory: "public/images/fun",
+              publicPath: "/images/fun/",
+            }),
+            alt: fields.text({ label: "Page description", multiline: true }),
+          }),
+          {
+            label: "Photobook pages",
+            description: "Optional. The reader opens in the hero. Add pages in reading order, including both covers.",
+            itemLabel: (props) => props.fields.alt.value.slice(0, 48) || "Page",
+          },
+        ),
         tools: fields.text({
           label: "Tools",
           description: "Optional line when the piece is open, e.g. Figma, Blender",

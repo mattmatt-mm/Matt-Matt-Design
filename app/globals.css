@@ -91,7 +91,7 @@
     color-mix(in srgb, var(--color-bg) 2.8%, transparent) 90%,
     transparent 100%;
 
-  /* Type — body copy, case study section headings, and page titles. */
+  /* Type — body copy, compact headings, and page titles. */
   --text-base: 16px;
   --text-base--line-height: 21px;
   --text-section: 18px;
@@ -1766,13 +1766,12 @@
   }
 
   .prose h1,
-  .prose h2,
   .prose h3 {
     font-size: var(--text-title);
     line-height: var(--text-title--line-height);
   }
 
-  .case-study .prose h2 {
+  .prose h2 {
     font-size: var(--text-section);
     line-height: var(--text-section--line-height);
     font-weight: 700;
@@ -2062,8 +2061,7 @@
     color: var(--color-muted);
   }
 
-  /* Extra leading for Chinese body copy only — headings keep their own
-     42px line box, which is already generous for CJK. */
+  /* Extra leading for Chinese body copy only. Headings use their type tokens. */
   .prose-zh :is(p, li, blockquote) {
     line-height: 28px;
   }
@@ -3306,13 +3304,19 @@
      work, then its colours, details and the rest of the set, down one column
      inside the gutters. */
   .fun-piece {
-    --fun-hero-w: min(calc(var(--fun-w) * 1px), 100vw - 48px);
+    --fun-media-w: calc(var(--fun-w) * 1px);
+    --fun-available-w: calc(100vw - 48px);
+    --fun-hero-w: min(var(--fun-media-w), var(--fun-available-w));
     display: grid;
     grid-template-columns: var(--fun-hero-w);
     grid-template-areas: "hero" "palette" "details" "more";
     row-gap: 24px;
     justify-content: center;
     padding: 60px 24px 128px;
+  }
+
+  .fun-piece[data-photobook] {
+    --fun-media-w: calc(var(--fun-w) * 2px);
   }
 
   .fun-piece-hero {
@@ -3356,17 +3360,26 @@
      set scrolls past. */
   @media (width >= 1104px) {
     .fun-piece {
+      --fun-side-w: 192px;
+      --fun-available-w: calc(100vw - 144px - 2 * var(--fun-side-w));
       --fun-hero-w: min(
-        calc(var(--fun-w) * 1px),
-        100vw - 528px,
+        var(--fun-media-w),
+        var(--fun-available-w),
         (100dvh - 120px) * var(--fun-ratio)
       );
-      grid-template-columns: 192px var(--fun-hero-w) 192px;
+      grid-template-columns: var(--fun-side-w) var(--fun-hero-w) var(--fun-side-w);
       grid-template-rows: auto 1fr;
       grid-template-areas:
         "palette hero details"
         "palette more details";
       column-gap: 48px;
+    }
+
+    /* The reader fills the media column. Narrow the side columns where a
+       spread needs the space. */
+    .fun-piece[data-photobook] {
+      --fun-side-w: clamp(128px, calc((100vw - 848px) / 2), 192px);
+      --fun-hero-w: min(var(--fun-media-w), var(--fun-available-w));
     }
 
     .fun-piece-palette,

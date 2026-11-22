@@ -72,7 +72,7 @@ blurred (`.site-content-blur`).
 ### Type
 - **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
 - **16px / 21px** for body text and labels, including case study eyebrows.
-- **18px / 24px, bold** for case study section headings. **32px / 42px** for page titles.
+- **18px / 24px, bold** for case study and Writing section headings, Writing article titles, and Fun detail titles. **32px / 42px** for other page titles.
 - Pixel fonts must render at multiples of their design size. Never 15px, 17px, rem fractions, or `clamp()` on text.
 - Use **color and position** for hierarchy within each type size.
 - Chinese body copy gets `28px` leading (`.prose-zh`, `.leading-cjk`) — 1.6 would land on 25.6px and break the grid.

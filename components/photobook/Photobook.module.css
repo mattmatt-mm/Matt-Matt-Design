@@ -1,0 +1,386 @@
+@layer components {
+  .reader {
+    container: photobook / inline-size;
+    scroll-margin-top: 24px;
+  }
+
+  .controls,
+  .stage {
+    width: 100%;
+  }
+
+  .controls,
+  .zoomBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .controls {
+    margin-top: 16px;
+    color: var(--color-muted-readable);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pageCount {
+    min-height: 48px;
+    cursor: zoom-in;
+  }
+
+  .pageCount:is(:hover, :focus-visible) {
+    color: var(--color-fg);
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 48px;
+    min-height: 48px;
+    padding-inline: 12px;
+    color: var(--color-fg);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+
+  .button[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  .button:not([aria-disabled="true"]):hover {
+    background: color-mix(in srgb, var(--color-surface) 92%, var(--color-fg));
+  }
+
+  .stage {
+    --photobook-columns: 1;
+    --photobook-fold-dur: 440ms;
+    --photobook-cover-dur: 600ms;
+    position: relative;
+    aspect-ratio: calc(var(--photobook-columns) * var(--photobook-page-ratio));
+    perspective: 1600px;
+    touch-action: pan-y pinch-zoom;
+    user-select: none;
+  }
+
+  .pageTargets {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .pageTrigger {
+    position: relative;
+    width: calc(100% / var(--photobook-columns));
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .corner {
+    position: absolute;
+    bottom: 0;
+    width: min(80px, 25%);
+    height: min(80px, 24%);
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .corner[data-book-corner="next"] { right: 0; }
+  .corner[data-book-corner="previous"] { left: 0; }
+
+  .stage[data-dragging] .corner { cursor: grabbing; }
+
+  .dragLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .dragPage {
+    position: absolute;
+    inset-block: 0;
+    transform-origin: top left;
+  }
+
+  .dragBack > .page { transform: scaleX(-1); }
+
+  .stage:has(.dragLayer) :is(.paper, .gutter) { visibility: hidden; }
+
+  .paper {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .page {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Reserve the spread at first paint. Landscape phones keep one page. */
+  @media (pointer: fine), (pointer: none), (height > 600px) {
+    @container photobook (width >= 704px) {
+      .stage {
+        --photobook-columns: 2;
+      }
+
+      .paper > .page {
+        width: 50%;
+      }
+    }
+  }
+
+  /* Keep the gutter above the turning sheet so it can settle with the fold. */
+  .gutter {
+    position: absolute;
+    z-index: 1;
+    inset-block: 0;
+    left: calc(50% - 12px);
+    width: 24px;
+    background: linear-gradient(to right, transparent, rgb(0 0 0 / 19%), transparent);
+    pointer-events: none;
+  }
+
+  .gutter[data-turn="fold"] {
+    animation: photobook-gutter-fold var(--photobook-fold-dur) var(--ai-ease) both;
+  }
+
+  @keyframes photobook-gutter-fold {
+    from, to { opacity: 1; }
+    20% { opacity: 0.15; }
+  }
+
+  .paper[data-enter] {
+    animation: photobook-open var(--ai-open-dur) var(--ai-ease) both;
+  }
+
+  .paper[data-enter="next"] {
+    --photobook-open-angle: 28deg;
+    transform-origin: left center;
+  }
+
+  .paper[data-enter="previous"] {
+    --photobook-open-angle: -28deg;
+    transform-origin: right center;
+  }
+
+  .stage[data-spread] .paper[data-enter] {
+    transform-origin: center;
+  }
+
+  @keyframes photobook-open {
+    from {
+      opacity: 0.65;
+      transform: rotateY(var(--photobook-open-angle));
+    }
+    to {
+      opacity: 1;
+      transform: rotateY(0deg);
+    }
+  }
+
+  .turn {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    transform-style: preserve-3d;
+  }
+
+  .heldPage,
+  .leaf {
+    position: absolute;
+    inset-block: 0;
+    width: 50%;
+  }
+
+  .stage[data-direction="next"] {
+    --photobook-turn-angle: -180deg;
+    --photobook-cover-offset: 25%;
+  }
+
+  .stage[data-direction="previous"] {
+    --photobook-turn-angle: 180deg;
+    --photobook-cover-offset: -25%;
+  }
+
+  .stage[data-direction="next"] .heldPage,
+  .stage[data-direction="previous"] .leaf {
+    left: 0;
+  }
+
+  .stage[data-direction="previous"] .heldPage,
+  .stage[data-direction="next"] .leaf {
+    right: 0;
+  }
+
+  .stage[data-direction="next"] .leaf {
+    transform-origin: left center;
+  }
+
+  .stage[data-direction="previous"] .leaf {
+    transform-origin: right center;
+  }
+
+  .leaf {
+    animation: photobook-fold var(--photobook-fold-dur) var(--ai-ease) both;
+    transform-style: preserve-3d;
+  }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+  }
+
+  .faceBack {
+    transform: rotateY(180deg);
+  }
+
+  @keyframes photobook-fold {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(var(--photobook-turn-angle));
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Keep the top edge clear of the viewport as the sheet lifts. */
+    .stage:has(.turn) {
+      perspective: 3200px;
+    }
+
+    /* Move by half a page to align a centered cover with the spine. The
+       turning sheet supplies the landing face until the fold is complete. */
+    .stage[data-cover-turn="open"] .turn {
+      animation: photobook-cover-to-spine var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+
+    .stage[data-cover-turn="close"] .turn {
+      animation: photobook-cover-to-center var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+
+    .stage[data-cover-turn="open"] .leaf {
+      animation: photobook-cover-open var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+
+    .stage[data-cover-turn="close"] .leaf {
+      animation: photobook-cover-close var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+
+    .stage[data-cover-turn="open"] .paper,
+    .gutter[data-turn="open"] {
+      animation: photobook-cover-reveal var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+
+    .stage[data-cover-turn="close"] .paper,
+    .stage[data-cover-turn="open"][data-direction="next"] .paper > .page:first-child,
+    .stage[data-cover-turn="open"][data-direction="previous"] .paper > .page:last-child {
+      visibility: hidden;
+    }
+
+    .gutter[data-turn="close"] {
+      animation: photobook-cover-hide-gutter var(--photobook-cover-dur) var(--ai-ease) both;
+    }
+  }
+
+  @keyframes photobook-cover-to-spine {
+    from { transform: translateX(calc(-1 * var(--photobook-cover-offset))); }
+    45%, to { transform: translateX(0); }
+  }
+
+  @keyframes photobook-cover-to-center {
+    from, 36% { transform: translateX(0); }
+    to { transform: translateX(var(--photobook-cover-offset)); }
+  }
+
+  @keyframes photobook-cover-open {
+    from, 16% {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(var(--photobook-turn-angle));
+    }
+  }
+
+  @keyframes photobook-cover-close {
+    from {
+      transform: rotateY(0deg);
+    }
+    84%, to {
+      transform: rotateY(var(--photobook-turn-angle));
+    }
+  }
+
+  @keyframes photobook-cover-reveal {
+    from, 16% { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes photobook-cover-hide-gutter {
+    from { opacity: 1; }
+    45%, to { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .paper[data-enter],
+    .gutter[data-turn] {
+      animation: none;
+    }
+
+    .turn,
+    .gutter[data-turn="close"] {
+      display: none;
+    }
+  }
+
+  :global(body):has(.zoom[open]) {
+    overflow: hidden;
+  }
+
+  .zoom {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    color: var(--color-fg);
+    background: var(--color-bg);
+  }
+
+  .zoom[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .zoomBar {
+    padding: max(8px, env(safe-area-inset-top)) 16px 8px;
+  }
+
+  .zoomScroll {
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .zoomScroll > img {
+    width: clamp(640px, 200vw, 1280px);
+    max-width: none;
+    height: auto;
+    margin-inline: auto;
+  }
+}

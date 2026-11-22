@@ -41,6 +41,8 @@ the piece, and the dock contracts to the back arrow as on a case study.
 - Below that: media on top at full width inside the 24px gutter, then
   palette dots in a row, then the details.
 - More images stack under the main one, 24px apart, at the same width.
+- A photobook opens in the hero. Its cover is the first view and its gallery
+  tile still uses the entry's image. See `doc/chan-kee-photobook-plan.md`.
 
 ## Content model — Keystatic `fun`
 
@@ -50,6 +52,7 @@ the piece, and the dock contracts to the back arrow as on a case study.
 - `image` — the picture, or the video's still (palette, resolution and layout
   all read it) · `video` (optional .mp4, plays silently on loop) · `alt`
 - `more[]` — `{ image, alt }`
+- `bookPages[]` — optional ordered pages, each with `{ image, alt }`
 - `tools` · `palette` (optional hex list) · `project` (Experience
   relationship) · `externalUrl`
 
@@ -72,7 +75,7 @@ accessibility tree and never loads its lazy images.
 | BM Airline | Side project | video + 3 images |
 | ISD graduation backdrop | Side project | 11 renders |
 | ISD culture poster | Illustration | poster |
-| 燦記 pattern | Illustration | poster |
+| 燦記路邊雞 | Illustration | poster |
 | Innovation Design Tech crewneck | Side project | mockup |
 | The HKUST | Illustration | card |
 

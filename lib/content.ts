@@ -558,6 +558,12 @@ function funMedia(src: string | null | undefined, alt: string): FunMedia | undef
   return src ? { src, alt, ...measure(src) } : undefined;
 }
 
+/** Book pages are only needed on the piece's own page. */
+export async function getFunBookPages(slug: string): Promise<FunMedia[]> {
+  const piece = await reader.collections.fun.read(slug);
+  return piece?.bookPages.flatMap((page) => funMedia(page.image, page.alt) ?? []) ?? [];
+}
+
 /** The Fun tab, newest first. See doc/fun-tab-plan.md. */
 export async function getFun(): Promise<FunPiece[]> {
   const [all, experience] = await Promise.all([
