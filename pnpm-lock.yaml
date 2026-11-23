@@ -5,7 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  distortion-waves@0.1.0: 9fede7b4fdc16b5a708744027d499da7518b503e8156b2f3a45dc077edb53013
+  distortion-waves@0.1.0:
+    hash: 9fede7b4fdc16b5a708744027d499da7518b503e8156b2f3a45dc077edb53013
+    path: patches/distortion-waves@0.1.0.patch
 
 importers:
 
