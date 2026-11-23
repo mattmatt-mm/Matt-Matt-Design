@@ -3,6 +3,7 @@ import { MapPin } from "@phosphor-icons/react/dist/ssr/MapPin";
 import Image from "next/image";
 import Link from "next/link";
 import type { Comment } from "@/lib/content";
+import { profilePath } from "@/lib/site";
 
 const names = new Intl.ListFormat("en", { type: "conjunction" });
 
@@ -35,7 +36,7 @@ export function HomeOverview({ comments }: { comments: Comment[] }) {
         <span><strong>8</strong> clients</span>
       </div>
       {comments.length > 0 ? (
-        <Link href="/profile#comments" className="home-overview-comments press-shrink">
+        <Link href={`${profilePath}#comments`} className="home-overview-comments press-shrink">
           {avatars.length > 0 ? (
             <span className="home-overview-avatars" aria-hidden="true">
               {avatars.map((comment) => (

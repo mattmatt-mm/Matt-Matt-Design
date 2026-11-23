@@ -16,9 +16,8 @@ export const siteUrl =
  * visitors search for a design engineer, Hong Kong visitors for UI/UX, brand
  * and AI transformation; one set of words serves both.
  *
- * Metadata only: the full name lives in titles, descriptions, structured data
- * and llms.txt, never in the copy a visitor reads on the page, which still
- * says "Matt". See doc/seo-plan.md.
+ * The full name is used in metadata and on the lanyard badge. The site's
+ * other page copy uses "Matt". See doc/seo-plan.md.
  */
 export const siteName = "Matt Matt Design";
 /** Other names the site is searched by. */
@@ -26,6 +25,7 @@ export const siteAlternateNames = ["Matt Design", "Matt Tam", "mattmattdesign"];
 /** The home-screen label, where the brand name is too long to fit. */
 export const siteShortName = "Matt";
 export const profileTitle = "Profile";
+export const profilePath = "/browse/profile";
 export const siteTitle =
   "Matt Tam — Matt Matt Design · Design Engineer in Hong Kong";
 export const siteDescription =

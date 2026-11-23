@@ -17,8 +17,10 @@ Read `doc/taste.md` before proposing, designing, or implementing interface work.
 It records Matt's durable UI taste decisions. A newer explicit instruction from
 Matt overrides that file and should be folded back into it.
 
-Read `doc/engraving-graphics.md` before importing any hand-drawn or engraved
-illustration (hatched line art like the JW Anderson references).
+Read `doc/editorial-ink-illustrations.md` before generating editorial pen-and-ink
+artwork, Writing covers, or character spots. Read `doc/engraving-graphics.md`
+before importing engraved illustrations (hatched line art like the JW Anderson
+references).
 For generated sprite animations, read `doc/illustration-animation-workflow.md`:
 it covers prompts, frame assembly, reduced motion, and the 404 tree example.
 
@@ -58,21 +60,20 @@ through the guided tour (HR mode).
 | `--color-line` | `#D9D9D9` | `#383631` | Hairlines, dividers, image placeholder |
 | `--color-surface` | `#FFFFFF` | `#1C1B18` | Navigation, trigger, and composer surfaces |
 
-The entire site follows the operating-system theme through
-`prefers-color-scheme`; native controls and browser chrome advertise both
-schemes. There is no separate saved preference or theme toggle. AI answers, the
+The site follows the operating-system theme by default. Browse → Settings offers
+Auto, Light, and Dark, with the choice saved in the browser. AI answers, the
 tour checklist and the contact fields are white with the elevated shadow in
 light mode (Matt, 2026-10-19) and warm off-white (`#F3F1EC`, near-black text)
 in dark mode; only the AI's action buttons (Accept, Continue, `Send to Matt`
 …) stay dark, on `--color-ai-action`. The squircle surfaces carry their drop
 shadow on an `AiLift` wrapper, because a squircle's own clip trims a filter.
-While the AI is open the page beneath its white arc is also progressively
-blurred (`.site-content-blur`).
+The page beneath the dock and AI is progressively blurred (`.site-content-blur`).
+The blur grows stronger and reaches higher when the AI opens.
 
 ### Type
-- **Helvetica Neue** is the primary interface face, with Helvetica, Arial, and the existing CJK system faces as fallbacks. The full stack lives in `--font-sans` in `app/globals.css`.
+- **Allo** is the primary interface face. Helvetica Neue is available in Settings and heads the fallback stack. The full stack lives in `--font-sans` in `app/globals.css`.
 - **16px / 21px** for body text and labels, including case study eyebrows.
-- **18px / 24px, bold** for case study and Writing section headings, Writing article titles, and Fun detail titles. **32px / 42px** for other page titles.
+- **18px / 24px, bold** for case study and Writing section headings, Writing list titles, and Fun detail titles. **32px / 42px** for Writing article titles and other page titles.
 - Pixel fonts must render at multiples of their design size. Never 15px, 17px, rem fractions, or `clamp()` on text.
 - Use **color and position** for hierarchy within each type size.
 - Chinese body copy gets `28px` leading (`.prose-zh`, `.leading-cjk`) — 1.6 would land on 25.6px and break the grid.
@@ -91,7 +92,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - **The two-column row never stacks.** Category left, title right, at every width including mobile — the 100px label column and the inset rule are fixed, and only the title column narrows. Do not add a breakpoint that collapses it.
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 5:3 image (640×384) is exactly 450px.
 - **A case study's thumbnail is the one thing that leaves the column.** Whatever sits before the first `##` heading — an image, a video or a Lottie sequence — opens the page at `min(840px, 100vw - 48px)`, centred on the 640px measure and inside the 24px gutters on a phone. Images, video and animation inside a section sit at the text's own 640px. Use symmetric negative margins, never a transform. To make an image the thumbnail, move it above the first heading.
-- **Profile comments** are the second thing that leaves the column: below the Experience list (no heading), a full-bleed view pins to the screen while the cards travel through it. Without JavaScript or under reduced motion they stack in the column (`components/Comments.tsx`, `doc/profile-comments-plan.md`).
+- **Profile comments** are the second thing that leaves the column: below the Experience badge (no heading), a full-bleed view pins to the screen while the cards travel through it. Without JavaScript or under reduced motion they stack in the column (`components/Comments.tsx`, `doc/profile-comments-plan.md`).
 - **The Fun wall** is the third: `/fun` breaks out to `min(1200px, 100vw - 48px)` centred on the measure, 3 masonry columns with 24px gaps from 688px and 2 with 16px below. Its title and filters stay in the column. Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
@@ -100,9 +101,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 ### Interaction
 - Links underlined, `text-underline-offset: 2px`, `text-decoration-color: --color-line`, hover → fg. `120ms ease-out`, color only.
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
-- The dock links to **Home** `/` (the Gallery), **Writing** `/writing`, **Fun** `/fun`, and **Browse** `/browse`. Browse links to **Experience** `/profile` and provides search across case studies, posts, and Fun pieces.
+- The dock links to **Home** `/` (the Gallery), **Writing** `/writing`, **Fun** `/fun`, and **Browse** `/browse`. Browse links to **Profile** `/browse/profile` and provides search across case studies, posts, and Fun pieces.
 - The dock is icon-only. Tabs are `60×40` on desktop inside `4px` padding. On phones the columns narrow to fit, and the tabs are `44px` tall. The circular AI trigger sits beside the capsule with an `8px` gap. The dock and AI overlay share the `--dock-*` tokens.
-- On detail pages the dock contracts to a circular Back control. Back uses history when the visitor came from within the site and falls back to the section list. On a walkthrough, the X exits to Home. The width morphs over `300ms`.
+- On detail pages, Settings, and the Experience page, the dock contracts to a circular Back control. Back uses history when the visitor came from within the site and falls back to the section list or Browse. On a walkthrough, the X exits to Home. The width morphs over `300ms`.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
 - Dock tabs use the shared `press-shrink` interaction and play `public/sounds/tap.wav` at volume `0.5`. Each icon has an `sr-only` label.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
@@ -139,7 +140,7 @@ app/
   layout.tsx                            fonts, metadata defaults
   (site)/layout.tsx                     Header + Intro — shared, must not remount
   (site)/page.tsx                       /          Home: the Gallery
-  (site)/profile/page.tsx               /profile   Experience list
+  browse/profile/page.tsx              /browse/profile   Experience badge and comments
   (site)/writing/page.tsx               /writing
   fun/page.tsx                          /fun       Fun: side work as masonry, ?c= filters, no intro
   fun/[slug]/page.tsx                   one Fun piece (detail page)
@@ -161,8 +162,8 @@ keystatic.config.ts
 ```
 
 Rules:
-- SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). The site should be found by **"Matt Tam"**, **"Matt Matt Design"** and **"Matt Design"** (Matt, 2026-10-23): the full name goes in metadata only — titles, meta descriptions, keywords, JSON-LD (`name`, `alternateName`) and `llms.txt` — never in the copy a visitor reads, where he stays "Matt". No photo of him anywhere. See `doc/seo-plan.md`.
-- The name and intro belong on Home. Other portfolio pages lead with their own title in the shared `text-title` style.
+- SEO identity lives in `lib/site.ts` and `lib/structured-data.ts` (JSON-LD via `components/JsonLd.tsx`). **"Matt Tam"**, **"Matt Matt Design"** and **"Matt Design"** are search names. Use the full name in metadata and on the lanyard badge. Other page copy calls him "Matt". No photo of him anywhere. See `doc/seo-plan.md`.
+- Home leads with Matt's name and intro. Profile leads with the name on its badge. Other portfolio pages use their own title in the shared `text-title` style.
 - Everything statically generated; `generateStaticParams` on both detail routes.
 - Server components unless interactivity demands otherwise.
 - Drafts hidden when `VERCEL_ENV === 'production'`, visible on previews.
@@ -171,16 +172,16 @@ Rules:
 
 ## Content model (Keystatic collections)
 
-**experience** — `title` (slug), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). Timeline (`start – end`), Role, and Team appear below the opening thumbnail, or above the body when there is no thumbnail. Empty figures are left out.
+**experience** — `title` (slug), `profileTitle?` (display name on the Profile badge), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). Timeline (`start – end`), Role, and Team appear below the opening thumbnail, or above the body when there is no thumbnail. Empty figures are left out.
 
 Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a `caption` (two to four words) and are filed under it as a folder tab, the recording at full width (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
-**writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `summary?` (meta description in the post's own language; falls back to the opening paragraph), `cover?` (share image only), `body` (markdoc). There is no writing `label`: the Writing list labels each post with its publish month ("26 Aug", from `monthLabel` in `lib/content.ts`), so posts from the same month form one group. Matt replaced the season labels on 2026-10-17.
-**comments** — `name` (slug, first name only), `role` ("CEO, Neardeal"), `comment` (multiline; line breaks kept), `rating` (half stars, optional), `logo?` (`public/images/comments/`), `initials` (shown when there is no logo), `order` → `content/comments/*.yaml`, shown on `/profile`.
+**writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `summary?` (list preview and meta description in the post's own language, with the opening paragraph as fallback), `cover?` (Writing thumbnail and share image), `body` (markdoc). The Writing list shows newest posts first, with the date above each title.
+**comments** — `name` (slug, first name only), `role` ("CEO, Neardeal"), `comment` (multiline; line breaks kept), `rating` (half stars, optional), `logo?` (`public/images/comments/`), `initials` (shown when there is no logo), `order` → `content/comments/*.yaml`, shown on `/browse/profile`.
 **fun** — `title` (slug), `subtitle`, `category` (`hackathon` | `side-project` | `motion` | `illustration`, from `lib/fun-categories.ts`; a filter shows only once a piece uses it), `date`, `image` (the picture, or a video's still — layout, palette and Resolution read it), `video?` (.mp4, silent loop), `alt`, `more[]` (`{ image, alt }`, shown under the main one), `tools?`, `palette?` (hex override), `project?`, `externalUrl?` → `content/fun/*.yaml`, media in `public/images/fun/` and `public/videos/fun/`. Newest first.
 **settings** (singleton) — `name`, `role`, `intro[]`, `socials[]`, `email` → **`content/settings.yaml`** (no trailing slash on the singleton path means a file, not a directory)
 
-There is no `group` field. Grouping is derived in `lib/content.ts`: consecutive entries sharing a `label` form a group, only the first keeps the visible label, and the rule before a new group runs full width.
+The Profile badge uses the experience `label` to group projects. Dated groups appear newest first, followed by other groups in their CMS order.
 
 `label` is a list-only category. It never appears on a detail page.
 

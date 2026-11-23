@@ -1,10 +1,23 @@
+import { useId } from "react";
+
+export const signatureImages = {
+  main: "/signature-main.png",
+  left: "/signature-mark-left.png",
+  right: "/signature-mark-right.png",
+} as const;
+
 /**
  * The exported artwork is made from filled outlines, so each shape is revealed
  * through a centerline mask to preserve the pencil texture while still reading
  * as handwriting. The main mark writes from the lower-left; the two finishing
  * strokes each write from top to bottom.
  */
-export function Signature({ className = "" }: { className?: string }) {
+export function Signature({ className = "", onFinish }: { className?: string; onFinish?: () => void }) {
+  const id = useId();
+  const main = `${id}-main`;
+  const left = `${id}-left`;
+  const right = `${id}-right`;
+
   return (
     <svg
       aria-hidden="true"
@@ -15,7 +28,7 @@ export function Signature({ className = "" }: { className?: string }) {
     >
       <defs>
         <mask
-          id="signature-main-reveal"
+          id={main}
           x="0"
           y="0"
           width="734"
@@ -30,7 +43,7 @@ export function Signature({ className = "" }: { className?: string }) {
         </mask>
 
         <mask
-          id="signature-left-mark-reveal"
+          id={left}
           x="0"
           y="0"
           width="734"
@@ -45,7 +58,7 @@ export function Signature({ className = "" }: { className?: string }) {
         </mask>
 
         <mask
-          id="signature-right-mark-reveal"
+          id={right}
           x="0"
           y="0"
           width="734"
@@ -54,6 +67,7 @@ export function Signature({ className = "" }: { className?: string }) {
         >
           <path
             className="signature-trace signature-trace--right-mark"
+            onAnimationEnd={onFinish}
             d="M 691 0 C 690 20 687 47 683 74"
             pathLength="1"
           />
@@ -61,25 +75,25 @@ export function Signature({ className = "" }: { className?: string }) {
       </defs>
 
       <image
-        href="/signature-main.png"
+        href={signatureImages.main}
         width="734"
         height="219"
         preserveAspectRatio="none"
-        mask="url(#signature-main-reveal)"
+        mask={`url(#${main})`}
       />
       <image
-        href="/signature-mark-left.png"
+        href={signatureImages.left}
         width="734"
         height="219"
         preserveAspectRatio="none"
-        mask="url(#signature-left-mark-reveal)"
+        mask={`url(#${left})`}
       />
       <image
-        href="/signature-mark-right.png"
+        href={signatureImages.right}
         width="734"
         height="219"
         preserveAspectRatio="none"
-        mask="url(#signature-right-mark-reveal)"
+        mask={`url(#${right})`}
       />
     </svg>
   );

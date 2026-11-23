@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ThumbnailSquircle } from "@/components/SiteSquircle";
 import type { Discipline } from "@/lib/disciplines";
 
 export type GalleryEntry = {
@@ -18,18 +19,20 @@ export type GalleryEntry = {
 function Figure({ entry }: { entry: GalleryEntry }) {
   return (
     <>
-      {entry.image ? (
-        <Image
-          src={entry.image}
-          alt={entry.alt ?? ""}
-          width={entry.width ?? 500}
-          height={entry.height ?? 300}
-          sizes="(min-width: 688px) 640px, calc(100vw - 48px)"
-          className="h-auto w-full"
-        />
-      ) : (
-        <div className="bg-line aspect-[5/3] w-full" />
-      )}
+      <ThumbnailSquircle>
+        {entry.image ? (
+          <Image
+            src={entry.image}
+            alt={entry.alt ?? ""}
+            width={entry.width ?? 500}
+            height={entry.height ?? 300}
+            sizes="(min-width: 688px) 640px, calc(100vw - 48px)"
+            className="h-auto w-full"
+          />
+        ) : (
+          <div className="bg-line aspect-[5/3] w-full" />
+        )}
+      </ThumbnailSquircle>
       {/* Only the caption dims. The lens refracts a frozen capture of the
           page, so an image that changes opacity under the pointer stops
           matching its own refraction and the strip reads as a seam. */}

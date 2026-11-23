@@ -102,74 +102,36 @@ export async function getAIKnowledge(): Promise<AIKnowledge> {
   };
 }
 
-/**
- * Consecutive entries sharing a label form a group: only the first carries the
- * visible label, and the rule before a new group runs the full column width.
- */
-function toRows(
-  items: { label: string; title: string; href?: string; lang?: "en" | "zh" }[],
-): Row[] {
-  return items.map((item, i) => {
-    const startsGroup = i === 0 || items[i - 1].label !== item.label;
-    return {
-      group: item.label,
-      label: startsGroup && item.label ? item.label : undefined,
-      title: item.title,
-      href: item.href,
-      lang: item.lang,
-    };
-  });
-}
-
 export async function getExperience(): Promise<Row[]> {
   const all = await reader.collections.experience.all();
   const sorted = [...all].sort(
     (a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0),
   );
 
-  return toRows(
-    sorted.map((e) => ({
-      label: e.entry.label ?? "",
-      title: e.entry.title,
-      href: e.entry.externalUrl
-        ? e.entry.externalUrl
-        : e.entry.hasPage
-          ? `/work/${e.slug}`
-          : undefined,
-    })),
-  );
+  return sorted.map((e) => ({
+    group: e.entry.label ?? "",
+    title: e.entry.profileTitle?.trim() || e.entry.title,
+    href: e.entry.externalUrl
+      ? e.entry.externalUrl
+      : e.entry.hasPage
+        ? `/work/${e.slug}`
+        : undefined,
+  }));
 }
 
-const MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-/**
- * A post's list label is the month it was published, "26 Aug", read straight
- * from `publishedAt` (YYYY-MM-DD) without a Date, so no timezone can move it
- * into the neighbouring month. Posts from the same month share a label and so
- * form one group.
- */
-function monthLabel(publishedAt: string | null | undefined) {
-  const [year, month] = (publishedAt ?? "").split("-");
-  const name = MONTHS[Number(month) - 1];
-  return year && name ? `${year.slice(-2)} ${name}` : "";
-}
-
-export async function getWriting(): Promise<Row[]> {
-  const all = await reader.collections.writing.all();
-  const visible = all.filter((e) => !(hideDrafts && e.entry.draft));
-  const sorted = visible.sort((a, b) =>
+export async function getWriting() {
+  const posts = (await listWritingSlugs()).sort((a, b) =>
     (b.entry.publishedAt ?? "").localeCompare(a.entry.publishedAt ?? ""),
   );
 
-  return toRows(
-    sorted.map((e) => ({
-      label: monthLabel(e.entry.publishedAt),
-      title: e.entry.title,
-      href: `/writing/${e.slug}`,
-      lang: e.entry.lang,
+  return Promise.all(
+    posts.map(async ({ slug, entry }) => ({
+      slug,
+      title: entry.title,
+      lang: entry.lang,
+      publishedAt: entry.publishedAt,
+      cover: entry.cover,
+      description: entry.summary?.trim() || firstSentences(await readWritingBody(entry)),
     })),
   );
 }
@@ -227,13 +189,19 @@ export async function getExperienceEntry(slug: string) {
   return { ...entry, slug, body };
 }
 
+type WritingEntry = Awaited<ReturnType<typeof listWritingSlugs>>[number]["entry"];
+
+async function readWritingBody(entry: WritingEntry) {
+  // Keystatic bundles its own copy of Markdoc, so the node it hands back is
+  // structurally identical but nominally a different type.
+  return (await entry.body()).node as unknown as MarkdocNode;
+}
+
 export async function getWritingEntry(slug: string) {
   const entry = await reader.collections.writing.read(slug);
   if (!entry) return null;
   if (hideDrafts && entry.draft) return null;
-  // Keystatic bundles its own copy of Markdoc, so the node it hands back is
-  // structurally identical but nominally a different type. One cast, here.
-  const body = (await entry.body()).node as unknown as MarkdocNode;
+  const body = await readWritingBody(entry);
   const description = entry.summary?.trim() || firstSentences(body);
   return { ...entry, slug, body, description };
 }
@@ -369,8 +337,7 @@ export async function getWritingTour(slug: string) {
       slug: e.slug,
       title: e.entry.title,
       lang: e.entry.lang,
-      // Keystatic bundles its own copy of Markdoc — same cast as above.
-      body: (await e.entry.body()).node as unknown as MarkdocNode,
+      body: await readWritingBody(e.entry),
     })),
   );
 }
@@ -445,7 +412,7 @@ export type Comment = {
   initials: string;
 };
 
-/** The floating comments under the Experience list on /profile. */
+/** The floating comments under the badge on /browse/profile. */
 export async function getComments(): Promise<Comment[]> {
   const all = await reader.collections.comments.all();
   return [...all]

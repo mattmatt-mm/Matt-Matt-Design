@@ -38,6 +38,8 @@ The interface should feel quiet, exact, warm, and intentional.
 - Use continuous squircle corners for every non-circular rounded element on the
   site. The shared implementation is `SiteSquircle`, backed by
   [`@squircle-js/react`](https://github.com/bring-shrubbery/squircle-js).
+- Use the 4px `ThumbnailSquircle` for Writing covers, Home gallery images,
+  and Fun tiles, including stacked previews. It uses the shared 0.6 smoothing.
 - Use a 16px corner-radius input and `0.6` corner smoothing for elevated control
   surfaces. This includes the AI composer, response, contact form, and
   `Send to Matt` button.
@@ -107,6 +109,8 @@ not decorative borders and should remain where required.
   `--ai-ease` while tabs and pill fade out with 3px blur and the arrow
   resolves in. Detail pages are served contracted; only navigation animates.
   Matt asked for this on 2026-10-16. See `doc/dock-back-button-plan.md`.
+- Settings and the Experience page use the same circular back control. It
+  returns to Browse on a direct visit.
 - Bar and active tab are capsules — radius is half the height, 24px and 20px.
   The AI trigger is a 48×48px circle, a separate sibling with an 8px dock gap.
 - Every dock measurement derives from `--dock-tab-w`, `--dock-tab-h`,
@@ -124,11 +128,16 @@ not decorative borders and should remain where required.
 - The recess is one pill for the whole bar, not a surface per tab, and it slides
   between columns over 250ms on the shared `--ai-ease` curve. The icon color
   transitions on the same clock so it arrives with the pill.
-- The pill travels by `translateX` in multiples of its own width. The dock is a
-  gapless equal-column grid, so one column width is exactly one step: the pill's
-  box never changes, so only the compositable transform animates, and the active
-  column is known during render — the server sends it already in place, so there
-  is no measure-and-snap on first paint and no JavaScript in the path at all.
+- The pill travels in multiples of its own width. Each column of the gapless
+  grid is one step. The server renders the pill in the active column on first
+  paint.
+- Press and drag the active pill with a trackpad or touch to move it horizontally
+  along the dock. The release position selects the tab immediately, including
+  when the pointer is above or below the bar. A release past either end opens
+  the tab at that end.
+- While held, the pill takes on a translucent glass finish and swells. Pulling
+  past an end stretches it with resistance. Its shape springs back on release.
+  Reduced motion keeps direct tracking and the glass finish.
 - Never animate a squircle surface's width or height. Clip-path regenerates on
   every frame and the corners crawl. Move it instead.
 - A tap hops the icon 2px and back over 240ms and plays `tap.wav`. This replaced
@@ -161,18 +170,14 @@ not decorative borders and should remain where required.
   smoothstep (`--arc-fade`) all the way out to clear at the curve. Rejected
   along the way: a hard edge with a drop shadow, and a feathered edge around
   a flat 80% core, which read as unnatural.
-  - Dock: ellipse 80% wide by 100% of a `min(120px, 16dvh)` strip.
-  - AI: ellipse 80% wide by 100% of a `min(480px, 60dvh)` strip — tall enough
-    that the row above the composer sits in the denser part and stays legible.
-  It is one fade, not two: opening the AI grows the dock's arc into the AI's
-  over the AI's open clock, and closing shrinks it back (Matt, 2026-10-18;
-  swapping one fade for the other snapped). It stays above the travelling
-  thumbnail during the gallery morph, as it is on the page.
-- While the AI is open, the page under its arc is blurred as well as paled:
-  a progressive blur, strongest at the bottom centre (about 9px) and gone
-  before the curve, so the conversation reads over the page without a hard
-  band (Matt, 2026-10-19). Four stacked `backdrop-filter` layers on the
-  arc's own ellipse; it fades with the AI and is absent behind the dock.
+  - The ellipse extends beyond both sides of the viewport, with a horizontal
+    radius of 128% on desktop and 118% on phones. The curve is shallow.
+  - The dock arc is `min(120px, 16dvh)` high. It grows to `min(600px, 72dvh)`
+    as chat opens and shrinks when chat closes. It stays above the travelling
+    thumbnail during the gallery morph.
+- The theme-colored gradient sits over four progressively masked blur layers.
+  The two light layers soften the page behind the dock. The two stronger layers
+  appear as the chat arc grows and feather out above the composer.
 - When AI opens, the navigation shell moves 12px left, blurs by at most 3px,
   and fades. The cloud moves to the horizontal center and stays there for every
   active AI state.
@@ -245,11 +250,12 @@ not decorative borders and should remain where required.
 ## 8. Color and type
 
 - Use the existing background, foreground, muted, and divider tokens.
-- Apply the theme universally and follow the operating system's light/dark
-  preference. Navigation, AI controls, overlays, native controls, the cloud,
-  browser chrome, and the scroll lens must switch together; do not leave an
-  isolated light surface in dark mode.
-- Use Helvetica Neue first, with Helvetica/Arial and the existing CJK fallbacks.
+- Apply the chosen theme across the site, including navigation, AI controls,
+  overlays, native controls, and browser chrome. Settings offers Auto, Light,
+  and Dark. Auto follows the operating system.
+- Use Allo as the default typeface, with Helvetica Neue, Helvetica, Arial, and
+  the existing CJK fallbacks. Helvetica Neue is selectable in Settings.
+  Typeface and theme preferences are saved in the browser.
 - Do not invent off-scale sizes or weights to create hierarchy.
 - Elevated controls use the theme surface on its warm background without a
   solid border.
@@ -264,6 +270,10 @@ not decorative borders and should remain where required.
   drop shadow goes on a wrapper (`AiLift`), since its own clip path trims a
   filter. Do not add an AI accent color.
 - Secondary copy and placeholders use the existing muted grays.
+- The Writing index presents each post with its publication date, a one-line
+  bold 18px heading, and a gray preview of up to two lines. A soft full-width
+  hairline sits below each post. An available cover sits beside the preview on
+  wide screens and above the date on narrow screens. The whole row is one link.
 - Interface copy is compact, plain, sentence case, and specific.
 - The AI speaks about Matt in the third person.
 - Do not publish model, token, word, turn, quota, or chat-limit rules in the UI.
@@ -274,6 +284,8 @@ not decorative borders and should remain where required.
 - Standard resizing uses `cubic-bezier(0.22, 1, 0.36, 1)`, around 300ms open
   and 240ms close.
 - Ordinary content travel stays near 8px with at most 3px transient blur.
+- Animated text swaps use a brief blur and about 2px of vertical movement.
+  For reduced motion, keep the opacity transition. [Emil Kowalski's design engineering skill](https://github.com/emilkowalski/skills/blob/main/skills/emil-design-eng/SKILL.md)
 - Avoid decorative bounce, parallax, and persistent page movement.
 - The active AI opening does not use a goo or liquid overlay. Keep the vendored
   [liquid-taffy](https://github.com/arknow91/liquid-taffy) experiment dormant
@@ -441,7 +453,23 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   or rely on raster inversion. See `doc/illustration-animation-workflow.md`
   for the 404 tree’s ink filter.
 
-- Comments from clients and users travel below the Experience list (Matt,
+- Profile opens inside Browse with a React Bits lanyard badge. Matt Tam's name
+  and role sit at opposite ends of the header. The role and linked project
+  history use 10px type, with space between year groups. The links are HTML
+  projected onto the moving card. Drag sideways or pull down to bend the
+  strap. Release returns the card to center, inside the canvas. Reduced
+  motion returns it immediately. The “Scroll down” link leads to comments.
+- Landing on Home runs the badge intro once per tab. The gray percentage
+  starts at 1% and can be tapped to skip. The badge drops at 100%, after
+  the first 3D frame renders and the signature images finish decoding.
+  “Hello” appears as the signature writes with Home's stroke order and
+  timing. The card then flips to Experience and the prompt alternates between
+  “Pull the card” and “Or tap here to start.” The card can pass in front of
+  the prompt. The rainbow distortion follows the badge's grab point with a
+  little lag on mouse and touch. Pull distance drives its strength. A short
+  release recoils with the badge. A full release carries the same wave into
+  Home from the release point. Direct links open their destination.
+- Comments from clients and users travel below the Profile badge (Matt,
   2026-10-21, after Wispr Flow's testimonial wall). Wispr was a reference for
   the motion only; the card is Matt's: theme surface, elevated drop shadow,
   16px squircle, half-star rating, the words as written, a hairline, a 40px

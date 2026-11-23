@@ -282,16 +282,20 @@ export default config({
             description: "The web address for this entry's page.",
           },
         }),
+        profileTitle: fields.text({
+          label: "Profile title",
+          description: "Name on the Profile badge. Leave empty to use the entry title.",
+        }),
         label: fields.text({
           label: "Label",
           multiline: true,
           description:
-            "The grey text on the left, e.g. 2026 or Hobby. Entries with the same label are grouped together, and only the first one shows it.",
+            "Group shown to the left of project names on the Profile badge, such as 2026.",
         }),
         order: fields.integer({
           label: "Sort order",
           defaultValue: 0,
-          description: "Higher numbers appear higher up the list.",
+          description: "Higher numbers appear first within a Profile group and in the guided walkthrough.",
         }),
         start: fields.text({
           label: "Start",
@@ -597,7 +601,7 @@ export default config({
         publishedAt: fields.date({
           label: "Published",
           description:
-            "Also sets the grey month on the left of the Writing list, e.g. 26 Aug. Posts from the same month are grouped.",
+            "Shown above the title in the Writing list.",
           validation: { isRequired: true },
         }),
         draft: fields.checkbox({
@@ -609,14 +613,14 @@ export default config({
           label: "Summary",
           multiline: true,
           description:
-            "One or two sentences on what the post is about, shown by Google and on share cards. Write it in the post's own language. Leave empty to use the first paragraph.",
+            "One or two sentences for the Writing list, search results, and share cards. Write it in the post's own language. Leave empty to use the opening paragraph.",
         }),
         cover: fields.image({
-          label: "Share image",
+          label: "Cover image",
           directory: "public/images/writing",
           publicPath: "/images/writing/",
           description:
-            "Shown when the post is shared. Never shown on the page. Leave empty to use the site's default card.",
+            "Shown in the Writing list and link previews. Leave empty for a text-only listing and the site's default share card.",
         }),
         body: fields.markdoc({
           label: "Body",

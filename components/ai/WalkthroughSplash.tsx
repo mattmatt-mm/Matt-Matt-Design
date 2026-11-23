@@ -8,6 +8,7 @@ import {
 } from "distortion-waves";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { GRADIENT_FEATHER, gradientWave, gradientWipe, wipeGradientSheet } from "@/components/effects/gradient-reveal";
 
 export type SplashRun = {
   /** The confirmation button, which swells and dissolves as it goes. */
@@ -29,14 +30,11 @@ const LINE_DUR = 500;
 const HANDOFF_AT = 1800;
 /** Let the library play even if a slow image delays the first snapshot. */
 const CAPTURE_WAIT = 750;
-const REVEAL = 600;
+const REVEAL = gradientWipe.duration;
 const EXIT = 300;
 /** How long to wait for the walkthrough page before revealing regardless. */
 const PAGE_WAIT = 3000;
-/** The soft band at the bottom edge of the wipe. Matches the mask's 80px halves. */
-const FEATHER = 160;
-
-const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
+const EASE = gradientWipe.easing;
 const HIDDEN = { opacity: 0, transform: "translateY(12px)", filter: "blur(3px)" };
 const SHOWN = { opacity: 1, transform: "translateY(0)", filter: "blur(0)" };
 
@@ -234,13 +232,7 @@ export function WalkthroughSplash({
       if (titleLine && targets?.title) hiddenTargets.push(targets.title);
       for (const target of hiddenTargets) target.style.setProperty("opacity", "0");
 
-      const wipe = cover.animate(
-        {
-          maskPosition: ["0 0%", "0 100%"],
-          WebkitMaskPosition: ["0 0%", "0 100%"],
-        } as PropertyIndexedKeyframes,
-        { duration: REVEAL, easing: EASE, fill: "forwards" },
-      );
+      const wipe = wipeGradientSheet(cover);
 
       const exit = [
         SHOWN,
@@ -355,18 +347,14 @@ export function WalkthroughSplash({
     <div
       ref={root}
       className="walkthrough-splash"
-      style={{ "--splash-feather": `${FEATHER}px` } as React.CSSProperties}
+      style={{ "--splash-feather": `${GRADIENT_FEATHER}px` } as React.CSSProperties}
       onClick={() => skip.current()}
     >
       <DistortionWave
         ref={wave}
         className="walkthrough-splash-wave"
-        type="vertical"
-        palette="colorful"
+        {...gradientWave}
         capture={capture}
-        live={false}
-        prewarm={false}
-        resolution={1}
         revealedContent={<div className="walkthrough-splash-fill" />}
         onFinish={(revealed) => {
           if (revealed) waveFinished.current();

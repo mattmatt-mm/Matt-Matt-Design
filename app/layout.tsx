@@ -16,6 +16,9 @@ import { SmoothScrollLens } from "@/components/effects/SmoothScrollLens";
 import { ImageZoom } from "@/components/effects/ImageZoom";
 import { ThumbnailMorph } from "@/components/effects/ThumbnailMorph";
 import { ViewCursor } from "@/components/effects/ViewCursor";
+import { restoreAppearance, THEME_COLORS, THEME_COLOR_META_ID } from "@/lib/site-appearance";
+import { preparePortfolioLaunch } from "@/lib/portfolio-launch";
+import "allo-font";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -53,10 +56,6 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FDFDFC" },
-    { media: "(prefers-color-scheme: dark)", color: "#12110F" },
-  ],
 };
 
 export default async function RootLayout({
@@ -64,7 +63,20 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const tourCatalog = await getTourCatalog();
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta
+          id={THEME_COLOR_META_ID}
+          name="theme-color"
+          media="not all"
+          content={THEME_COLORS.light}
+          suppressHydrationWarning
+        />
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content={THEME_COLORS.light} />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content={THEME_COLORS.dark} />
+        <script dangerouslySetInnerHTML={{ __html: restoreAppearance }} />
+        <script dangerouslySetInnerHTML={{ __html: preparePortfolioLaunch }} />
+      </head>
       {/* Browser extensions (Grammarly, password managers) add attributes to
           <body> before React hydrates, which otherwise reports a mismatch that
           has nothing to do with this code. This suppresses the warning for
