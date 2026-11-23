@@ -46,6 +46,10 @@
   pointer-events: none;
 }
 
+.dialog[data-badge-phase="static"] .scene a {
+  pointer-events: auto;
+}
+
 .dialog[data-badge-phase="loading"] .scene {
   opacity: 0;
 }
@@ -95,7 +99,8 @@
 
 .dialog:is([data-badge-phase="loading"], [data-badge-phase="dropping"]) .percentage[data-current],
 .dialog[data-badge-phase="signing"]:not(:has([data-lanyard-face="front"])) .hello,
-.dialog[data-badge-phase="signing"]:has([data-lanyard-face="front"]) .prompts {
+.dialog[data-badge-phase="signing"]:has([data-lanyard-face="front"]) .prompts,
+.dialog[data-badge-phase="static"] .prompts {
   opacity: 1;
   visibility: visible;
   transform: none;
