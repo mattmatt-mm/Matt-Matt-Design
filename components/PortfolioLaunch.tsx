@@ -6,7 +6,7 @@ import { ExperienceBadge } from "@/components/ExperienceBadge";
 import { signatureImages } from "@/components/Signature";
 import { GRADIENT_FEATHER, gradientWave, wipeGradientSheet } from "@/components/effects/gradient-reveal";
 import type { LanyardPull } from "@/components/vendor/react-bits-lanyard/Lanyard";
-import { endPortfolioLaunch, rememberPortfolioEntry } from "@/lib/portfolio-launch";
+import { endPortfolioLaunch } from "@/lib/portfolio-launch";
 import styles from "./PortfolioLaunch.module.css";
 
 const WAVE_DEADLINE_MS = 4000;
@@ -100,11 +100,14 @@ export function PortfolioLaunch({
   const readyAssets = useRef(new Set<string | null>());
   const [active, setActive] = useState(false);
   const [entering, setEntering] = useState(false);
-  const [phase, setPhase] = useState<"loading" | "dropping" | "signing">("loading");
+  const [phase, setPhase] = useState<"loading" | "dropping" | "signing" | "static">("loading");
   const [loadedAssets, setLoadedAssets] = useState(0);
   const loading = phase === "loading";
+  const staticBadge = phase === "static";
+  const canEnter = phase === "signing" || staticBadge;
   const progress = percentages[loadedAssets];
   const loaded = progress === 100;
+  const enterLabel = staticBadge ? "Enter portfolio" : "Enter portfolio. Pull the card or tap here to start.";
   const markAssetReady = useCallback((asset: string | null) => {
     readyAssets.current.add(asset);
     setLoadedAssets(readyAssets.current.size);
@@ -153,9 +156,13 @@ export function PortfolioLaunch({
   const skip = useCallback(() => {
     if (!dialog.current?.open || entered.current) return;
     entered.current = true;
-    rememberPortfolioEntry();
     finish();
   }, [finish]);
+
+  const showStaticBadge = useCallback(() => {
+    if (!dialog.current?.open || entered.current) return;
+    setPhase("static");
+  }, []);
 
   useEffect(() => {
     if (!active || !loading) return;
@@ -167,21 +174,21 @@ export function PortfolioLaunch({
       void image.decode().then(() => {
         if (!cancelled) markAssetReady(source);
       }, () => {
-        if (!cancelled) skip();
+        if (!cancelled) showStaticBadge();
       });
     }
 
     return () => { cancelled = true; };
-  }, [active, loading, markAssetReady, skip]);
+  }, [active, loading, markAssetReady, showStaticBadge]);
 
   useEffect(() => {
     if (!active || !loading || loaded) return;
     const timeout = window.setTimeout(() => {
       // The renderer can finish in the same task as the deadline, before React paints 100%.
-      if (readyAssets.current.size < loadingSteps) skip();
+      if (readyAssets.current.size < loadingSteps) showStaticBadge();
     }, LOAD_DEADLINE_MS);
     return () => clearTimeout(timeout);
-  }, [active, loaded, loading, skip]);
+  }, [active, loaded, loading, showStaticBadge]);
 
   useEffect(() => {
     if (!active || !loading || !loaded) return;
@@ -203,7 +210,7 @@ export function PortfolioLaunch({
     const layer = root.current;
     const before = intro.current;
     const after = home.current;
-    if (!active || loading || !layer || !before || !after) return;
+    if (!active || loading || staticBadge || !layer || !before || !after) return;
 
     const controller = new WaveController(layer, before, after);
     const options: WaveOptions = {
@@ -225,7 +232,7 @@ export function PortfolioLaunch({
       controller.destroy();
       wave.current = null;
     };
-  }, [active, finish, loading]);
+  }, [active, finish, loading, staticBadge]);
 
   useEffect(() => {
     if (!active || phase !== "signing" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -238,7 +245,6 @@ export function PortfolioLaunch({
     const screen = dialog.current;
     if (!screen?.open || entered.current) return;
     entered.current = true;
-    rememberPortfolioEntry();
     const effect = wave.current;
     const card = badge.current;
     const button = enterButton.current;
@@ -312,7 +318,6 @@ export function PortfolioLaunch({
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = (event.target as Element).closest<HTMLAnchorElement>("a[href]");
     if (!link || link.target === "_blank") return;
-    rememberPortfolioEntry();
     finish();
   }
 
@@ -326,8 +331,8 @@ export function PortfolioLaunch({
       onCancel={(event) => {
         event.preventDefault();
         if (entering) finish();
-        else if (phase !== "signing") skip();
-        else enter();
+        else if (canEnter) enter();
+        else skip();
       }}
     >
       <div ref={root} className={styles.wave}>
@@ -340,8 +345,8 @@ export function PortfolioLaunch({
               ref={enterButton}
               type="button"
               data-dw-skip
-              aria-label={phase === "signing" ? "Enter portfolio. Pull the card or tap here to start." : `${progress}%. Skip introduction.`}
-              onClick={phase === "signing" ? () => enter() : skip}
+              aria-label={canEnter ? enterLabel : `${progress}%. Skip introduction.`}
+              onClick={canEnter ? () => enter() : skip}
               className={`${styles.enter} press-shrink`}
             >
               {percentages.map((value) => (
@@ -357,7 +362,7 @@ export function PortfolioLaunch({
               <span aria-hidden="true" className={`${styles.copy} ${styles.hello}`}>Hello</span>
               <span aria-hidden="true" className={`${styles.copy} ${styles.prompts}`}>
                 <span className={styles.pull}>Pull the card</span>
-                <span className={styles.tap}>Or tap here to start</span>
+                <span className={styles.tap}>{staticBadge ? "Tap here to start" : "Or tap here to start"}</span>
               </span>
             </button>
           </div>
@@ -376,12 +381,12 @@ export function PortfolioLaunch({
         <ExperienceBadge
           name={name}
           role={role}
-          animate={active}
+          animate={active && !staticBadge}
           interactive={!entering && phase === "signing"}
           writeSignature={phase === "signing"}
           onPull={handlePull}
           onReady={markCardReady}
-          onUnavailable={skip}
+          onUnavailable={showStaticBadge}
         >
           {children}
         </ExperienceBadge>

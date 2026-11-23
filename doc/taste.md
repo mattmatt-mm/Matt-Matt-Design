@@ -459,8 +459,11 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   projected onto the moving card. Drag sideways or pull down to bend the
   strap. Release returns the card to center, inside the canvas. Reduced
   motion returns it immediately. The “Scroll down” link leads to comments.
-- Landing on Home runs the badge intro once per tab. The gray percentage
-  starts at 1% and can be tapped to skip. The badge drops at 100%, after
+- Opening or refreshing Home runs the badge intro, including Home links
+  with tracking parameters or a fragment. Direct links to Writing and other
+  pages open their destination, and using the dock to return to Home keeps
+  browsing uninterrupted. The gray percentage starts at 1% and can be
+  tapped to skip. The badge drops at 100%, after
   the first 3D frame renders and the signature images finish decoding.
   “Hello” appears as the signature writes with Home's stroke order and
   timing. The card then flips to Experience and the prompt alternates between
@@ -468,7 +471,8 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   the prompt. The rainbow distortion follows the badge's grab point with a
   little lag on mouse and touch. Pull distance drives its strength. A short
   release recoils with the badge. A full release carries the same wave into
-  Home from the release point. Direct links open their destination.
+  Home from the release point. If the animated badge can't load, the
+  Experience card appears as a static card with “Tap here to start.”
 - Comments from clients and users travel below the Profile badge (Matt,
   2026-10-21, after Wispr Flow's testimonial wall). Wispr was a reference for
   the motion only; the card is Matt's: theme surface, elevated drop shadow,

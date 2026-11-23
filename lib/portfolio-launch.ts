@@ -1,30 +1,17 @@
-const ENTERED_KEY = "mmd:portfolio-entered-v1";
 export const PORTFOLIO_LAUNCH_END = "mmd:portfolio-launch-end";
+const HYDRATION_DEADLINE_MS = 10_000;
 
-// Runs before the first render so the launch loader can appear before hydration.
-export const preparePortfolioLaunch = `try {
-  if (!sessionStorage.getItem(${JSON.stringify(ENTERED_KEY)})) {
-    if (location.pathname === "/" && !location.search && !location.hash) {
-      const root = document.documentElement;
-      root.dataset.portfolioLaunch = "pending";
-      window.setTimeout(() => {
-        if (root.dataset.portfolioLaunch !== "pending") return;
-        delete root.dataset.portfolioLaunch;
-        window.dispatchEvent(new Event(${JSON.stringify(PORTFOLIO_LAUNCH_END)}));
-      }, 2500);
-    } else {
-      sessionStorage.setItem(${JSON.stringify(ENTERED_KEY)}, "1");
-    }
-  }
-} catch {}`;
-
-export function rememberPortfolioEntry() {
-  try {
-    sessionStorage.setItem(ENTERED_KEY, "1");
-  } catch {
-    // Visitors can still enter when session storage is unavailable.
-  }
-}
+// The head script runs on document loads, before hydration. Client-side
+// navigation back to Home doesn't run it again.
+export const preparePortfolioLaunch = `if (location.pathname === "/") {
+  const root = document.documentElement;
+  root.dataset.portfolioLaunch = "pending";
+  window.setTimeout(() => {
+    if (root.dataset.portfolioLaunch !== "pending") return;
+    delete root.dataset.portfolioLaunch;
+    window.dispatchEvent(new Event(${JSON.stringify(PORTFOLIO_LAUNCH_END)}));
+  }, ${HYDRATION_DEADLINE_MS});
+}`;
 
 export function endPortfolioLaunch() {
   const { dataset } = document.documentElement;
