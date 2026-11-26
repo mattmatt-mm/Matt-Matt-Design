@@ -5,6 +5,8 @@ import { CornersOut } from "@phosphor-icons/react/dist/ssr/CornersOut";
 import { Pause } from "@phosphor-icons/react/dist/ssr/Pause";
 import { PictureInPicture } from "@phosphor-icons/react/dist/ssr/PictureInPicture";
 import { Play } from "@phosphor-icons/react/dist/ssr/Play";
+import { SpeakerSimpleHigh } from "@phosphor-icons/react/dist/ssr/SpeakerSimpleHigh";
+import { SpeakerSimpleX } from "@phosphor-icons/react/dist/ssr/SpeakerSimpleX";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SiteSquircle } from "@/components/SiteSquircle";
 
@@ -24,10 +26,10 @@ type WebkitVideo = HTMLVideoElement & { webkitEnterFullscreen?: () => void };
  * A case-study screen recording with a floating control bar, after the
  * Video.js v10 player: play, elapsed time, a scrubber, time remaining,
  * picture-in-picture, and fullscreen on one blurred strip inset from the
- * frame. The recordings are silent, so there is no volume control to promise
- * sound that is not there.
+ * frame. Videos with a soundtrack can opt in to a mute control.
  *
- * It plays muted and looped while it is on screen and pauses when it leaves.
+ * It loops while on screen and pauses when it leaves. Autoplay is muted by
+ * default. Fun detail pages can opt in to starting with sound.
  * Once the reader pauses it themselves, scrolling never restarts it.
  */
 export function VideoPlayer({
@@ -37,12 +39,16 @@ export function VideoPlayer({
   width,
   height,
   flush = false,
+  hasSound = false,
+  autoPlayWithSound = false,
 }: {
   src: string;
   poster?: string;
   title?: string;
   width?: number;
   height?: number;
+  hasSound?: boolean;
+  autoPlayWithSound?: boolean;
   /** Square corners, for a player whose shape comes from a frame around it
    *  (components/Recording.tsx). */
   flush?: boolean;
@@ -53,22 +59,38 @@ export function VideoPlayer({
   const idleTimer = useRef<number>(0);
   const pausedByReader = useRef(false);
   const scrubbing = useRef(false);
+  const soundOnEntry = hasSound && autoPlayWithSound;
 
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [active, setActive] = useState(true);
+  const [muted, setMuted] = useState(!soundOnEntry);
+  const [needsPlay, setNeedsPlay] = useState(false);
+  const [controlsShown, setControlsShown] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [pipSupported, setPipSupported] = useState(false);
 
-  // The bar is up while paused, and for a moment after any pointer movement.
-  const wake = useCallback(() => {
-    setActive(true);
+  const scheduleControlsHide = useCallback(() => {
     window.clearTimeout(idleTimer.current);
     idleTimer.current = window.setTimeout(() => {
-      if (!scrubbing.current) setActive(false);
+      if (
+        videoRef.current?.paused === false &&
+        !scrubbing.current &&
+        !frameRef.current?.querySelector(":focus-visible")
+      ) {
+        setControlsShown(false);
+      }
     }, IDLE_MS);
   }, []);
+
+  const resetControlsTimer =
+    controlsShown && playing ? scheduleControlsHide : undefined;
+
+  useEffect(() => {
+    if (!resetControlsTimer) return;
+    resetControlsTimer();
+    return () => window.clearTimeout(idleTimer.current);
+  }, [resetControlsTimer]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -87,12 +109,17 @@ export function VideoPlayer({
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
+    if (reduceMotion && soundOnEntry) setNeedsPlay(true);
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           if (!reduceMotion && !pausedByReader.current) {
-            video.play().catch(() => {});
+            video.play().catch((error: unknown) => {
+              if (soundOnEntry && video.isConnected && video.paused && error instanceof DOMException && error.name === "NotAllowedError") {
+                setNeedsPlay(true);
+              }
+            });
           }
         } else if (
           !video.paused &&
@@ -111,10 +138,10 @@ export function VideoPlayer({
 
     return () => {
       observer.disconnect();
+      if (soundOnEntry) video.pause();
       document.removeEventListener("fullscreenchange", onFullscreen);
-      window.clearTimeout(idleTimer.current);
     };
-  }, []);
+  }, [soundOnEntry]);
 
   const togglePlay = () => {
     const video = videoRef.current;
@@ -126,7 +153,6 @@ export function VideoPlayer({
       pausedByReader.current = true;
       video.pause();
     }
-    wake();
   };
 
   const seekTo = (seconds: number) => {
@@ -171,18 +197,18 @@ export function VideoPlayer({
   };
 
   const progress = duration ? (time / duration) * 100 : 0;
-  const shown = active || !playing;
-
+  const playbackLabel = playing ? "Pause video" : "Play video";
   return (
     // SiteSquircle keeps its own ref for measuring, so the fullscreen target
     // and the pointer listeners live on a plain wrapper around it.
     <div
       ref={frameRef}
       className="video-player"
-      data-controls={shown ? "shown" : "hidden"}
-      onPointerMove={wake}
-      onPointerDown={wake}
-      onFocus={wake}
+      data-controls={controlsShown ? "shown" : "hidden"}
+      data-has-sound={hasSound || undefined}
+      onPointerMove={resetControlsTimer}
+      onPointerDown={resetControlsTimer}
+      onBlur={resetControlsTimer}
     >
       <SiteSquircle
         className="video-player-frame"
@@ -197,19 +223,39 @@ export function VideoPlayer({
           width={width}
           height={height}
           title={title}
-          muted
+          muted={muted}
           loop
           playsInline
           preload="metadata"
-          onClick={togglePlay}
-          onPlay={() => setPlaying(true)}
+          onPlay={() => {
+            setNeedsPlay(false);
+            setPlaying(true);
+          }}
           onPause={() => setPlaying(false)}
           onTimeUpdate={(e) => setTime(e.currentTarget.currentTime)}
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
           onDurationChange={(e) => setDuration(e.currentTarget.duration)}
+          onVolumeChange={hasSound ? (e) => setMuted(e.currentTarget.muted) : undefined}
         />
 
-        <SiteSquircle className="video-player-bar">
+        <button
+          type="button"
+          className="video-player-trigger"
+          aria-label={needsPlay ? "Play with sound" : controlsShown ? playbackLabel : "Show video controls"}
+          onClick={() => {
+            if (needsPlay || controlsShown) togglePlay();
+            setControlsShown(true);
+          }}
+        >
+          {needsPlay && (
+            <span className="video-player-start">
+              <Play weight="fill" aria-hidden />
+              Play with sound
+            </span>
+          )}
+        </button>
+
+        <SiteSquircle className="video-player-bar" inert={!controlsShown}>
           <button
             type="button"
             className="video-player-button"
@@ -243,12 +289,9 @@ export function VideoPlayer({
             onPointerMove={(e) => {
               if (scrubbing.current) seekFromPointer(e.clientX);
             }}
-            onPointerUp={() => {
+            onLostPointerCapture={() => {
               scrubbing.current = false;
-              wake();
-            }}
-            onPointerCancel={() => {
-              scrubbing.current = false;
+              resetControlsTimer?.();
             }}
             onKeyDown={(e) => {
               if (e.key === "ArrowRight") seekTo(time + SEEK_STEP);
@@ -275,6 +318,20 @@ export function VideoPlayer({
           <span className="video-player-time">
             -{formatTime(duration - time)}
           </span>
+
+          {hasSound && (
+            <button
+              type="button"
+              className="video-player-button"
+              aria-label={muted ? "Turn on sound" : "Mute sound"}
+              onClick={() => {
+                const video = videoRef.current;
+                if (video) video.muted = !video.muted;
+              }}
+            >
+              {muted ? <SpeakerSimpleX aria-hidden /> : <SpeakerSimpleHigh aria-hidden />}
+            </button>
+          )}
 
           {pipSupported && (
             <button

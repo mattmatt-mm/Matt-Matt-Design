@@ -1,6 +1,6 @@
 # SEO and AI search
 
-- Status: Part 2 built 2026-10-19 (not yet deployed); Part 1 is Matt's to do
+- Updated 2026-11-25 with Profile recognition, search aliases, and verification steps.
 - Owner: Matt
 
 ## What it is for
@@ -55,10 +55,12 @@ These need Matt's accounts, so only he can do them. Most take minutes.
 
 1. Make sure the property is a **Domain** property (`mattmattdesign.com`), not
    only a URL-prefix one, so `www` and every page are covered.
-2. **Sitemaps** → submit `https://mattmattdesign.com/sitemap.xml` (re-submit
+2. **Sitemaps** → submit `https://www.mattmattdesign.com/sitemap.xml` (re-submit
    after Part 2 ships).
-3. **URL Inspection** → paste each case study address → **Request indexing**.
-   Do this once now and again whenever a case study is published or rewritten.
+3. After deployment, use **URL Inspection** to request a recrawl for the
+   [Home](https://www.mattmattdesign.com/) and
+   [Profile](https://www.mattmattdesign.com/browse/profile) URLs. Follow
+   [Google’s recrawl guidance](https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl).
 4. **Pages** report → anything listed under "Crawled – currently not indexed" or
    "Discovered – currently not indexed" is a page Google saw but did not keep.
    Send that list to Claude to look at.
@@ -95,7 +97,7 @@ AIs trust a fact more when several independent places agree on it.
 
 ## Part 2 — Code changes (Claude builds after review)
 
-Nothing here changes how any page looks.
+The Profile badge shows each recognition’s title and year when its sticker opens.
 
 ### 2.1 Identity and audiences
 
@@ -194,7 +196,7 @@ chat-only and are **not** used here.
 ## Part 3 — Measuring it
 
 - **Google Search Console** is the main scoreboard: impressions and clicks per
-  search, per page. Check monthly.
+  search, per page. Track `Matt Tam`, `Matt Matt`, and `Matt Matt Design`.
 - **Bing Webmaster Tools** shows the same for Bing, and has started reporting
   AI-assistant citations.
 - **PostHog** (for visitors who accept cookies) already records referrers.
@@ -204,8 +206,35 @@ chat-only and are **not** used here.
   the HKUST ISD brand?", "Find me a UI/UX designer in Hong Kong" and "Find me a
   design engineer portfolio" and note whether the site is cited.
 
-Expect weeks, not days: Google typically takes 2–8 weeks to reflect changes,
-and AI answers lag behind the search indexes they draw on.
+### Profile and recognition update
+
+- Home and Profile describe the same person. **Matt Tam** is the name shown on
+  the Profile badge and in search metadata. **Matt Matt** is an alternate name
+  for the person and site. The site name remains **Matt Matt Design**.
+- Update recognitions in Keystatic under **Site settings → Recognition and
+  certificates**. Entries with card artwork feed the sticker captions on
+  Profile and the Home splash. All entries feed `/llms.txt`, and Profile
+  metadata names the first two. The ProfilePage schema uses
+  `hasCredential` for certificates and `award` for awards. The Wall of
+  Portfolios 2026 selection appears as a feature, and the INSIDE LVMH
+  Certificate appears as a credential earned in 2026. [ProfilePage guidance](https://developers.google.com/search/docs/appearance/structured-data/profile-page) [Schema.org credential property](https://schema.org/hasCredential)
+- The production origin is `https://www.mattmattdesign.com`. Keep canonicals,
+  crawler files, and structured data on that origin because the apex redirects
+  to it. If `NEXT_PUBLIC_SITE_URL` is set in production, it must match that
+  origin.
+- Google’s AI search features use the same crawlable page content as regular
+  Search. The public Profile is the source for both recognitions.
+  [Google’s AI search guidance](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+
+### Components catalog
+
+- Browse links to `/components`, and the catalog links to each component in
+  the rendered HTML. The catalog and its entries appear in `sitemap.xml` and
+  `/llms.txt` with production URLs.
+- Component pages have their own React-focused title, description, canonical
+  URL, and share metadata. The catalog publishes a `CollectionPage` with an
+  `ItemList`. Detail pages publish breadcrumbs and describe the source or demo
+  available on each page. The embedded pull-card preview stays `noindex`.
 
 ## Decisions
 

@@ -38,13 +38,18 @@ The interface should feel quiet, exact, warm, and intentional.
 - Use continuous squircle corners for every non-circular rounded element on the
   site. The shared implementation is `SiteSquircle`, backed by
   [`@squircle-js/react`](https://github.com/bring-shrubbery/squircle-js).
-- Use the 4px `ThumbnailSquircle` for Writing covers, Home gallery images,
-  and Fun tiles, including stacked previews. It uses the shared 0.6 smoothing.
+- Use the 4px `ThumbnailSquircle` for Writing covers and Do and Don’t frames,
+  Home gallery images, and Fun tiles including stacked previews. It uses
+  the shared 0.6 smoothing.
+- Inside the Writing demos, animated squares and Press buttons use 2px
+  squircles.
 - Use a 16px corner-radius input and `0.6` corner smoothing for elevated control
   surfaces. This includes the AI composer, response, contact form, and
   `Send to Matt` button.
-- The bottom navigation is the exception: the bar and its active tab are
-  capsules, and the AI trigger is a true circle. See section 5 for the radii.
+- Browse grid cards and list groups use 16px squircles. Their icon tiles
+  use 8px squircles.
+- The navigation bar, its active tab, and the Home actions use capsules.
+  The AI trigger uses a true circle. See section 5 for the radii.
 - Plain CSS `border-radius` is only the no-JavaScript/first-render fallback. It
   must not be the final rendered geometry for a rounded surface. The exception
   is a surface carrying an inset shadow, which is drawn against `border-radius`
@@ -53,9 +58,8 @@ The interface should feel quiet, exact, warm, and intentional.
   dividers, and accessibility focus outlines are deliberate exceptions. At
   radius = half the height there is no corner left to smooth, so a capsule or
   circle takes plain `border-radius` and skips `SiteSquircle`.
-- A corner treatment defines geometry; it is not permission to add a solid
-  border. Capsules belong to the navigation dock; do not spread them to
-  buttons, fields, or content surfaces.
+- A corner treatment defines geometry. Use capsules for the navigation dock,
+  the Browse search field, and the Home action style.
 - **Uniform inset.** A control or surface nested in a corner of its container
   sits the same distance from every edge it is near: top, bottom and side
   alike. If the container's height leaves 8px above and below a button, the
@@ -65,6 +69,14 @@ The interface should feel quiet, exact, warm, and intentional.
   bar is 12px from the frame's sides and bottom, and its 44px buttons 2px
   inside the 48px bar on every side. Matt flagged the copy button's 8px top against 16px right on
   2026-10-19.
+- Set the inner corner radius to the outer radius minus the uniform inset.
+  The Components code pane sits 8px inside its 16px frame and uses an 8px
+  corner radius. The reusable Preview and Code tab group follows the same
+  inset and left edge. Its tabs sit 4px inside the group with 4px corners.
+  The Settings selector and its open list share 8px corners. Options sit 4px
+  inside the list with 4px corners.
+- Component pages keep the live demo visible. Each source file below it has
+  a faded excerpt that opens with **View code** and expands to its full height.
 
 ## 4. Elevation, not borders
 
@@ -94,6 +106,16 @@ not decorative borders and should remain where required.
 ## 5. Buttons and navigation
 
 - Buttons use direct, short labels.
+- **Contact me** on Let’s work reuses the filled Home action pill.
+- A magnifying glass opens Browse from the dock. **About Matt** and
+  **Components** sit side by side below search. The full-width groups below
+  hold Selected work, Writing, and Fun, then AI actions, then Settings and
+  Releases together, with Releases directly below Settings.
+  Each row has an icon on the left, a label, and a chevron on the right.
+  Grid cards and list groups share a 12px content inset at their outer edges.
+  Grid labels align with their icons, and list dividers align with their labels.
+- Releases uses the reading column with the newest version first. Each version
+  shows its date, a short summary when available, and its GitHub source.
 - `Send to Matt` is full width and text only. It has no send icon.
 - Icon-only buttons need an accessible label and a minimum 44×44px hit area.
 - The AI back control is a 16px muted-gray Phosphor arrow inside a 44×44px hit
@@ -197,18 +219,15 @@ not decorative borders and should remain where required.
     It is translucent (64%, 72% on hover) over a 10px backdrop blur, so it
     reads as frosted glass instead of a solid grey that can vanish into the
     page behind it (Matt, 2026-10-19).
-  Not capsules — capsules stay with the dock. See `doc/hr-mode-plan.md`.
+  See `doc/hr-mode-plan.md`.
 - The AI composer (Ask me anything, Follow up) wears the dock's stack: the 1px
   `--shadow-navigation` rim on the surface and `--filter-navigation` on a
   wrapper around it, since the squircle's clip path would cut a drop shadow off
-  the surface itself (Matt, 2026-10-18). The row above it lines up with the
-  field: "Guided walkthrough" starts at the text's 16px inset, the info icon centres on
-  the send icon.
-- Above the first-question composer, show **Guided walkthrough** (Phosphor Compass,
-  muted, fg on hover) on the left, and a 16px Phosphor Info button on the right
-  whose tooltip carries the review notice. Do not print that notice as a line of
-  text. Do not auto-focus a control when an AI surface appears unprompted — the
-  focus ring reads as a stray frame. Matt asked for both on 2026-10-18.
+  the surface itself (Matt, 2026-10-18).
+- The chat opens with the question field and its send button. The follow-up
+  field sits 8px below the answer. Guided walkthrough has entry points on
+  Home and Browse. Wait for user interaction before focusing a control on an
+  AI surface that opens on its own.
 - Start walkthrough opens with a splash: the pressed button swells a little,
   blurs and fades while the page background fades up over everything and the
   selected titles rise in on the page column, then the sheet
@@ -281,6 +300,8 @@ not decorative borders and should remain where required.
 ## 9. Motion
 
 - Motion is quick, restrained, and spatially clear.
+- Simulate the physical behavior of the object. A lifted surface casts a
+  shadow on the surfaces beneath it and covers the details it passes over.
 - Standard resizing uses `cubic-bezier(0.22, 1, 0.36, 1)`, around 300ms open
   and 240ms close.
 - Ordinary content travel stays near 8px with at most 3px transient blur.
@@ -338,10 +359,17 @@ not decorative borders and should remain where required.
   wheel or touch hijacking. See `doc/case-study-continuous-scroll-plan.md`.
 - Case-study video follows the Video.js v10 player: a translucent black,
   blurred control strip floating 12px inside the frame. Frame and strip are
-  16px squircles, not capsules. Only controls that do something appear — no
-  volume on a silent recording. It plays muted while on screen and stops when
-  it leaves; a reader's pause is final. See
+  16px squircles. The progress bar and playback controls start hidden and
+  appear when the reader taps, clicks, or uses the keyboard to activate the
+  video surface. It plays muted while on screen and pauses when it leaves.
+  Scrolling respects a reader's pause. See
   `doc/case-study-video-player-plan.md`.
+- Flipbook spreads keep a fine seam and a light spine shadow between the
+  pages. The seam softens on flat spreads and passes behind the lifted sheet.
+  Both sides of the spine shadow return gradually as the page settles.
+  The turning page's front and the newly revealed page dim evenly. The
+  facing page and lifted back face keep their resting brightness.
+  See `doc/chan-kee-photobook-plan.md`.
 - Case-study prose speaks human: what an interaction feels like and why,
   never "24px height, 4px between controls". The numbers live in a Notes
   card (Apple Notes style, yellow band, ruled paper, Copy prompt) written as
@@ -403,6 +431,7 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   position; the wider measure is not permission for larger type.
 - A case study opens with a thumbnail up to 840px (whatever sits before the
   first section heading); imagery inside a section stays at the text's 640px.
+- Writing posts show their cover below the title at the reading column width.
 - Motion exported from Matt's own tools (Lottie) plays as he made it, in his
   order, inside the site's frame — no added chrome around it.
 - Detail pages carry a text-only section rail on the screen's left edge: muted
@@ -459,6 +488,17 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   projected onto the moving card. Drag sideways or pull down to bend the
   strap. Release returns the card to center, inside the canvas. Reduced
   motion returns it immediately. The “Scroll down” link leads to comments.
+  The Wall of Portfolios 2026 badge and the INSIDE LVMH certificate sit
+  under the role at the upper right, with a small overlap and tilt. The
+  project history is anchored at the bottom left. Profile and the Home
+  splash share this layout. Tapping a sticker moves it to the center over
+  a blurred backdrop with one shimmer sweep across the artwork. A 32px gap
+  separates the sticker from its title and one-sentence description.
+  The year sits below the description in the lower third of the view, with
+  “Earned in” for the certificate and “Featured in” for the portfolio selection.
+  Tapping the backdrop, pressing Space, or pressing Escape returns it to the card.
+  The sticker lands at its original size and position with no flicker. The
+  original becomes visible in the same frame that the moving copy disappears.
 - Opening or refreshing Home runs the badge intro, including Home links
   with tracking parameters or a fragment. Direct links to Writing and other
   pages open their destination, and using the dock to return to Home keeps
@@ -489,8 +529,8 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
 - Fun (Matt, 2026-10-23, after a hackathon portfolio grid and a file
   inspector view of one poster): side work as a masonry wall that breaks out
   to 1200px, three columns, two on a phone, under the name alone — no
-  intro. Filters are text links in the
-  column, active in fg, never filled chips — the site has no accent colour.
+  intro. All, 3D, Motion, and Illustration are text links in the column, active
+  in fg. Incipe Board pre-order appears under both 3D and Motion.
   A tile morphs into its piece's page, like a gallery card into a case
   study, and the dock contracts to the back arrow. That page is the work
   centred with its colours as 32px dots on the left and its details on the
@@ -500,6 +540,10 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   out to either side under the pointer — the one place a wall picture moves
   on hover, because Matt asked for it to reveal more of the set. See
   `doc/fun-tab-plan.md`.
+- Video tiles in Fun play muted. Detail videos with a soundtrack start with
+  sound when the browser allows autoplay. A **Play with sound** button starts
+  playback when autoplay is blocked or reduced motion is enabled. Detail
+  players have a scrubber and a mute control.
 
 ## 13. Review checklist
 

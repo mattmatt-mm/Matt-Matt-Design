@@ -35,6 +35,21 @@
   background: var(--color-bg);
 }
 
+.dialog[data-embedded] {
+  touch-action: pan-y pinch-zoom;
+}
+
+.dialog[data-embedded] .intro {
+  background: var(--library-panel-background);
+}
+
+/* A touch starting on the badge belongs to the pull gesture. Empty space
+   in the embedded scene can scroll the surrounding page. */
+.dialog[data-embedded] :global([data-lanyard-face="front"]) {
+  pointer-events: auto;
+  touch-action: none;
+}
+
 .home {
   pointer-events: none;
 }

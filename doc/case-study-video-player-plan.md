@@ -26,8 +26,10 @@ desktop and phone demos, with a control bar modelled on the Video.js v10 player
 - The video plays muted and looped while at least half of it is on screen and
   pauses when it leaves. Once the reader pauses, scrolling never restarts it.
   No autoplay under reduced motion.
-- The bar hides 2s after the pointer stops while playing, fading and dropping
-  8px over 240ms. It is always shown while paused or focused.
+- The bar starts hidden. Tapping, clicking, or using the keyboard to activate
+  the video surface reveals it. Once visible, the bar hides after 2s of
+  pointer inactivity during playback, fading and dropping 8px over 240ms.
+  The bar stays open while scrubbing or while the player has keyboard focus.
 - Videos break out of the column at the same width as images.
 - Authoring: `{% video src poster title /%}` in Markdoc, also available as a
   "Video" block in the Keystatic Experience editor. Files live in

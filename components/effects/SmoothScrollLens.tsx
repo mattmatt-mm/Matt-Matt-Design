@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { PULL_CARD_PREVIEW_PATH } from "@/lib/portfolio-launch";
 import { useEffect, useRef } from "react";
 
 const vertexShader = /* glsl */ `
@@ -433,7 +434,9 @@ export function SmoothScrollLens() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (pathname.startsWith("/keystatic")) return;
+    // Let wheel and touch scrolling chain to the component page outside
+    // the preview frame.
+    if (pathname.startsWith("/keystatic") || pathname === PULL_CARD_PREVIEW_PATH) return;
 
     const contentElement =
       document.querySelector<HTMLElement>("[data-lens-content]");

@@ -3,11 +3,14 @@
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
 import { X } from "@phosphor-icons/react/dist/ssr/X";
-import Image from "next/image";
 import {
+  type ComponentType,
   type CSSProperties,
+  type ImgHTMLAttributes,
   type KeyboardEvent,
   type PointerEvent,
+  createContext,
+  useContext,
   useEffect,
   useId,
   useRef,
@@ -28,18 +31,32 @@ const PAGE_SIZES = "(max-width: 751px) 100vw, (pointer: coarse) and (max-height:
 
 export type PhotobookPage = { src: string; alt: string; width: number; height: number };
 
-type PhotobookProps = {
+export type PhotobookImageProps = PhotobookPage &
+  Pick<ImgHTMLAttributes<HTMLImageElement>, "className" | "draggable" | "fetchPriority" | "loading" | "sizes">;
+
+export type PhotobookProps = {
   pages: readonly PhotobookPage[];
   id?: string;
   label?: string;
+  imageRenderer?: ComponentType<PhotobookImageProps>;
 };
 
 type PageTurn = { direction: Direction; fromStart: number; fromEnd: number };
-type Drag = { layout: FoldLayout; target: [number, number]; point: Point };
+type Drag = { layout: FoldLayout; target: [number, number]; point: Point; restingGutterOpacity?: number };
 type CornerGesture = Drag & { id: number; pointerStart: Point; moved: boolean };
 
-export function Photobook(props: PhotobookProps) {
-  return props.pages.length > 0 ? <Reader {...props} /> : null;
+function BrowserImage(props: PhotobookImageProps) {
+  return <img {...props} />;
+}
+
+const ImageRenderer = createContext<ComponentType<PhotobookImageProps>>(BrowserImage);
+
+export function Photobook({ imageRenderer = BrowserImage, ...props }: PhotobookProps) {
+  return props.pages.length > 0 ? (
+    <ImageRenderer.Provider value={imageRenderer}>
+      <Reader {...props} />
+    </ImageRenderer.Provider>
+  ) : null;
 }
 
 function draggedPoint(event: PointerEvent, gesture: CornerGesture) {
@@ -50,6 +67,7 @@ function draggedPoint(event: PointerEvent, gesture: CornerGesture) {
 }
 
 function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
+  const Image = useContext(ImageRenderer);
   const zoomTitle = useId();
   const reader = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -146,7 +164,8 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
   function onPointerDown(event: PointerEvent<HTMLDivElement>) {
     if (corner.current || settleFrame.current !== null) return;
     suppressPageTap.current = !event.isPrimary;
-    const handle = (event.target as Element).closest<HTMLElement>("[data-book-corner]");
+    const targetElement = event.target as Element;
+    const handle = targetElement.closest<HTMLElement>("[data-book-corner]");
     if (handle && event.isPrimary && event.button === 0 && !turn) {
       const direction = handle.dataset.bookCorner === "next" ? "next" : "previous";
       const next = direction === "next" ? end + 1 : start - 1;
@@ -161,7 +180,7 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
       handle.setPointerCapture(event.pointerId);
       return;
     }
-    if (event.pointerType !== "touch") return;
+    if (event.pointerType !== "touch" || !targetElement.closest("[data-page-direction]")) return;
     swipe.current = event.isPrimary
       ? { id: event.pointerId, x: event.clientX, y: event.clientY }
       : null;
@@ -194,6 +213,7 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
     const point = cancelled ? gesture.point : draggedPoint(event, gesture);
     const commit = !cancelled && Math.abs(point.x - layout.corner.x) >= layout.pageWidth * 0.42;
     const destination = commit ? layout.landing : layout.corner;
+    const landsOnSpread = commit ? layout.toPair : layout.fromPair;
     const finish = () => {
       settleFrame.current = null;
       if (commit) setPage(target[0]);
@@ -212,10 +232,17 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
         return;
       }
       const progress = 1 - (1 - Math.max(0, elapsed)) ** 3;
-      setDrag({ layout, target, point: {
-        x: point.x + (destination.x - point.x) * progress,
-        y: point.y + (destination.y - point.y) * progress,
-      } });
+      // Settle the shadow before removing the fold, even if the last frame is skipped.
+      const restFade = Math.min(1, Math.max(0, (elapsed - 0.72) / 0.17));
+      setDrag({
+        layout,
+        target,
+        point: {
+          x: point.x + (destination.x - point.x) * progress,
+          y: point.y + (destination.y - point.y) * progress,
+        },
+        restingGutterOpacity: landsOnSpread ? restFade : 0,
+      });
       settleFrame.current = requestAnimationFrame(settle);
     };
     settleFrame.current = requestAnimationFrame(settle);
@@ -306,6 +333,7 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
                 />
               </div>
             )}
+            <div className={styles.gutter} data-turn={coverTurn ?? "fold"} />
             <div className={styles.leaf} onAnimationEnd={finishTurn}>
               <div className={styles.face}>
                 <PageImage
@@ -320,13 +348,8 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
           </div>
         )}
 
-        {(pair || coverTurn === "close") && (
-          <div
-            key={`gutter-${start}`}
-            className={styles.gutter}
-            data-turn={turn ? coverTurn ?? "fold" : undefined}
-            aria-hidden
-          />
+        {pair && (
+          <div key={`gutter-${start}`} className={`${styles.gutter} ${styles.restingGutter}`} aria-hidden />
         )}
 
         {drag && <DraggedPage drag={drag} pages={pages} start={start} end={end} />}
@@ -338,6 +361,7 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
                 key={direction}
                 type="button"
                 className={styles.pageTrigger}
+                data-page-direction={direction}
                 aria-label={`${direction === "next" ? "Turn forward" : "Turn back"}. ${pages[index].alt}`}
                 onClick={(event) => {
                   // A swipe can produce a click on the same page control.
@@ -420,7 +444,7 @@ function Reader({ pages, id, label = "Photobook" }: PhotobookProps) {
         </div>
         {zoomPage !== null && (
           <div className={styles.zoomScroll} tabIndex={0} role="region" aria-label="Zoomed page">
-            <Image {...pages[zoomPage]} loading="eager" unoptimized draggable={false} />
+            <Image {...pages[zoomPage]} loading="eager" draggable={false} />
           </div>
         )}
       </dialog>
@@ -434,36 +458,52 @@ function DraggedPage({ drag, pages, start, end }: {
   start: number;
   end: number;
 }) {
-  const { layout, point, target: [first, second] } = drag;
+  const { layout, point, target: [first, second], restingGutterOpacity = 0 } = drag;
   const fold = projectFold(layout, point);
   if (!fold) return null;
 
   const { forward, fromPair, toPair, pageWidth } = layout;
   const sheet = { left: fold.left, width: pageWidth };
   const held = { left: fold.left + (forward ? -pageWidth : pageWidth), width: pageWidth };
-  const clip = fromPair || toPair ? undefined : { clipPath: `inset(0 ${layout.sourceLeft}px)` };
+  const layerStyle = {
+    clipPath: fromPair || toPair ? undefined : `inset(0 ${layout.sourceLeft}px)`,
+    "--photobook-lift": Math.sin(fold.progress * Math.PI),
+  } as CSSProperties;
+  // On cover turns, fade the gutter over the half of the motion nearest the spread.
+  const spreadProgress = fromPair ? 1 - fold.progress : fold.progress;
+  const gutterOpacity = fromPair && toPair ? 1 : Math.max(0, 2 * spreadProgress - 1);
+  const activeGutterOpacity = gutterOpacity * (1 - restingGutterOpacity);
 
   return (
-    <div className={styles.dragLayer} style={clip} aria-hidden>
+    <div className={styles.dragLayer} style={layerStyle} aria-hidden>
       {fromPair && (
         <div className={styles.dragPage} style={held}>
           <PageImage page={pages[forward ? start : end]} decorative />
         </div>
       )}
       {(toPair || !fromPair) && (
-        <div className={styles.dragPage} style={sheet}>
+        <div className={`${styles.dragPage} ${styles.dragShaded}`} style={sheet}>
           <PageImage page={pages[forward ? second : first]} decorative />
         </div>
       )}
-      <div className={styles.dragPage} style={{ ...sheet, clipPath: fold.frontClip }}>
+      <div className={`${styles.dragPage} ${styles.dragShaded}`} style={{ ...sheet, clipPath: fold.frontClip }}>
         <PageImage page={pages[forward ? end : start]} decorative />
       </div>
+      {(fromPair || toPair) && activeGutterOpacity > 0 && (
+        <div className={styles.gutter} style={{
+          left: fold.left + (forward ? 0 : pageWidth),
+          opacity: activeGutterOpacity,
+        }} />
+      )}
       <div
         className={`${styles.dragPage} ${styles.dragBack}`}
         style={{ ...sheet, clipPath: fold.backClip, transform: fold.reflection }}
       >
         <PageImage page={pages[forward ? first : second]} decorative />
       </div>
+      {restingGutterOpacity > 0 && (
+        <div className={`${styles.gutter} ${styles.restingGutter}`} style={{ opacity: restingGutterOpacity }} />
+      )}
     </div>
   );
 }
@@ -474,6 +514,7 @@ function PageImage({ page, cover = false, decorative = false, prefetch = false }
   decorative?: boolean;
   prefetch?: boolean;
 }) {
+  const Image = useContext(ImageRenderer);
   return (
     <Image
       {...page}

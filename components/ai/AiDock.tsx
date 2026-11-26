@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr/ArrowLeft";
-import { GridFour } from "@phosphor-icons/react/dist/ssr/GridFour";
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 import { House } from "@phosphor-icons/react/dist/ssr/House";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
@@ -10,10 +10,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   type CSSProperties,
-  type PointerEvent,
   type Ref,
   startTransition,
-  useCallback,
   useEffect,
   useOptimistic,
   useRef,
@@ -21,31 +19,20 @@ import {
 } from "react";
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
+import { useDockDrag } from "@/components/library/useDockDrag";
 import { track } from "@/lib/analytics";
-import { profilePath, profileTitle } from "@/lib/site";
+import { letsWorkPath, profilePath, profileTitle } from "@/lib/site";
 
 const tabs = [
   { href: "/", label: "Home", icon: House },
   { href: "/writing", label: "Writing", icon: PenNib },
   { href: "/fun", label: "Fun", icon: Sparkle },
-  { href: "/browse", label: "Browse", icon: GridFour },
+  { href: "/browse", label: "Browse", icon: MagnifyingGlass },
 ];
 
 const TAP_VOLUME = 0.5;
-const DRAG_THRESHOLD = 5;
-const EDGE_RESISTANCE = 48;
 
 const CONTENT_DETAIL = /^\/(work|writing|fun)\/[^/]+/;
-
-type DockDrag = {
-  pointerId: number;
-  startX: number;
-  startOffset: number;
-  maxOffset: number;
-  inset: number;
-  pill: HTMLDivElement;
-  moved: boolean;
-};
 
 export function AiDock({
   aiOpen,
@@ -62,25 +49,28 @@ export function AiDock({
 }) {
   const pathname = usePathname();
   const tapSound = useRef<HTMLAudioElement | null>(null);
-  const pillRef = useRef<HTMLDivElement | null>(null);
-  const drag = useRef<DockDrag | null>(null);
-  const suppressClick = useRef(false);
 
   // Detail pages and Browse subpages contract the bar to Back.
   // A guided walkthrough (doc/hr-mode-plan.md) wears the same contracted bar,
   // but its circle is the way out of the walkthrough rather than a step back.
   const walkthrough = pathname.startsWith("/tour/");
   const browseSubpage = pathname.startsWith("/browse/");
-  const detail = walkthrough || browseSubpage || CONTENT_DETAIL.test(pathname);
+  const letsWork = pathname === letsWorkPath;
+  const componentDetail = pathname.startsWith("/components/");
+  const detail = walkthrough || browseSubpage || letsWork || componentDetail || CONTENT_DETAIL.test(pathname);
   const [backHref, backLabel] = walkthrough
     ? ["/", "Exit walkthrough"]
-    : browseSubpage
-      ? ["/browse", "Back to Browse"]
-      : pathname.startsWith("/writing/")
-        ? ["/writing", "Back to Writing"]
-        : pathname.startsWith("/fun/")
-          ? ["/fun", "Back to Fun"]
-          : [profilePath, `Back to ${profileTitle}`];
+    : letsWork
+      ? ["/", "Back to Home"]
+      : componentDetail
+        ? ["/components", "Back to Components"]
+        : browseSubpage
+          ? ["/browse", "Back to Browse"]
+          : pathname.startsWith("/writing/")
+            ? ["/writing", "Back to Writing"]
+            : pathname.startsWith("/fun/")
+              ? ["/fun", "Back to Fun"]
+              : [profilePath, `Back to ${profileTitle}`];
   const tabsHidden = aiOpen || detail;
 
   // The arrow means "back to where I was": a gallery item returns to the
@@ -107,12 +97,12 @@ export function AiDock({
     // Moving between entries of one detail page (the scroll tour replacing
     // the URL) keeps whatever the arrow already knew.
     if (!detail) setCanStepBack(false);
-    else if (!previousWasContentDetail || browseSubpage) {
+    else if (!previousWasContentDetail || browseSubpage || letsWork || componentDetail) {
       setCanStepBack(previous !== null && previous !== pathname && !poppedHistory.current);
     }
     poppedHistory.current = false;
     previousPath.current = pathname;
-  }, [pathname, detail, browseSubpage]);
+  }, [pathname, detail, browseSubpage, letsWork, componentDetail]);
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
@@ -122,20 +112,13 @@ export function AiDock({
   const activeIndex = tabs.findIndex((tab) => isActive(tab.href));
   const [pillIndex, previewDrop] = useOptimistic(activeIndex);
 
-  const endDrag = useCallback(() => {
-    const gesture = drag.current;
-    if (!gesture) return;
-
-    drag.current = null;
-    delete gesture.pill.dataset.dragging;
-    gesture.pill.style.removeProperty("--dock-drag-x");
-    gesture.pill.style.removeProperty("--dock-drag-pull");
-    return gesture;
-  }, []);
-
-  useEffect(() => () => {
-    if (endDrag()) suppressClick.current = true;
-  }, [endDrag, pathname, tabsHidden]);
+  const { pillRef, dragHandlers } = useDockDrag(tabs.length, activeIndex, tabsHidden, pathname, (index) => {
+    tap();
+    startTransition(() => {
+      previewDrop(index);
+      router.push(tabs[index].href);
+    });
+  });
 
   useEffect(() => {
     const audio = new Audio("/sounds/tap.wav");
@@ -154,91 +137,6 @@ export function AiDock({
       void audio.play().catch(() => {});
     }
     onNavigate();
-  }
-
-  function startDrag(event: PointerEvent<HTMLElement>) {
-    if (!event.isPrimary || drag.current) return;
-    suppressClick.current = false;
-
-    const pill = pillRef.current;
-    const link = (event.target as Element).closest(".site-dock-tab[data-active='true']");
-    if (
-      tabsHidden || !pill || !link || event.button !== 0 ||
-      event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
-    ) return;
-
-    const dockRect = event.currentTarget.getBoundingClientRect();
-    const pillRect = pill.getBoundingClientRect();
-    const pillStyle = getComputedStyle(pill);
-    const tabWidth = Number.parseFloat(pillStyle.width);
-    const inset = Number.parseFloat(pillStyle.left);
-    const pillCenter = pillRect.left + pillRect.width / 2;
-
-    // Capture on the link so a stationary press still produces a native click.
-    link.setPointerCapture(event.pointerId);
-    drag.current = {
-      pointerId: event.pointerId,
-      startX: event.clientX,
-      startOffset: pillCenter - tabWidth / 2 - dockRect.left - inset,
-      maxOffset: tabWidth * (tabs.length - 1),
-      inset,
-      pill,
-      moved: false,
-    };
-  }
-
-  function moveDrag(event: PointerEvent<HTMLElement>) {
-    const gesture = drag.current;
-    if (gesture?.pointerId !== event.pointerId) return;
-
-    const delta = event.clientX - gesture.startX;
-    if (!gesture.moved) {
-      if (Math.abs(delta) < DRAG_THRESHOLD) return;
-      gesture.moved = true;
-      gesture.pill.dataset.dragging = "true";
-      suppressClick.current = true;
-    }
-
-    const position = gesture.startOffset + delta;
-    const offset = Math.min(Math.max(position, 0), gesture.maxOffset);
-    const overrun = position - offset;
-    const pull = overrun / (Math.abs(overrun) + EDGE_RESISTANCE);
-    gesture.pill.style.setProperty("--dock-drag-x", `${offset}px`);
-    gesture.pill.style.setProperty("--dock-drag-pull", String(pull));
-  }
-
-  function dropDrag(event: PointerEvent<HTMLElement>) {
-    const gesture = drag.current;
-    if (gesture?.pointerId !== event.pointerId) return;
-
-    // A quick release can arrive at the destination before a move event does.
-    const releaseDistance = Math.abs(event.clientX - gesture.startX);
-    if (tabsHidden || (!gesture.moved && releaseDistance < DRAG_THRESHOLD)) {
-      endDrag();
-      return;
-    }
-    suppressClick.current = true;
-
-    // The pointer stays captured by its starting link, so use the release
-    // position along the live grid to resolve the destination.
-    const dockRect = event.currentTarget.getBoundingClientRect();
-    const tabWidth = (dockRect.width - 2 * gesture.inset) / tabs.length;
-    const column = Math.floor((event.clientX - dockRect.left - gesture.inset) / tabWidth);
-    const index = Math.min(Math.max(column, 0), tabs.length - 1);
-    endDrag();
-    if (index === activeIndex) return;
-
-    tap();
-    startTransition(() => {
-      previewDrop(index);
-      router.push(tabs[index].href);
-    });
-  }
-
-  function cancelDrag(event: PointerEvent<HTMLElement>) {
-    if (drag.current?.pointerId !== event.pointerId) return;
-    endDrag();
-    suppressClick.current = true;
   }
 
   return (
@@ -274,17 +172,7 @@ export function AiDock({
             aria-label="Portfolio sections"
             aria-hidden={aiOpen || undefined}
             data-has-active={activeIndex === -1 ? "false" : "true"}
-            onPointerDown={startDrag}
-            onPointerMove={moveDrag}
-            onPointerUp={dropDrag}
-            onPointerCancel={cancelDrag}
-            onLostPointerCapture={cancelDrag}
-            onClickCapture={(event) => {
-              if (suppressClick.current && event.detail > 0) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-            }}
+            {...dragHandlers}
           >
             {/* One pill for the whole bar, not a surface per tab: it travels
                 between columns so the recess slides rather than jumps. */}
@@ -327,6 +215,7 @@ export function AiDock({
                   aria-hidden={tabsHidden ? "true" : undefined}
                   tabIndex={tabsHidden ? -1 : undefined}
                   className="site-dock-tab press-shrink"
+                  data-dock-tab=""
                   data-active={active ? "true" : "false"}
                   draggable={active ? false : undefined}
                   onClick={tap}

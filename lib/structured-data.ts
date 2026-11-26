@@ -1,4 +1,5 @@
-import type { Settings } from "@/lib/content";
+import { componentCatalog, componentLibraryDescription, componentsPath, type LibraryModule } from "@/lib/component-library";
+import { recognitionLabel, type Settings } from "@/lib/content";
 import {
   person,
   profilePath,
@@ -20,29 +21,33 @@ const personId = `${siteUrl}/#person`;
 const websiteId = `${siteUrl}/#website`;
 
 const absolute = (path: string) => new URL(path, siteUrl).toString();
+const componentCatalogId = `${absolute(componentsPath)}#catalog`;
+
+function personEntity(settings: Settings) {
+  return {
+    "@type": "Person",
+    "@id": personId,
+    name: person.name,
+    givenName: person.givenName,
+    familyName: person.familyName,
+    alternateName: person.alternateName,
+    jobTitle: person.jobTitle,
+    description: siteDescription,
+    url: siteUrl,
+    email: settings.email ? `mailto:${settings.email}` : undefined,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: person.locality,
+    },
+    knowsAbout: person.knowsAbout,
+    areaServed: person.areaServed.map((name) => ({ "@type": "Place", name })),
+    sameAs: settings.socials.map((s) => s.url).filter(Boolean),
+  };
+}
 
 export function homeSchema(settings: Settings) {
   return [
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "@id": personId,
-      name: person.name,
-      givenName: person.givenName,
-      familyName: person.familyName,
-      alternateName: person.alternateName,
-      jobTitle: person.jobTitle,
-      description: siteDescription,
-      url: siteUrl,
-      email: settings.email ? `mailto:${settings.email}` : undefined,
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: person.locality,
-      },
-      knowsAbout: person.knowsAbout,
-      areaServed: person.areaServed.map((name) => ({ "@type": "Place", name })),
-      sameAs: settings.socials.map((s) => s.url).filter(Boolean),
-    },
+    { "@context": "https://schema.org", ...personEntity(settings) },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
@@ -57,6 +62,42 @@ export function homeSchema(settings: Settings) {
   ];
 }
 
+export function profileSchema(settings: Settings, description: string) {
+  const url = absolute(profilePath);
+  const awards = settings.recognitions
+    .filter(({ kind }) => kind === "award")
+    .map(recognitionLabel);
+  const credentials = settings.recognitions
+    .filter(({ kind }) => kind === "certificate")
+    .map(({ name, issuer, issuerUrl, year }) => ({
+      "@type": "EducationalOccupationalCredential",
+      name,
+      credentialCategory: "Certificate",
+      description: year === null ? undefined : `Earned in ${year}.`,
+      recognizedBy: {
+        "@type": "Organization",
+        name: issuer,
+        url: issuerUrl || undefined,
+      },
+    }));
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": `${url}#profile`,
+    url,
+    name: `${person.name} — ${siteName}`,
+    description,
+    isPartOf: { "@id": websiteId },
+    mainEntity: {
+      ...personEntity(settings),
+      description,
+      award: awards.length ? awards : undefined,
+      hasCredential: credentials.length ? credentials : undefined,
+    },
+  };
+}
+
 function breadcrumb(trail: { name: string; path: string }[]) {
   return {
     "@context": "https://schema.org",
@@ -68,6 +109,57 @@ function breadcrumb(trail: { name: string; path: string }[]) {
       item: absolute(step.path),
     })),
   };
+}
+
+const componentTrail = [
+  { name: "Browse", path: "/browse" },
+  { name: "Components", path: componentsPath },
+];
+
+export function componentCatalogSchema() {
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": componentCatalogId,
+      name: "Components",
+      description: componentLibraryDescription,
+      url: absolute(componentsPath),
+      isPartOf: { "@id": websiteId },
+      mainEntity: {
+        "@type": "ItemList",
+        itemListElement: componentCatalog.map(({ slug, title }, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          name: title,
+          url: absolute(`${componentsPath}/${slug}`),
+        })),
+      },
+    },
+    breadcrumb(componentTrail),
+  ];
+}
+
+export function componentSchema(component: LibraryModule, hasSource: boolean) {
+  const path = `${componentsPath}/${component.slug}`;
+  const url = absolute(path);
+  return [
+    {
+      "@context": "https://schema.org",
+      "@type": hasSource ? "SoftwareSourceCode" : "CreativeWork",
+      "@id": `${url}#component`,
+      name: component.title,
+      description: component.description,
+      url,
+      mainEntityOfPage: url,
+      inLanguage: "en",
+      programmingLanguage: hasSource ? "TypeScript" : undefined,
+      runtimePlatform: hasSource ? "React" : undefined,
+      author: { "@id": personId },
+      isPartOf: { "@id": componentCatalogId },
+    },
+    breadcrumb([...componentTrail, { name: component.title, path }]),
+  ];
 }
 
 export function caseStudySchema(study: {

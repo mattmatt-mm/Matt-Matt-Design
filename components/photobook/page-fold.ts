@@ -67,9 +67,13 @@ export function projectFold(layout: FoldLayout, point: Point) {
   const shift = fromPair && !toPair ? Math.max(0, (progress - 0.5) * 2) : progress;
   const left = sourceLeft + (landingLeft - sourceLeft) * shift;
   const original = { x: forward ? pageWidth : 0, y: height };
-  const pulled = { x: point.x - left, y: point.y };
-  const deltaX = original.x - pulled.x;
-  const deltaY = original.y - pulled.y;
+  const deltaX = original.x - (point.x - left);
+  const travel = Math.abs(deltaX);
+  // The crease must leave the bound edge attached. Keep the pulled corner
+  // within one page width of the bottom of the spine.
+  const maxLift = Math.sqrt(Math.max(0, travel * (2 * pageWidth - travel)));
+  const deltaY = Math.min(original.y - point.y, maxLift);
+  const pulled = { x: original.x - deltaX, y: original.y - deltaY };
   const distanceToCorner = Math.hypot(deltaX, deltaY);
   if (distanceToCorner < 0.01) return null;
 
@@ -82,6 +86,7 @@ export function projectFold(layout: FoldLayout, point: Point) {
 
   return {
     left,
+    progress,
     frontClip: clipPolygon(vertices, signedDistance, -1),
     backClip: clipPolygon(vertices, signedDistance, 1),
     reflection: `matrix(${1 - 2 * nx * nx}, ${cross}, ${cross}, ${1 - 2 * ny * ny}, ${2 * crease * nx}, ${2 * crease * ny})`,

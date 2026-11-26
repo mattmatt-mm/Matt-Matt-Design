@@ -10,11 +10,47 @@ import type { Row } from "@/components/RowList";
 import type { GalleryEntry } from "@/components/GalleryList";
 import type { Discipline } from "@/lib/disciplines";
 import type { FunCategory } from "@/lib/fun-categories";
+import { componentCatalog, componentsPath } from "@/lib/component-library";
+import { letsWorkDefaults, type LetsWorkSettings } from "@/lib/lets-work";
+import { releasesPath } from "@/lib/site";
 
 const reader = createReader(process.cwd(), keystaticConfig);
 
 /** Drafts stay visible on preview deploys and locally, hidden in production. */
 const hideDrafts = process.env.VERCEL_ENV === "production";
+
+const badgeArtwork = ["inside-lvmh", "wall-of-portfolios"] as const;
+
+export type BadgeSticker = {
+  artwork: (typeof badgeArtwork)[number];
+  name: string;
+  year: number | null;
+  description: string;
+  kind: Recognition["kind"];
+};
+
+export type Recognition = {
+  name: string;
+  description: string;
+  kind: "feature" | "award" | "certificate";
+  issuer: string;
+  issuerUrl: string | null;
+  year: number | null;
+  sticker: BadgeSticker["artwork"] | "none";
+};
+
+export function recognitionLabel({ name, year }: Pick<Recognition, "name" | "year">) {
+  return year === null ? name : `${name} (${year})`;
+}
+
+export function getBadgeStickers(recognitions: Recognition[]): BadgeSticker[] {
+  return badgeArtwork.flatMap((artwork) => {
+    const entry = recognitions.find(({ sticker }) => sticker === artwork);
+    if (!entry) return [];
+    const { name, year, description, kind } = entry;
+    return [{ artwork, name, year, description, kind }];
+  });
+}
 
 export type Settings = {
   name: string;
@@ -22,6 +58,8 @@ export type Settings = {
   intro: string[];
   socials: { label: string; url: string }[];
   email: string;
+  recognitions: Recognition[];
+  letsWork: LetsWorkSettings;
 };
 
 export type AIFactPolicy = "answer" | "contact_only" | "never_answer";
@@ -45,6 +83,8 @@ export type AIKnowledge = {
 
 export async function getSettings(): Promise<Settings> {
   const s = await reader.singletons.settings.read();
+  const offers = s?.letsWork;
+  const bookingUrl = offers?.bookingUrl;
   return {
     name: s?.name ?? "",
     role: s?.role ?? "",
@@ -54,6 +94,28 @@ export async function getSettings(): Promise<Settings> {
       url: x.url ?? "",
     })),
     email: s?.email ?? "",
+    recognitions: (s?.recognitions ?? []).map(({ name, description, kind, issuer, issuerUrl, year, sticker }) => ({
+      name,
+      description: description.trim(),
+      kind,
+      issuer,
+      issuerUrl: issuerUrl && /^https?:\/\//i.test(issuerUrl) ? issuerUrl : null,
+      year,
+      sticker,
+    })),
+    letsWork: {
+      bookingUrl: bookingUrl && /^https?:\/\//i.test(bookingUrl) ? bookingUrl : null,
+      introMeetingDescription:
+        offers?.introMeetingDescription.trim() || letsWorkDefaults.introMeetingDescription,
+      consultingDescription:
+        offers?.consultingDescription.trim() || letsWorkDefaults.consultingDescription,
+      consultingPrice: offers?.consultingPrice.trim() || letsWorkDefaults.consultingPrice,
+      websiteDescription: offers?.websiteDescription.trim() || letsWorkDefaults.websiteDescription,
+      websitePrice: offers?.websitePrice.trim() || letsWorkDefaults.websitePrice,
+      subscriptionDescription:
+        offers?.subscriptionDescription.trim() || letsWorkDefaults.subscriptionDescription,
+      subscriptionPrice: offers?.subscriptionPrice.trim() || letsWorkDefaults.subscriptionPrice,
+    },
   };
 }
 
@@ -104,9 +166,9 @@ export async function getAIKnowledge(): Promise<AIKnowledge> {
 
 export async function getExperience(): Promise<Row[]> {
   const all = await reader.collections.experience.all();
-  const sorted = [...all].sort(
-    (a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0),
-  );
+  const sorted = all
+    .filter(({ entry }) => entry.showOnProfile !== false)
+    .sort((a, b) => (b.entry.order ?? 0) - (a.entry.order ?? 0));
 
   return sorted.map((e) => ({
     group: e.entry.label ?? "",
@@ -337,6 +399,7 @@ export async function getWritingTour(slug: string) {
       slug: e.slug,
       title: e.entry.title,
       lang: e.entry.lang,
+      coverImage: e.entry.cover ? { src: e.entry.cover, ...measure(e.entry.cover) } : null,
       body: await readWritingBody(e.entry),
     })),
   );
@@ -350,7 +413,7 @@ export async function listWritingSlugs() {
 export type PortfolioSearchEntry = {
   href: string;
   title: string;
-  kind: "Case study" | "Writing" | "Fun";
+  kind: "Case study" | "Writing" | "Fun" | "Component" | "Site";
   keywords: string;
 };
 
@@ -379,8 +442,20 @@ export async function getPortfolioSearchEntries(): Promise<PortfolioSearchEntry[
       href: `/fun/${slug}`,
       title: entry.title,
       kind: "Fun" as const,
-      keywords: [entry.subtitle, entry.category, entry.tools].filter(Boolean).join(" "),
+      keywords: [entry.subtitle, ...entry.categories, entry.tools].filter(Boolean).join(" "),
     })),
+    ...componentCatalog.map(({ slug, title, description, group }) => ({
+      href: `${componentsPath}/${slug}`,
+      title,
+      kind: "Component" as const,
+      keywords: `${description} ${group}`,
+    })),
+    {
+      href: releasesPath,
+      title: "Releases",
+      kind: "Site",
+      keywords: "changelog version history build notes GitHub pull requests",
+    },
   ];
 }
 
@@ -439,12 +514,13 @@ export type FunPiece = {
   slug: string;
   title: string;
   subtitle: string;
-  category: FunCategory;
+  categories: readonly FunCategory[];
   /** YYYY-MM-DD. */
   date: string;
   /** The picture, or the video's still. Absent shows the grey placeholder. */
   image?: FunMedia;
   video?: string;
+  videoHasSound: boolean;
   more: FunMedia[];
   tools: string;
   /** Hex colours, typed in Keystatic or picked from the image. */
@@ -559,10 +635,11 @@ export async function getFun(): Promise<FunPiece[]> {
         slug,
         title: entry.title,
         subtitle: entry.subtitle,
-        category: entry.category,
+        categories: entry.categories,
         date: entry.date ?? "",
         image: funMedia(entry.image, entry.alt),
         video: entry.video ?? undefined,
+        videoHasSound: entry.videoHasSound,
         more: entry.more.flatMap((m) => funMedia(m.image, m.alt) ?? []),
         tools: entry.tools,
         palette: typed.length

@@ -15,3 +15,21 @@ socials:
   - label: Github
     url: https://github.com/mattmatt-mm
 email: 0701mattmatt@gmail.com
+recognitions:
+  - name: Featured on Wall of Portfolios
+    description: Selected among the 30% of submitted portfolios featured on Wall of Portfolios.
+    kind: feature
+    issuer: Wall of Portfolios
+    issuerUrl: https://www.wallofportfolios.in/
+    year: 2026
+    sticker: wall-of-portfolios
+  - name: INSIDE LVMH Certificate
+    description: This certificate marks completion of LVMH’s 30-hour online program on the luxury industry.
+    kind: certificate
+    issuer: LVMH
+    issuerUrl: https://www.insidelvmh.com/certificate
+    year: 2026
+    sticker: inside-lvmh
+letsWork:
+  bookingUrl: https://cal.com/mattmatt-mm/free-introductory-call
+  introMeetingDescription: A 30-minute video call to talk through your project.

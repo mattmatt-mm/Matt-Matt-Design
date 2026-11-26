@@ -2,6 +2,7 @@ import { config, fields, collection, singleton } from "@keystatic/core";
 import { block, repeating, wrapper } from "@keystatic/core/content-components";
 import { DISCIPLINES } from "./lib/disciplines";
 import { FUN_CATEGORIES } from "./lib/fun-categories";
+import { letsWorkDefaults } from "./lib/lets-work";
 
 /**
  * A row of figures for a case study or post. `stats` holds two to four `stat`
@@ -204,6 +205,71 @@ export default config({
           },
         ),
         email: fields.text({ label: "Email" }),
+        recognitions: fields.array(
+          fields.object({
+            name: fields.text({ label: "Name", validation: { isRequired: true } }),
+            description: fields.text({ label: "Sticker description", description: "One sentence shown below the year." }),
+            kind: fields.select({
+              label: "Type",
+              options: [
+                { label: "Feature", value: "feature" },
+                { label: "Award", value: "award" },
+                { label: "Certificate", value: "certificate" },
+              ],
+              defaultValue: "feature",
+            }),
+            issuer: fields.text({ label: "Issuer", validation: { isRequired: true } }),
+            issuerUrl: fields.url({ label: "Issuer or program website" }),
+            year: fields.integer({ label: "Year", validation: { min: 1900, max: 9999 } }),
+            sticker: fields.select({
+              label: "Card sticker",
+              options: [
+                { label: "None", value: "none" },
+                { label: "INSIDE LVMH", value: "inside-lvmh" },
+                { label: "Wall of Portfolios", value: "wall-of-portfolios" },
+              ],
+              defaultValue: "none",
+            }),
+          }),
+          {
+            label: "Recognition and certificates",
+            itemLabel: (props) => props.fields.name.value || "Recognition",
+          },
+        ),
+        letsWork: fields.object(
+          {
+            bookingUrl: fields.url({ label: "Free meeting booking link" }),
+            introMeetingDescription: fields.text({
+              label: "Free meeting description",
+              defaultValue: letsWorkDefaults.introMeetingDescription,
+            }),
+            consultingDescription: fields.text({
+              label: "UI/UX consulting description",
+              defaultValue: letsWorkDefaults.consultingDescription,
+            }),
+            consultingPrice: fields.text({
+              label: "UI/UX consulting price",
+              defaultValue: letsWorkDefaults.consultingPrice,
+            }),
+            websiteDescription: fields.text({
+              label: "Website design sprint description",
+              defaultValue: letsWorkDefaults.websiteDescription,
+            }),
+            websitePrice: fields.text({
+              label: "Website design sprint price",
+              defaultValue: letsWorkDefaults.websitePrice,
+            }),
+            subscriptionDescription: fields.text({
+              label: "Design subscription description",
+              defaultValue: letsWorkDefaults.subscriptionDescription,
+            }),
+            subscriptionPrice: fields.text({
+              label: "Design subscription price",
+              defaultValue: letsWorkDefaults.subscriptionPrice,
+            }),
+          },
+          { label: "Let’s work" },
+        ),
       },
     }),
     aiKnowledge: singleton({
@@ -285,6 +351,11 @@ export default config({
         profileTitle: fields.text({
           label: "Profile title",
           description: "Name on the Profile badge. Leave empty to use the entry title.",
+        }),
+        showOnProfile: fields.checkbox({
+          label: "Show on the experience card",
+          defaultValue: true,
+          description: "Show this project on the Profile card and Home splash.",
         }),
         label: fields.text({
           label: "Label",
@@ -441,11 +512,10 @@ export default config({
           label: "Subtitle",
           description: "The grey line under the title, e.g. 2nd place @ Hack Western 10",
         }),
-        category: fields.select({
-          label: "Category",
-          description: "Which filter at the top of the Fun tab finds it.",
+        categories: fields.multiselect({
+          label: "Categories",
+          description: "Choose the Fun filters that should show this piece.",
           options: FUN_CATEGORIES.map((c) => ({ label: c.label, value: c.value })),
-          defaultValue: "side-project",
         }),
         date: fields.date({
           label: "Date",
@@ -464,7 +534,12 @@ export default config({
           directory: "public/videos/fun",
           publicPath: "/videos/fun/",
           description:
-            "Optional. Plays silently on a loop in place of the image. Keep it under about 10MB.",
+            "Optional. The tile plays silently on a loop. Keep the file under about 10MB.",
+        }),
+        videoHasSound: fields.checkbox({
+          label: "Video has a soundtrack",
+          description: "Use the player with sound and seeking controls on the piece’s page.",
+          defaultValue: false,
         }),
         alt: fields.text({
           label: "Alt text",
@@ -620,7 +695,7 @@ export default config({
           directory: "public/images/writing",
           publicPath: "/images/writing/",
           description:
-            "Shown in the Writing list and link previews. Leave empty for a text-only listing and the site's default share card.",
+            "Shown in the Writing list, at the top of the article, and in link previews. Leave empty for a text-only article and the site's default share card.",
         }),
         body: fields.markdoc({
           label: "Body",

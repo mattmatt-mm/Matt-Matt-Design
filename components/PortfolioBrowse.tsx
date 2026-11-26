@@ -2,12 +2,15 @@
 
 import type { Icon } from "@phosphor-icons/react";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr/ArrowRight";
+import { CaretRight } from "@phosphor-icons/react/dist/ssr/CaretRight";
 import { ChatCircleDots } from "@phosphor-icons/react/dist/ssr/ChatCircleDots";
+import { Code } from "@phosphor-icons/react/dist/ssr/Code";
 import { Compass } from "@phosphor-icons/react/dist/ssr/Compass";
 import { Gear } from "@phosphor-icons/react/dist/ssr/Gear";
 import { ImagesSquare } from "@phosphor-icons/react/dist/ssr/ImagesSquare";
 import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr/MagnifyingGlass";
 import { PenNib } from "@phosphor-icons/react/dist/ssr/PenNib";
+import { Scroll } from "@phosphor-icons/react/dist/ssr/Scroll";
 import { Sparkle } from "@phosphor-icons/react/dist/ssr/Sparkle";
 import { UserCircle } from "@phosphor-icons/react/dist/ssr/UserCircle";
 import { X } from "@phosphor-icons/react/dist/ssr/X";
@@ -18,8 +21,10 @@ import {
   PortfolioActions,
   type PortfolioAction,
 } from "@/components/ai/PortfolioActions";
+import { SiteSquircle } from "@/components/SiteSquircle";
+import { componentsPath } from "@/lib/component-library";
 import type { PortfolioSearchEntry } from "@/lib/content";
-import { profilePath, profileTitle } from "@/lib/site";
+import { profilePath, profileTitle, releasesPath } from "@/lib/site";
 
 type Shortcut = {
   title: string;
@@ -27,14 +32,34 @@ type Shortcut = {
   icon: Icon;
 } & ({ href: string } | { action: PortfolioAction });
 
-const shortcuts: Shortcut[] = [
-  { href: "/", title: "Selected work", icon: ImagesSquare, tone: "blue" },
+const featuredShortcuts = [
   { href: profilePath, title: profileTitle, icon: UserCircle, tone: "peach" },
-  { href: "/writing", title: "Writing", icon: PenNib, tone: "gold" },
-  { href: "/fun", title: "Fun", icon: Sparkle, tone: "violet" },
-  { action: "chat", title: "Ask Matt’s AI", icon: ChatCircleDots, tone: "neutral" },
-  { action: "walkthrough", title: GUIDED_WALKTHROUGH_LABEL, icon: Compass, tone: "teal" },
-  { href: "/browse/settings", title: "Settings", icon: Gear, tone: "neutral" },
+  { href: componentsPath, title: "Components", icon: Code, tone: "teal" },
+];
+
+const shortcutGroups: { label: string; items: Shortcut[] }[] = [
+  {
+    label: "Portfolio shortcuts",
+    items: [
+      { href: "/", title: "Selected work", icon: ImagesSquare, tone: "blue" },
+      { href: "/writing", title: "Writing", icon: PenNib, tone: "gold" },
+      { href: "/fun", title: "Fun", icon: Sparkle, tone: "violet" },
+    ],
+  },
+  {
+    label: "AI actions",
+    items: [
+      { action: "chat", title: "Ask Matt’s AI", icon: ChatCircleDots, tone: "neutral" },
+      { action: "walkthrough", title: GUIDED_WALKTHROUGH_LABEL, icon: Compass, tone: "teal" },
+    ],
+  },
+  {
+    label: "Site shortcuts",
+    items: [
+      { href: "/browse/settings", title: "Settings", icon: Gear, tone: "neutral" },
+      { href: releasesPath, title: "Releases", icon: Scroll, tone: "neutral" },
+    ],
+  },
 ];
 
 function searchText(value: string) {
@@ -46,10 +71,71 @@ function searchText(value: string) {
     .trim();
 }
 
+function ShortcutContents({ title, icon: Icon }: Shortcut) {
+  return (
+    <>
+      <SiteSquircle asChild cornerRadius={8}>
+        <span className="browse-shortcut-icon" aria-hidden="true">
+          <Icon size={20} weight="duotone" />
+        </span>
+      </SiteSquircle>
+      <span className="browse-shortcut-label">{title}</span>
+      <CaretRight size={16} aria-hidden="true" />
+    </>
+  );
+}
+
+function BrowseShortcuts() {
+  const openAction = useContext(PortfolioActions);
+
+  return (
+    <div className="browse-shortcuts">
+      <ul className="browse-featured" role="list" aria-label="Featured shortcuts">
+        {featuredShortcuts.map((shortcut) => (
+          <SiteSquircle asChild key={shortcut.href}>
+            <li className="browse-featured-card">
+              <Link href={shortcut.href} data-tone={shortcut.tone} className="browse-shortcut press-shrink">
+                <ShortcutContents {...shortcut} />
+              </Link>
+            </li>
+          </SiteSquircle>
+        ))}
+      </ul>
+      {shortcutGroups.map(({ label, items }) => (
+        <SiteSquircle asChild key={label}>
+          <ul className="browse-shortcut-group" role="list" aria-label={label}>
+            {items.map((shortcut) => (
+              <li key={shortcut.title}>
+                {"href" in shortcut ? (
+                  <Link
+                    href={shortcut.href}
+                    data-tone={shortcut.tone}
+                    className="browse-shortcut press-shrink"
+                  >
+                    <ShortcutContents {...shortcut} />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    data-tone={shortcut.tone}
+                    className="browse-shortcut press-shrink"
+                    onClick={(event) => openAction?.(shortcut.action, event.currentTarget)}
+                  >
+                    <ShortcutContents {...shortcut} />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </SiteSquircle>
+      ))}
+    </div>
+  );
+}
+
 export function PortfolioBrowse({ entries }: { entries: PortfolioSearchEntry[] }) {
   const [query, setQuery] = useState("");
   const input = useRef<HTMLInputElement>(null);
-  const openAction = useContext(PortfolioActions);
   const normalized = searchText(query);
   const index = useMemo(
     () => entries.map((entry) => ({
@@ -114,39 +200,7 @@ export function PortfolioBrowse({ entries }: { entries: PortfolioSearchEntry[] }
           <p className="browse-empty">No matches. Try another name or topic.</p>
         )
       ) : (
-        <ul className="browse-grid" aria-label="Portfolio shortcuts">
-          {shortcuts.map((shortcut) => {
-            const Icon = shortcut.icon;
-            const contents = (
-              <>
-                <span className="browse-card-icon" aria-hidden="true">
-                  <Icon size={22} weight="duotone" />
-                </span>
-                <ArrowRight className="browse-card-arrow" size={16} aria-hidden="true" />
-                <span className="browse-card-label">{shortcut.title}</span>
-              </>
-            );
-
-            return (
-              <li key={shortcut.title}>
-                {"href" in shortcut ? (
-                  <Link href={shortcut.href} data-tone={shortcut.tone} className="browse-card press-shrink">
-                    {contents}
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    data-tone={shortcut.tone}
-                    className="browse-card press-shrink"
-                    onClick={(event) => openAction?.(shortcut.action, event.currentTarget)}
-                  >
-                    {contents}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <BrowseShortcuts />
       )}
     </>
   );

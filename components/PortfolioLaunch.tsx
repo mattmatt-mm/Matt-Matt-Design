@@ -6,6 +6,7 @@ import { ExperienceBadge } from "@/components/ExperienceBadge";
 import { signatureImages } from "@/components/Signature";
 import { GRADIENT_FEATHER, gradientWave, wipeGradientSheet } from "@/components/effects/gradient-reveal";
 import type { LanyardPull } from "@/components/vendor/react-bits-lanyard/Lanyard";
+import type { BadgeSticker } from "@/lib/content";
 import { endPortfolioLaunch } from "@/lib/portfolio-launch";
 import styles from "./PortfolioLaunch.module.css";
 
@@ -79,10 +80,14 @@ async function pictureSurface(target: HTMLElement, { width, height, scale, ignor
 export function PortfolioLaunch({
   name,
   role,
+  stickers,
+  embedded = false,
   children,
 }: {
   name: string;
   role: string;
+  stickers: BadgeSticker[];
+  embedded?: boolean;
   children: ReactNode;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -327,6 +332,7 @@ export function PortfolioLaunch({
       className={styles.dialog}
       aria-label="Portfolio launch"
       data-badge-phase={phase}
+      data-embedded={embedded || undefined}
       onClickCapture={followProject}
       onCancel={(event) => {
         event.preventDefault();
@@ -381,6 +387,7 @@ export function PortfolioLaunch({
         <ExperienceBadge
           name={name}
           role={role}
+          stickers={stickers}
           animate={active && !staticBadge}
           interactive={!entering && phase === "signing"}
           writeSignature={phase === "signing"}

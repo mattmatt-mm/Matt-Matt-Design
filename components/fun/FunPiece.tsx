@@ -1,7 +1,8 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { FunVideo } from "@/components/fun/FunVideo";
-import { Photobook } from "@/components/photobook/Photobook";
+import { SitePhotobook } from "@/components/photobook/SitePhotobook";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import type { FunMedia, FunPiece as Piece } from "@/lib/content";
 
 const MONTHS = [
@@ -46,7 +47,18 @@ export function FunPiece({ piece, bookPages }: { piece: Piece; bookPages: FunMed
     >
       <div className="fun-piece-hero" data-fun-hero={piece.slug}>
         {cover ? (
-          <Photobook id="photobook" pages={bookPages} />
+          <SitePhotobook id="photobook" pages={bookPages} />
+        ) : piece.video && piece.videoHasSound ? (
+          <VideoPlayer
+            src={piece.video}
+            poster={image?.src}
+            width={image?.width}
+            height={image?.height}
+            title={image?.alt || piece.title}
+            hasSound
+            autoPlayWithSound
+            flush
+          />
         ) : piece.video ? (
           <FunVideo
             src={piece.video}

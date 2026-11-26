@@ -4,8 +4,7 @@
  * See doc/fun-tab-plan.md.
  */
 export const FUN_CATEGORIES = [
-  { value: "hackathon", label: "Hackathon" },
-  { value: "side-project", label: "Side project" },
+  { value: "3d", label: "3D" },
   { value: "motion", label: "Motion" },
   { value: "illustration", label: "Illustration" },
 ] as const;

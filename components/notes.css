@@ -1,0 +1,132 @@
+@layer components {
+  .notes {
+    box-sizing: border-box;
+    overflow: hidden;
+    border-radius: 16px;
+    font-size: 16px;
+    line-height: 21px;
+    color-scheme: light dark;
+    color: var(--color-fg, light-dark(#000000, #f3f1ec));
+    background: var(--color-note-paper, light-dark(#f4f2ec, #1c1b18));
+  }
+
+  .notes-band {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 48px;
+    /* The title keeps the text inset; the copy button sits 8px from the
+       band's top, bottom and right alike — a control in a corner is inset
+       the same on every side (doc/taste.md). */
+    box-sizing: border-box;
+    padding-inline: 16px 8px;
+    color: var(--color-note-band-ink, #000000);
+    background: var(--color-note-band, #ffd60a);
+  }
+
+  /* Icon only: a 32px circle in the band, its hit area stretched to 44px.
+     Copy swaps to a check on success and back after two seconds. */
+  .notes-copy {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 9999px;
+    color: inherit;
+    background: rgb(0 0 0 / 8%);
+    cursor: pointer;
+    transition: background 120ms ease-out;
+  }
+
+  .notes-copy::before {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  .notes-copy:hover {
+    background: rgb(0 0 0 / 14%);
+  }
+
+  .notes-copy:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  /* Icon swap, after transitions.dev: two icons stacked in one cell; the
+     outgoing one shrinks to a quarter and blurs out while the incoming one
+     grows in. data-state names which icon (data-icon a | b) is showing. */
+  .notes .icon-swap {
+    display: inline-grid;
+  }
+
+  .notes .icon-swap > [data-icon] {
+    grid-area: 1 / 1;
+    width: 16px;
+    height: 16px;
+    transition:
+      opacity 250ms ease-in-out,
+      filter 250ms ease-in-out,
+      transform 250ms ease-in-out;
+  }
+
+  .notes .icon-swap[data-state="a"] > [data-icon="b"],
+  .notes .icon-swap[data-state="b"] > [data-icon="a"] {
+    opacity: 0;
+    filter: blur(2px);
+    transform: scale(0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .notes .icon-swap > [data-icon] {
+      transition: none;
+    }
+  }
+
+  .notes-perforation {
+    height: 12px;
+    background-image: radial-gradient(
+      circle,
+      var(--color-note-perforation, light-dark(#c9c3b4, #4a4740)) 2px,
+      transparent 2.5px
+    );
+    background-size: 16px 12px;
+    background-position: 8px 0;
+  }
+
+  .notes-body {
+    --notes-rule: var(--color-note-rule, light-dark(rgb(0 0 0 / 7%), rgb(255 255 255 / 7%)));
+    padding: 12px 16px 21px;
+    background-image: linear-gradient(
+      to bottom,
+      transparent 20px,
+      var(--notes-rule) 20px,
+      var(--notes-rule) 21px
+    );
+    background-size: 100% 21px;
+    background-position: 0 12px;
+    background-origin: border-box;
+  }
+
+  .notes .notes-body > * + * {
+    margin-top: 21px;
+  }
+
+  .notes .notes-body :is(p, ul, ol, li) {
+    margin-block: 0;
+  }
+
+  .notes .notes-body li + li {
+    margin-top: 0;
+  }
+
+  .notes .notes-body :is(ul, ol) {
+    padding-inline-start: 24px;
+  }
+  .notes-body ul { list-style: disc; }
+  .notes-body ol { list-style: decimal; }
+}

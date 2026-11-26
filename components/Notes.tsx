@@ -3,7 +3,8 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Check } from "@phosphor-icons/react/dist/ssr/Check";
 import { Copy } from "@phosphor-icons/react/dist/ssr/Copy";
-import { SiteSquircle } from "@/components/SiteSquircle";
+import { SiteSquircle } from "./SiteSquircle";
+import "./notes.css";
 
 /**
  * The exact numbers behind an interaction, set as a note in the manner of

@@ -20,7 +20,7 @@ the piece, and the dock contracts to the back arrow as on a case study.
 | Width | The grid **leaves the column**: `min(1200px, 100vw − 48px)` (840px at first; Matt widened it on 2026-10-23), centred on the 640px measure. Name, role and filter row stay in the column. |
 | Intro | None on `/fun` (Matt, 2026-10-23): the page sits outside `(site)` with the Header alone, at the same position as on every tab. |
 | Columns | 3 from 688px, 2 below it. Gap 24px (16px below 688px). |
-| Filters | Text links, not chips: **All · Hackathon · Side project · Motion · Illustration**. Active in fg, others muted, 16/21, 16px apart, wrapping on a phone. Real links (`/fun?c=motion`); the grid filters on the client and the server ships All. A category with no pieces is not shown; with fewer than two categories in use there is no row at all. |
+| Filters | Text links for **All · 3D · Motion · Illustration**. Active in fg, others muted, 16/21, 16px apart, wrapping on a phone. The grid filters on the client using links such as `/fun?c=3d` and the server ships All. The row appears when at least two categories have pieces. |
 | Item | Title + muted subtitle under the tile (as the Home gallery). Media: an image, or a looping silent video with a still. A set holds **more images**, shown under the main one in the open view. |
 | Order | Newest first by date. |
 | Hover | The caption dims to 60%; the cursor becomes the dot labelled **View**. Tiles press to 0.98. |
@@ -48,16 +48,20 @@ the piece, and the dock contracts to the back arrow as on a case study.
 
 `content/fun/*.yaml`, newest first.
 
-- `title` (slug) · `subtitle` · `category` (select) · `date`
+- `title` (slug) · `subtitle` · `categories` (multiselect) · `date`
 - `image` — the picture, or the video's still (palette, resolution and layout
-  all read it) · `video` (optional .mp4, plays silently on loop) · `alt`
+  all read it) · `video` (optional .mp4, plays silently on the wall) · `alt`
+- `videoHasSound` — uses the shared player on the piece page and starts with
+  sound when autoplay is allowed. If the browser blocks it or the visitor
+  prefers reduced motion, a Play with sound button starts playback. The
+  player offers the scrubber and a mute control.
 - `more[]` — `{ image, alt }`
 - `bookPages[]` — optional ordered pages, each with `{ image, alt }`
 - `tools` · `palette` (optional hex list) · `project` (Experience
   relationship) · `externalUrl`
 
 Images to `public/images/fun/`, videos to `public/videos/fun/`. Keep videos
-under ~10MB (H.264, no audio).
+under ~10MB (H.264 with AAC when the piece has sound).
 
 ## Masonry
 
@@ -72,11 +76,12 @@ accessibility tree and never loads its lazy images.
 
 | Piece | Category | Media |
 |---|---|---|
-| BM Airline | Side project | video + 3 images |
-| ISD graduation backdrop | Side project | 11 renders |
+| Incipe Board pre-order | 3D, Motion | video |
+| BM Airline | Illustration | video + 3 images |
+| ISD graduation backdrop | 3D | 11 renders |
 | ISD culture poster | Illustration | poster |
 | 燦記路邊雞 | Illustration | poster |
-| Innovation Design Tech crewneck | Side project | mockup |
+| Innovation Design Tech crewneck | Illustration | mockup |
 | The HKUST | Illustration | card |
 
 Titles, subtitles and dates are guesses except the poster's July 16.

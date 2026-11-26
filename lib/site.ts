@@ -1,5 +1,6 @@
 /**
- * Canonical origin, used for metadata, the sitemap and the RSS feed.
+ * Canonical origin, used for metadata, the sitemap and the RSS feed. The
+ * production apex redirects to www, which serves the final pages.
  *
  * Deliberately not derived from Vercel's env vars: VERCEL_PROJECT_PRODUCTION_URL
  * is the project's *.vercel.app address, so using it advertised that domain as
@@ -7,12 +8,12 @@
  * which is what canonical tags should say.
  */
 export const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://mattmattdesign.com";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.mattmattdesign.com";
 
 /**
  * How search engines and AI answers identify the site. People should find it
- * by "Matt Tam", "Matt Matt Design" or "Matt Design" (Matt, 2026-10-23), so
- * all three are stated here, paired with the city and the specialities. US
+ * by "Matt Tam", "Matt Matt", "Matt Matt Design" or "Matt Design", so
+ * these names sit with the city and the specialities. US
  * visitors search for a design engineer, Hong Kong visitors for UI/UX, brand
  * and AI transformation; one set of words serves both.
  *
@@ -21,11 +22,13 @@ export const siteUrl =
  */
 export const siteName = "Matt Matt Design";
 /** Other names the site is searched by. */
-export const siteAlternateNames = ["Matt Design", "Matt Tam", "mattmattdesign"];
+export const siteAlternateNames = ["Matt Matt", "Matt Design", "Matt Tam", "mattmattdesign"];
 /** The home-screen label, where the brand name is too long to fit. */
 export const siteShortName = "Matt";
-export const profileTitle = "Profile";
+export const profileTitle = "About Matt";
 export const profilePath = "/browse/profile";
+export const releasesPath = "/browse/releases";
+export const letsWorkPath = "/lets-work";
 export const siteTitle =
   "Matt Tam — Matt Matt Design · Design Engineer in Hong Kong";
 export const siteDescription =
@@ -48,7 +51,7 @@ export const person = {
   givenName: "Matt",
   familyName: "Tam",
   /** What the site itself calls him, and the brand he works under. */
-  alternateName: ["Matt", "Matt Matt Design", "Matt Design"],
+  alternateName: ["Matt", "Matt Matt", "Matt Matt Design", "Matt Design"],
   jobTitle: "Design Engineer",
   locality: "Hong Kong",
   knowsAbout: [

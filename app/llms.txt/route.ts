@@ -1,8 +1,10 @@
+import { componentCatalog, componentLibraryDescription, componentsPath } from "@/lib/component-library";
 import {
   getSettings,
   getWritingEntry,
   listExperienceSlugs,
   listWritingSlugs,
+  recognitionLabel,
 } from "@/lib/content";
 import { person, profilePath, siteDescription, siteName, siteUrl } from "@/lib/site";
 
@@ -10,7 +12,7 @@ export const dynamic = "force-static";
 
 /**
  * /llms.txt — a plain map of the site for AI tools: who Matt is, then every
- * case study and post with a line on each. Public content only; the AI's CV
+ * case study, post, and component with a line on each. Public content only; the AI's CV
  * facts never appear here. See doc/seo-plan.md.
  */
 export async function GET() {
@@ -40,12 +42,17 @@ export async function GET() {
   );
 
   const links = [
-    `- [Profile](${siteUrl}${profilePath}): project history and client comments`,
+    `- [Profile](${siteUrl}${profilePath}): recognition, project history and client comments`,
     ...settings.socials
       .filter((s) => s.url)
       .map((s) => `- [${s.label}](${s.url})`),
     ...(settings.email ? [`- Email: ${settings.email}`] : []),
   ];
+
+  const recognition = settings.recognitions.map((entry) => {
+    const issuer = entry.issuerUrl ? `[${entry.issuer}](${entry.issuerUrl})` : entry.issuer;
+    return `- ${recognitionLabel(entry)} · ${issuer}`;
+  });
 
   const body = [
     `# ${siteName}`,
@@ -54,6 +61,9 @@ export async function GET() {
     "",
     `${person.name}, who works as ${siteName} (also known as ${person.alternateName.filter((n) => n !== siteName).join(" and ")}), is a ${person.jobTitle.toLowerCase()} based in ${person.locality}, working with clients in ${person.areaServed.map((place) => (place === "United States" ? "the United States" : place)).join(" and ")}. Areas of work: ${person.knowsAbout.join(", ")}.`,
     "",
+    ...(recognition.length
+      ? ["## Recognition", "", ...recognition, "", `[Stickers on Matt’s Profile](${siteUrl}${profilePath})`, ""]
+      : []),
     "## Case studies",
     "",
     ...studies,
@@ -61,6 +71,13 @@ export async function GET() {
     "## Writing",
     "",
     ...posts,
+    "",
+    "## Components",
+    "",
+    `- [React Component Library](${siteUrl}${componentsPath}): ${componentLibraryDescription}`,
+    ...componentCatalog.map(({ slug, title, description }) =>
+      `- [${title}](${siteUrl}${componentsPath}/${slug}): ${description}`,
+    ),
     "",
     "## Elsewhere",
     "",

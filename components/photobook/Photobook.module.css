@@ -4,6 +4,21 @@
     scroll-margin-top: 24px;
   }
 
+  .reader, .reader * {
+    box-sizing: border-box;
+  }
+
+  .reader button {
+    font: inherit;
+  }
+
+  .pageTrigger, .pageCount {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+  }
+
   .controls,
   .stage {
     width: 100%;
@@ -19,7 +34,7 @@
 
   .controls {
     margin-top: 16px;
-    color: var(--color-muted-readable);
+    color: var(--color-muted-readable, light-dark(#737373, #b2afa7));
     font-variant-numeric: tabular-nums;
   }
 
@@ -29,7 +44,7 @@
   }
 
   .pageCount:is(:hover, :focus-visible) {
-    color: var(--color-fg);
+    color: var(--color-fg, CanvasText);
   }
 
   .button {
@@ -40,9 +55,9 @@
     min-width: 48px;
     min-height: 48px;
     padding-inline: 12px;
-    color: var(--color-fg);
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
+    color: var(--color-fg, CanvasText);
+    background: var(--color-surface, light-dark(#fff, #1c1b18));
+    border: 1px solid var(--color-line, light-dark(#d9d9d9, #383631));
     border-radius: 999px;
     cursor: pointer;
   }
@@ -53,13 +68,16 @@
   }
 
   .button:not([aria-disabled="true"]):hover {
-    background: color-mix(in srgb, var(--color-surface) 92%, var(--color-fg));
+    background: color-mix(in srgb, var(--color-surface, light-dark(#fff, #1c1b18)) 92%, var(--color-fg, CanvasText));
   }
 
   .stage {
     --photobook-columns: 1;
+    --photobook-spine-inset: 12px;
     --photobook-fold-dur: 440ms;
     --photobook-cover-dur: 600ms;
+    --photobook-turn-dur: var(--photobook-fold-dur);
+    --photobook-page-shade: 0.18;
     position: relative;
     aspect-ratio: calc(var(--photobook-columns) * var(--photobook-page-ratio));
     perspective: 1600px;
@@ -77,10 +95,13 @@
 
   .pageTrigger {
     position: relative;
-    width: calc(100% / var(--photobook-columns));
+    width: calc(100% / var(--photobook-columns) - var(--photobook-spine-inset));
     cursor: pointer;
     pointer-events: auto;
   }
+
+  .pageTrigger[data-page-direction="next"] { margin-left: var(--photobook-spine-inset); }
+  .pageTrigger[data-page-direction="previous"] { margin-right: var(--photobook-spine-inset); }
 
   .corner {
     position: absolute;
@@ -109,9 +130,16 @@
     transform-origin: top left;
   }
 
+  .dragBack,
+  .leaf { z-index: 2; }
+
   .dragBack > .page { transform: scaleX(-1); }
 
-  .stage:has(.dragLayer) :is(.paper, .gutter) { visibility: hidden; }
+  .dragShaded > .page {
+    filter: brightness(calc(1 - var(--photobook-page-shade) * var(--photobook-lift)));
+  }
+
+  .stage:has(.dragLayer) > :is(.paper, .gutter) { visibility: hidden; }
 
   .paper {
     position: absolute;
@@ -140,28 +168,93 @@
     }
   }
 
-  /* Keep the gutter above the turning sheet so it can settle with the fold. */
+  /* The fine seam stays visible while the shadow responds to the sheet's lift. */
   .gutter {
     position: absolute;
     z-index: 1;
     inset-block: 0;
-    left: calc(50% - 12px);
-    width: 24px;
-    background: linear-gradient(to right, transparent, rgb(0 0 0 / 19%), transparent);
+    left: 50%;
+    width: calc(2 * var(--photobook-spine-inset, 2%));
+    transform: translateX(-50%);
     pointer-events: none;
   }
 
-  .gutter[data-turn="fold"] {
-    animation: photobook-gutter-fold var(--photobook-fold-dur) var(--ai-ease) both;
+  .gutter::before,
+  .gutter::after {
+    position: absolute;
+    inset-block: 0;
+    content: "";
+    opacity: calc(var(--photobook-gutter-rest-opacity) + (1 - var(--photobook-gutter-rest-opacity)) * var(--photobook-lift, 0));
   }
 
-  @keyframes photobook-gutter-fold {
-    from, to { opacity: 1; }
-    20% { opacity: 0.15; }
+  .gutter::before {
+    --photobook-gutter-rest-opacity: 0.36;
+    inset-inline: 0;
+    background: linear-gradient(to right, transparent, rgb(0 0 0 / 19%), transparent);
+  }
+
+  .gutter::after {
+    --photobook-gutter-rest-opacity: 0.65;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: rgb(0 0 0 / 14%);
+  }
+
+  /* The lifted sheet covers the active gutter. As the sheet lands, blend in
+     the resting seam in front of it so neither side of the shadow pops in. */
+  .restingGutter {
+    --photobook-lift: 0;
+    z-index: 3;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .stage[data-cover-turn] {
+      --photobook-turn-dur: var(--photobook-cover-dur);
+    }
+
+    .gutter[data-turn]::before,
+    .gutter[data-turn]::after {
+      animation: photobook-gutter-lift var(--photobook-turn-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    }
+
+    .stage:has(.turn) > .restingGutter {
+      animation: photobook-settle-gutter var(--photobook-turn-dur) linear both;
+    }
+
+    .gutter[data-turn="fold"] {
+      animation: photobook-fold-hide-gutter var(--photobook-turn-dur) linear both;
+    }
+
+    .stage[data-direction="next"]:has(.turn) .paper > .page:last-child,
+    .stage[data-direction="previous"]:has(.turn) .paper > .page:first-child,
+    .face:not(.faceBack) > .page {
+      animation: photobook-page-shade var(--photobook-turn-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    }
+  }
+
+  @keyframes photobook-gutter-lift {
+    from, to { opacity: var(--photobook-gutter-rest-opacity); }
+    28%, 42% { opacity: 1; }
+  }
+
+  @keyframes photobook-settle-gutter {
+    from, 76% { opacity: 0; }
+    94%, to { opacity: 1; }
+  }
+
+  @keyframes photobook-fold-hide-gutter {
+    from, 76% { opacity: 1; }
+    94%, to { opacity: 0; }
+  }
+
+  @keyframes photobook-page-shade {
+    from, to { filter: brightness(1); }
+    28%, 42% { filter: brightness(calc(1 - var(--photobook-page-shade))); }
   }
 
   .paper[data-enter] {
-    animation: photobook-open var(--ai-open-dur) var(--ai-ease) both;
+    animation: photobook-open var(--ai-open-dur, 300ms) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
   }
 
   .paper[data-enter="next"] {
@@ -232,7 +325,7 @@
   }
 
   .leaf {
-    animation: photobook-fold var(--photobook-fold-dur) var(--ai-ease) both;
+    animation: photobook-fold var(--photobook-fold-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     transform-style: preserve-3d;
   }
 
@@ -264,24 +357,27 @@
     /* Move by half a page to align a centered cover with the spine. The
        turning sheet supplies the landing face until the fold is complete. */
     .stage[data-cover-turn="open"] .turn {
-      animation: photobook-cover-to-spine var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-to-spine var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
     .stage[data-cover-turn="close"] .turn {
-      animation: photobook-cover-to-center var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-to-center var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
     .stage[data-cover-turn="open"] .leaf {
-      animation: photobook-cover-open var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-open var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
     .stage[data-cover-turn="close"] .leaf {
-      animation: photobook-cover-close var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-close var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
-    .stage[data-cover-turn="open"] .paper,
+    .stage[data-cover-turn="open"] .paper {
+      animation: photobook-cover-reveal var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+    }
+
     .gutter[data-turn="open"] {
-      animation: photobook-cover-reveal var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-show-gutter var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
 
     .stage[data-cover-turn="close"] .paper,
@@ -291,7 +387,7 @@
     }
 
     .gutter[data-turn="close"] {
-      animation: photobook-cover-hide-gutter var(--photobook-cover-dur) var(--ai-ease) both;
+      animation: photobook-cover-hide-gutter var(--photobook-cover-dur) var(--ai-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
     }
   }
 
@@ -328,9 +424,19 @@
     to { opacity: 1; }
   }
 
+  @keyframes photobook-cover-show-gutter {
+    from, 30% { opacity: 0; }
+    60% { opacity: 1; }
+    76% {
+      opacity: 1;
+      animation-timing-function: linear;
+    }
+    94%, to { opacity: 0; }
+  }
+
   @keyframes photobook-cover-hide-gutter {
-    from { opacity: 1; }
-    45%, to { opacity: 0; }
+    from, 16% { opacity: 1; }
+    36%, to { opacity: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -358,8 +464,8 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    color: var(--color-fg);
-    background: var(--color-bg);
+    color: var(--color-fg, CanvasText);
+    background: var(--color-bg, Canvas);
   }
 
   .zoom[open] {

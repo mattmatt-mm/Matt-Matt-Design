@@ -1,6 +1,7 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { SelectMenu } from "@/components/SelectMenu";
 import {
   THEME_COLORS,
   THEME_COLOR_META_ID,
@@ -9,14 +10,14 @@ import {
 } from "@/lib/site-appearance";
 
 const typefaces = [
-  { value: "allo", name: "Allo", className: "font-site-allo" },
-  { value: "helvetica", name: "Helvetica Neue", className: "font-site-helvetica" },
+  { value: "allo", label: "Allo", className: "font-site-allo" },
+  { value: "helvetica", label: "Helvetica Neue", className: "font-site-helvetica" },
 ] as const;
 
 const themes = [
-  { value: "auto", name: "Auto" },
-  { value: "light", name: "Light" },
-  { value: "dark", name: "Dark" },
+  { value: "auto", label: "Auto" },
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
 ] as const;
 
 type Typeface = (typeof typefaces)[number]["value"];
@@ -29,28 +30,6 @@ function savePreference(key: string, value: string | null) {
   } catch {
     // The current page can still apply preferences when storage is unavailable.
   }
-}
-
-function PreferenceOption({ name, value, checked, select, children }: {
-  name: "typeface" | "theme";
-  value: string;
-  checked: boolean;
-  select: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <label className="flex cursor-pointer items-center justify-between gap-4 border-b border-line py-4">
-      {children}
-      <input
-        type="radio"
-        name={name}
-        value={value}
-        checked={checked}
-        onChange={select}
-        className="size-5 shrink-0 accent-fg"
-      />
-    </label>
-  );
 }
 
 export function AppearanceSettings() {
@@ -86,35 +65,19 @@ export function AppearanceSettings() {
   }
 
   return (
-    <div className="space-y-8">
-      <fieldset>
-        <legend className="text-section font-bold">Typeface</legend>
-        {typefaces.map((option) => (
-          <PreferenceOption
-            key={option.value}
-            name="typeface"
-            value={option.value}
-            checked={typeface === option.value}
-            select={() => selectTypeface(option.value)}
-          >
-            <span className={option.className}>{option.name}</span>
-          </PreferenceOption>
-        ))}
-      </fieldset>
-      <fieldset>
-        <legend className="text-section font-bold">Theme</legend>
-        {themes.map((option) => (
-          <PreferenceOption
-            key={option.value}
-            name="theme"
-            value={option.value}
-            checked={theme === option.value}
-            select={() => selectTheme(option.value)}
-          >
-            <span>{option.name}</span>
-          </PreferenceOption>
-        ))}
-      </fieldset>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-4 border-b border-line pb-3">
+        <span>Typeface</span>
+        <div className="w-48 min-w-0">
+          <SelectMenu label="Typeface" options={typefaces} value={typeface} onChange={selectTypeface} />
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-4">
+        <span>Theme</span>
+        <div className="w-48 min-w-0">
+          <SelectMenu label="Theme" options={themes} value={theme} onChange={selectTheme} />
+        </div>
+      </div>
     </div>
   );
 }

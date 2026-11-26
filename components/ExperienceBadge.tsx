@@ -2,9 +2,11 @@
 
 import dynamic from "next/dynamic";
 import { type CSSProperties, type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import { BadgeStickers } from "@/components/BadgeStickers";
 import { Signature } from "@/components/Signature";
 import { SiteSquircle } from "@/components/SiteSquircle";
 import type { LanyardControls, LanyardPull } from "@/components/vendor/react-bits-lanyard/Lanyard";
+import type { BadgeSticker } from "@/lib/content";
 import styles from "./ExperienceBadge.module.css";
 
 const Lanyard = dynamic(() => import("@/components/vendor/react-bits-lanyard/Lanyard"), {
@@ -15,6 +17,7 @@ const SWING_ROOM = 64;
 export function ExperienceBadge({
   name,
   role,
+  stickers,
   children,
   animate = true,
   interactive = true,
@@ -26,6 +29,7 @@ export function ExperienceBadge({
 }: {
   name: string;
   role: string;
+  stickers: BadgeSticker[];
   children: ReactNode;
   animate?: boolean;
   interactive?: boolean;
@@ -122,6 +126,7 @@ export function ExperienceBadge({
               <h1 className="text-sm font-bold">{name}</h1>
               <p>{role}</p>
             </header>
+            <BadgeStickers stickers={stickers} />
             <div className={styles.history}>{children}</div>
           </SiteSquircle>
         </div>

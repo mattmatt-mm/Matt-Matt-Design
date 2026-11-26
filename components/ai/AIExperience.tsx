@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MAX_AI_TURNS } from "@/lib/ai/limits";
-import { PORTFOLIO_LAUNCH_END } from "@/lib/portfolio-launch";
+import { PORTFOLIO_LAUNCH_END, PULL_CARD_PREVIEW_PATH } from "@/lib/portfolio-launch";
 import { AiDock } from "@/components/ai/AiDock";
 import {
   AiAnswer,
@@ -97,15 +97,19 @@ async function responseError(response: Response) {
   }
 }
 
-export function AIExperience({
-  children,
-  tourCatalog,
-}: {
+type AIExperienceProps = {
   children: React.ReactNode;
   /** Titles for the walkthrough splash, before its page has loaded. */
   tourCatalog: TourCatalog;
-}) {
+};
+
+export function AIExperience(props: AIExperienceProps) {
   const pathname = usePathname();
+  if (pathname === PULL_CARD_PREVIEW_PATH) return <>{props.children}</>;
+  return <SiteAIExperience {...props} pathname={pathname} />;
+}
+
+function SiteAIExperience({ children, tourCatalog, pathname }: AIExperienceProps & { pathname: string }) {
   const trigger = useRef<HTMLButtonElement | null>(null);
   const actionOpener = useRef<HTMLButtonElement | null>(null);
   const requestInFlight = useRef(false);
@@ -556,7 +560,6 @@ export function AIExperience({
             if (contactStatus === "error") setContactStatus("idle");
           }}
           onContactSubmit={sendContact}
-          onWalkthrough={openTour}
           tour={
             tourStep ? (
               <AiTour

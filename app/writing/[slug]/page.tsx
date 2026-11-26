@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChainGate } from "@/components/ChainGate";
@@ -7,6 +8,7 @@ import { DetailChain } from "@/components/DetailChain";
 import { JsonLd } from "@/components/JsonLd";
 import { Prose } from "@/components/Prose";
 import { SectionRail } from "@/components/SectionRail";
+import { ThumbnailSquircle } from "@/components/SiteSquircle";
 import {
   getWritingEntry,
   getWritingTour,
@@ -88,6 +90,22 @@ export default async function WritingPost({ params }: Props) {
               )}
 
               <div className={i === 0 ? "mt-6" : "chain-gate-body mt-6"}>
+                {post.coverImage && (
+                  <ThumbnailSquircle>
+                    <Image
+                      {...post.coverImage}
+                      alt=""
+                      sizes="(min-width: 688px) 640px, calc(100vw - 48px)"
+                      priority={i === 0}
+                      className="mb-6 block h-auto w-full cursor-zoom-in focus-visible:-outline-offset-4"
+                      data-zoom=""
+                      data-cursor="Zoom"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Zoom cover image for ${post.title}`}
+                    />
+                  </ThumbnailSquircle>
+                )}
                 <Prose node={post.body} lang={post.lang} idPrefix={post.slug} />
               </div>
             </article>

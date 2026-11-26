@@ -5,7 +5,7 @@ import { ChatCircle } from "@phosphor-icons/react/dist/ssr/ChatCircle";
 import { Envelope } from "@phosphor-icons/react/dist/ssr/Envelope";
 import { BorderBeam } from "border-beam";
 import { SiteSquircle } from "@/components/SiteSquircle";
-import { AiComposer, ComposerAside } from "@/components/ai/AiComposer";
+import { AiComposer } from "@/components/ai/AiComposer";
 import {
   AiContactForm,
   type ContactStatus,
@@ -46,10 +46,7 @@ export function AiOverlay({
   onContactNoteChange,
   onContactSubmit,
   tour,
-  onWalkthrough,
 }: {
-  /** Opens the guided walkthrough from the composer. */
-  onWalkthrough?: () => void;
   /** The guided tour, shown in place of the conversation while it runs. */
   tour?: React.ReactNode;
   phase: AIPhase;
@@ -141,34 +138,23 @@ export function AiOverlay({
                   onNoteChange={onContactNoteChange}
                   onSubmit={onContactSubmit}
                 />
+              ) : turnsLeft > 0 ? (
+                <AiComposer
+                  value={question}
+                  compact
+                  autoFocus={false}
+                  placeholder="Follow Up?"
+                  onChange={onQuestionChange}
+                  onSubmit={onFollowUpSubmit}
+                />
               ) : (
-                // Still there once a conversation exists: the walkthrough
-                // must stay reachable after a first answer.
-                <>
-                  <ComposerAside inline onWalkthrough={onWalkthrough} />
-                  {turnsLeft > 0 ? (
-                    <AiComposer
-                      value={question}
-                      compact
-                      showDisclosure={false}
-                      autoFocus={false}
-                      placeholder="Follow Up?"
-                      onChange={onQuestionChange}
-                      onSubmit={onFollowUpSubmit}
-                    />
-                  ) : (
-                    // The conversation is spent. Say so where the next prompt
-                    // would have been, and make the sentence the way out
-                    // rather than a dead end beside one.
-                    <button
-                      type="button"
-                      className="ai-turns-spent"
-                      onClick={onToggleContact}
-                    >
-                      That is all {MAX_AI_TURNS} questions. Email Matt for more.
-                    </button>
-                  )}
-                </>
+                <button
+                  type="button"
+                  className="ai-turns-spent"
+                  onClick={onToggleContact}
+                >
+                  That is all {MAX_AI_TURNS} questions. Email Matt for more.
+                </button>
               )}
             </div>
           </div>
@@ -191,7 +177,6 @@ export function AiOverlay({
                 <AiComposer
                   value={question}
                   error={composerError}
-                  onWalkthrough={phase === "ask_primary" ? onWalkthrough : undefined}
                   onChange={onQuestionChange}
                   onSubmit={onQuestionSubmit}
                 />

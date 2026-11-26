@@ -1,6 +1,7 @@
 "use client";
 
 import { type CSSProperties, useState } from "react";
+import { SiteSquircle, ThumbnailSquircle } from "./SiteSquircle";
 
 export type DemoKind =
   | "easing"
@@ -211,33 +212,35 @@ function SwapPane({
   return (
     <div>
       <p className="text-muted">{variant.label}</p>
-      <div className="border-line mt-1 border p-3">
-        <div className="flex gap-2">
-          {PAGES.map((page, i) => (
-            <button
-              key={page.label}
-              type="button"
-              onClick={() => onSelect(i)}
-              aria-pressed={i === view.page}
-              className={`px-1 ${i === view.page ? "text-fg" : "text-muted"}`}
-            >
-              {page.label}
-            </button>
-          ))}
-        </div>
+      <ThumbnailSquircle>
+        <div className="border-line mt-1 border p-3">
+          <div className="flex gap-2">
+            {PAGES.map((page, i) => (
+              <button
+                key={page.label}
+                type="button"
+                onClick={() => onSelect(i)}
+                aria-pressed={i === view.page}
+                className={`px-1 ${i === view.page ? "text-fg" : "text-muted"}`}
+              >
+                {page.label}
+              </button>
+            ))}
+          </div>
 
-        {/* Keyed on the page so the arrival replays on every switch. */}
-        <div
-          key={view.page}
-          className={`mt-3 flex flex-col gap-2 ${animated ? variant.className : ""}`}
-          data-direction={animated ? view.direction : undefined}
-          aria-hidden="true"
-        >
-          {PAGES[view.page].bars.map((width, i) => (
-            <span key={i} className="bg-line block h-2" style={{ width }} />
-          ))}
+          {/* Keyed on the page so the arrival replays on every switch. */}
+          <div
+            key={view.page}
+            className={`mt-3 flex flex-col gap-2 ${animated ? variant.className : ""}`}
+            data-direction={animated ? view.direction : undefined}
+            aria-hidden="true"
+          >
+            {PAGES[view.page].bars.map((width, i) => (
+              <span key={i} className="bg-line block h-2" style={{ width }} />
+            ))}
+          </div>
         </div>
-      </div>
+      </ThumbnailSquircle>
       <p className="text-muted mt-1">{variant.note}</p>
     </div>
   );
@@ -259,32 +262,39 @@ function Pane({
   return (
     <div>
       <p className="text-muted">{variant.label}</p>
-      <div className="border-line mt-1 flex h-24 items-center justify-center border">
-        {isPress ? (
-          <button
-            type="button"
-            className={`border-line border px-3 py-1 ${variant.className}`}
-          >
-            Press
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={onReplay}
-            aria-label={`Replay the ${variant.label} example`}
-            className={variant.track ?? "demo-track"}
-          >
-            {/* the key restarts the CSS animation on each replay */}
-            {Array.from({ length: variant.parts ?? 1 }, (_, i) => (
-              <span
-                key={`${plays}-${i}`}
-                className={`demo-anim ${variant.className}`}
-                style={{ "--i": i } as CSSProperties}
-              />
-            ))}
-          </button>
-        )}
-      </div>
+      <ThumbnailSquircle>
+        <div className="border-line mt-1 flex h-24 items-center justify-center border">
+          {isPress ? (
+            <button type="button" className={variant.className}>
+              <SiteSquircle asChild cornerRadius={2}>
+                <span className="border-line block border px-3 py-1">Press</span>
+              </SiteSquircle>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onReplay}
+              aria-label={`Replay the ${variant.label} example`}
+              className={variant.track ?? "demo-track"}
+            >
+              {/* the key restarts the CSS animation on each replay */}
+              {Array.from({ length: variant.parts ?? 1 }, (_, i) => {
+                const key = `${plays}-${i}`;
+                const square = kind === "secondary" ? i === 1 : !variant.track;
+                const part = (
+                  <span
+                    key={key}
+                    className={`demo-anim ${variant.className}`}
+                    style={{ "--i": i } as CSSProperties}
+                  />
+                );
+
+                return square ? <SiteSquircle asChild cornerRadius={2} key={key}>{part}</SiteSquircle> : part;
+              })}
+            </button>
+          )}
+        </div>
+      </ThumbnailSquircle>
       <p className="text-muted mt-1">{variant.note}</p>
     </div>
   );

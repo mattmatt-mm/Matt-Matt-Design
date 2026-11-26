@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useContext } from "react";
 import { GUIDED_WALKTHROUGH_LABEL, PortfolioActions } from "@/components/ai/PortfolioActions";
 import { GalleryList, type GalleryEntry } from "@/components/GalleryList";
 import { parseFocus, type Discipline } from "@/lib/disciplines";
+import { letsWorkPath } from "@/lib/site";
 
-type FeedProps = { entries: GalleryEntry[]; email: string };
+type FeedProps = { entries: GalleryEntry[] };
 
 function matchingEntries(entries: GalleryEntry[], picks: Discipline[]) {
   return picks.length
@@ -20,7 +22,6 @@ function resultLabel(shown: number, total: number) {
 
 function FeedView({
   entries,
-  email,
   selected,
 }: FeedProps & {
   selected: Discipline[];
@@ -39,12 +40,12 @@ function FeedView({
         >
           {GUIDED_WALKTHROUGH_LABEL}
         </button>
-        <a
+        <Link
           className="home-feed-action home-feed-primary press-shrink"
-          href={`mailto:${email}`}
+          href={letsWorkPath}
         >
           Let’s work
-        </a>
+        </Link>
       </div>
 
       <div className="mt-15 pt-3">

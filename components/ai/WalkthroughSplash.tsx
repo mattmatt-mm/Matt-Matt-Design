@@ -44,6 +44,84 @@ function snapshotStyles(node: Element, overrides?: Record<string, string>) {
   return { "border-width": getComputedStyle(node).borderWidth, ...overrides };
 }
 
+function visibleLines(element: HTMLElement, bounds: DOMRect, lineHeight: string) {
+  const text = element.textContent ?? "";
+  const node = element.firstChild;
+  if (!(node instanceof Text) || node !== element.lastChild || bounds.height <= parseFloat(lineHeight) + 1) return text;
+
+  // Freeze the browser's actual line breaks so the proxy never reflows mid-glide.
+  const range = document.createRange();
+  let rowTop: number | undefined;
+  let wrapped = "";
+  let index = 0;
+  for (const character of text) {
+    range.setStart(node, index);
+    index += character.length;
+    range.setEnd(node, index);
+    const rect = range.getBoundingClientRect();
+    if (rect.width > 0) {
+      if (rowTop !== undefined && rect.top - rowTop > parseFloat(lineHeight) / 2) {
+        wrapped = `${wrapped.trimEnd()}\n`;
+      }
+      rowTop = rect.top;
+    }
+    wrapped += character;
+  }
+  return wrapped;
+}
+
+function textFrame(bounds: DOMRect, style: CSSStyleDeclaration) {
+  return {
+    left: `${bounds.left}px`,
+    top: `${bounds.top}px`,
+    fontSize: style.fontSize,
+    lineHeight: style.lineHeight,
+    letterSpacing: style.letterSpacing === "normal" ? "0px" : style.letterSpacing,
+    fontWeight: style.fontWeight,
+    color: style.color,
+  };
+}
+
+function glideText(layer: HTMLElement, line: HTMLElement, target: HTMLElement) {
+  const from = line.getBoundingClientRect();
+  const to = target.getBoundingClientRect();
+  const fromStyle = getComputedStyle(line);
+  const toStyle = getComputedStyle(target);
+  const sourceText = visibleLines(line, from, fromStyle.lineHeight);
+  const targetText = visibleLines(target, to, toStyle.lineHeight);
+  const frames = [textFrame(from, fromStyle), textFrame(to, toStyle)];
+  const move = { duration: REVEAL, easing: EASE, fill: "both" as const };
+
+  const copy = (text: string) => {
+    const proxy = document.createElement("p");
+    proxy.className = "walkthrough-splash-glide";
+    proxy.setAttribute("aria-hidden", "true");
+    proxy.textContent = text;
+    Object.assign(proxy.style, {
+      fontFamily: toStyle.fontFamily,
+      fontOpticalSizing: toStyle.fontOpticalSizing,
+      fontVariationSettings: toStyle.fontVariationSettings,
+    });
+    layer.append(proxy);
+    // Allo recalculates its optical spacing at each actual font size.
+    proxy.animate(frames, move);
+    return proxy;
+  };
+
+  const source = copy(sourceText);
+  line.style.visibility = "hidden";
+  if (sourceText !== targetText) {
+    const handover = {
+      duration: REVEAL * 0.3,
+      delay: REVEAL * 0.15,
+      easing: "ease-in-out",
+      fill: "both" as const,
+    };
+    source.animate([{ opacity: 1 }, { opacity: 0 }], handover);
+    copy(targetText).animate([{ opacity: 0 }, { opacity: 1 }], handover);
+  }
+}
+
 /** The wave covers the old view, then the title copies hand off to the new one. */
 export function WalkthroughSplash({
   run,
@@ -253,36 +331,7 @@ export function WalkthroughSplash({
           line.animate(exit, { duration: EXIT, easing: EASE, fill: "forwards" });
           return;
         }
-        const from = line.getBoundingClientRect();
-        const to = target.getBoundingClientRect();
-        const scale =
-          parseFloat(getComputedStyle(target).fontSize) /
-          parseFloat(getComputedStyle(line).fontSize);
-        line.animate(
-          [
-            { transform: "translate(0, 0) scale(1)" },
-            {
-              transform: `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${scale})`,
-            },
-          ],
-          { duration: REVEAL, easing: EASE, fill: "forwards" },
-        );
-        // The page's own line takes over as the copy lands, so a heading
-        // that wraps differently from its splash copy never jumps. Both fades
-        // run on one plain clock of their own: on the glide's eased curve the
-        // copy would be gone well before the page's line arrived.
-        const handover = {
-          duration: REVEAL * 0.35,
-          delay: REVEAL * 0.65,
-          easing: "linear",
-          fill: "both" as const,
-        };
-        line.animate([{ opacity: 1 }, { opacity: 0 }], handover);
-        target
-          .animate([{ opacity: 0 }, { opacity: 1 }], handover)
-          .finished.then(() => {
-            target.style.removeProperty("opacity");
-          });
+        glideText(layer, line, target);
       };
       glide(eyebrowLine, targets?.eyebrow);
       glide(titleLine, targets?.title);

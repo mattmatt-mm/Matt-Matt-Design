@@ -58,6 +58,7 @@
   --color-star: #ffa028;
   --color-avatar: #d9bdf5;
   --color-on-avatar: #000000;
+  --color-sticker-paper: #fffdf7;
   --color-browse-blue: #72b8fa;
   --color-browse-teal: #60c5ae;
 
@@ -156,11 +157,6 @@
        reads as a wobble rather than a move. */
     --ai-cross-travel: 24px;
     --ai-blur: 3px;
-    /* Icon swap (.icon-swap): a quick in-place exchange, so shorter and
-       softer than the AI handoff. */
-    --icon-swap-dur: 250ms;
-    --icon-swap-ease: ease-in-out;
-    --icon-swap-blur: 2px;
     --ai-radius: 16px;
     /* Slightly quicker than the AI handoff: the pill crosses a 76px column, not
        the width of the screen. Same curve, so the two read as one system. */
@@ -279,7 +275,8 @@
 
   /* Two light layers soften the dock backdrop. The stronger layers feather
      in toward the bottom of the taller chat arc. Animate each layer so it
-     can keep sampling the page throughout the handoff. */
+     can keep sampling the page throughout the handoff. The CSS build adds
+     the WebKit fallback from the standard backdrop-filter declaration. */
   .site-content-blur {
     --blur: 1.5px;
     --solid: 40%;
@@ -290,7 +287,6 @@
     opacity: var(--dock-blur-opacity);
     transition: opacity var(--ai-close-dur) var(--ai-ease);
     backdrop-filter: blur(var(--blur));
-    -webkit-backdrop-filter: blur(var(--blur));
     mask-image: radial-gradient(
       ellipse var(--arc-width) 100% at 50% 100%,
       black var(--solid),
@@ -671,32 +667,76 @@
     color: var(--color-fg);
   }
 
-  .browse-grid {
+  .browse-shortcuts {
+    --browse-surface-inset: 12px;
+    --browse-row-padding-block: 8px;
+    --browse-icon-size: 32px;
+    --browse-icon-gap: 12px;
+    display: grid;
+    gap: 24px;
+  }
+
+  .browse-featured {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 8px;
   }
 
-  @media (min-width: 688px) {
-    .browse-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  .browse-featured-card,
+  .browse-shortcut-group {
+    border-radius: var(--ai-radius);
+    background: color-mix(in srgb, var(--color-surface) 97%, var(--color-fg));
   }
 
-  .browse-card {
+  .browse-featured-card .browse-shortcut {
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 8px;
+    min-height: 88px;
+    height: 100%;
+    padding-block: var(--browse-surface-inset);
+  }
+
+  .browse-featured-card .browse-shortcut-label {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    overflow-wrap: anywhere;
+  }
+
+  .browse-featured-card .browse-shortcut > svg {
+    grid-column: 3;
+    grid-row: 2;
+  }
+
+  .browse-shortcut-group {
+    display: grid;
+    gap: 8px;
+    padding-block: calc(var(--browse-surface-inset) - var(--browse-row-padding-block));
+  }
+
+  .browse-shortcut-group > li + li {
+    position: relative;
+  }
+
+  .browse-shortcut-group > li + li::before {
+    position: absolute;
+    inset-block-start: -4px;
+    inset-inline:
+      calc(var(--browse-surface-inset) + var(--browse-icon-size) + var(--browse-icon-gap))
+      var(--browse-surface-inset);
+    border-top: 1px solid var(--color-line);
+    content: "";
+    pointer-events: none;
+  }
+
+  .browse-shortcut {
     --browse-accent: var(--color-line);
     display: grid;
     width: 100%;
-    min-height: 108px;
-    height: 100%;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto 1fr;
-    align-items: start;
-    gap: 12px;
-    padding: 16px;
-    border-radius: var(--ai-radius);
-    background: var(--color-surface);
-    box-shadow: var(--shadow-navigation);
+    min-height: 48px;
+    grid-template-columns: var(--browse-icon-size) minmax(0, 1fr) 16px;
+    align-items: center;
+    gap: var(--browse-icon-gap);
+    padding: var(--browse-row-padding-block) var(--browse-surface-inset);
     color: var(--color-fg);
     font: inherit;
     text-align: left;
@@ -704,32 +744,35 @@
     cursor: pointer;
   }
 
-  .browse-card:hover {
-    background: color-mix(in srgb, var(--browse-accent) 12%, var(--color-surface));
+  .browse-shortcut:hover .browse-shortcut-label {
+    opacity: 0.6;
   }
 
-  .browse-card[data-tone="blue"] { --browse-accent: var(--color-browse-blue); }
-  .browse-card[data-tone="peach"] { --browse-accent: var(--color-shimmer-sunset-rose); }
-  .browse-card[data-tone="gold"] { --browse-accent: var(--color-note-band); }
-  .browse-card[data-tone="violet"] { --browse-accent: var(--color-avatar); }
-  .browse-card[data-tone="teal"] { --browse-accent: var(--color-browse-teal); }
+  .browse-shortcut:focus-visible {
+    outline-offset: -4px;
+  }
 
-  .browse-card-icon {
+  .browse-shortcut[data-tone="blue"] { --browse-accent: var(--color-browse-blue); }
+  .browse-shortcut[data-tone="peach"] { --browse-accent: var(--color-shimmer-sunset-rose); }
+  .browse-shortcut[data-tone="gold"] { --browse-accent: var(--color-note-band); }
+  .browse-shortcut[data-tone="violet"] { --browse-accent: var(--color-avatar); }
+  .browse-shortcut[data-tone="teal"] { --browse-accent: var(--color-browse-teal); }
+
+  .browse-shortcut-icon {
     display: grid;
-    width: 36px;
-    height: 36px;
+    width: var(--browse-icon-size);
+    height: var(--browse-icon-size);
     place-items: center;
-    border-radius: 12px;
+    border-radius: 8px;
     background: color-mix(in srgb, var(--browse-accent) 32%, var(--color-surface));
     color: color-mix(in srgb, var(--color-fg) 78%, var(--browse-accent));
   }
 
-  .browse-card-label {
-    grid-column: 1 / -1;
-    align-self: end;
+  .browse-shortcut-label {
+    transition: opacity 120ms ease-out;
   }
 
-  .browse-card-arrow,
+  .browse-shortcut > svg,
   .browse-result > svg {
     align-self: center;
     color: var(--color-muted-readable);
@@ -919,106 +962,6 @@
 
   .ai-composer-error {
     color: var(--color-fg);
-  }
-
-  /* The row above the first question: the guided walkthrough on the left,
-     the privacy notice behind an info button on the right. */
-  /* Lined up with the field below: the walkthrough button starts where its text does
-     (16px in) and the info icon sits over the send icon's centre. The send
-     button is 8px in on the first composer and flush on a follow-up, so the
-     row's end inset follows it. */
-  .ai-composer-aside {
-    --aside-end: 8px;
-    position: absolute;
-    z-index: 2;
-    right: 0;
-    bottom: calc(100% + 8px);
-    left: 0;
-    padding-inline: 16px var(--aside-end);
-    display: flex;
-    height: 21px;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  /* Above a follow-up it sits in the flow, between the answer and the field. */
-  .ai-composer-aside[data-inline="true"] {
-    --aside-end: 0px;
-    position: relative;
-    inset: auto;
-    margin-bottom: 8px;
-  }
-
-  .ai-walkthrough {
-    display: inline-flex;
-    /* 44px hit area around a 21px line. */
-    margin: -12px 0 -12px -4px;
-    padding: 12px 4px;
-    align-items: center;
-    gap: 4px;
-    border: 0;
-    background: transparent;
-    color: var(--color-muted-readable);
-    font: inherit;
-    cursor: pointer;
-    transition: color 120ms ease-out;
-  }
-
-  .ai-walkthrough:hover {
-    color: var(--color-fg);
-  }
-
-  .ai-info {
-    position: relative;
-    display: inline-flex;
-  }
-
-  .ai-info-button {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    margin: -12px 0 -11px 0;
-    place-items: center;
-    border: 0;
-    background: transparent;
-    color: var(--color-muted-readable);
-    cursor: pointer;
-    transition: color 120ms ease-out;
-  }
-
-  .ai-info-button:hover,
-  .ai-info[data-open="true"] .ai-info-button {
-    color: var(--color-fg);
-  }
-
-  .ai-info-tooltip {
-    position: absolute;
-    /* Back out to the field's edge, whatever the row's end inset. */
-    right: calc(-1 * var(--aside-end));
-    bottom: calc(100% + 8px);
-    width: 240px;
-    padding: 8px 12px;
-    background: var(--color-surface);
-    color: var(--color-fg);
-    font-size: 12px;
-    line-height: 16px;
-    opacity: 0;
-    transform: translateY(4px);
-    visibility: hidden;
-    pointer-events: none;
-    transition:
-      opacity 120ms ease-out,
-      transform 120ms ease-out,
-      visibility 0s linear 120ms;
-  }
-
-  .ai-info[data-open="true"] .ai-info-tooltip {
-    opacity: 1;
-    transform: translateY(0);
-    visibility: visible;
-    transition:
-      opacity 120ms ease-out,
-      transform 120ms ease-out;
   }
 
   .ai-thinking,
@@ -1629,6 +1572,13 @@
   .walkthrough-splash-column p {
     opacity: 0;
     transform-origin: 0 0;
+  }
+
+  .walkthrough-splash-glide {
+    position: fixed;
+    margin: 0;
+    white-space: pre;
+    pointer-events: none;
   }
 
   @media (min-width: 688px) {
@@ -2770,123 +2720,6 @@
     accent-color: var(--color-isd-orange);
   }
 
-  /* Notes (components/Notes.tsx): the recipe behind an interaction, as an
-     Apple Notes card. A 48px yellow band holds the title and the copy
-     button, a row of perforation dots tears it from the paper, and the paper
-     is ruled on the 21px line so every line of text sits on a rule. Lists and
-     paragraphs inside keep that rhythm: no margins, a blank line between
-     paragraphs. Matt asked for it on 2026-10-18. */
-  .notes {
-    overflow: hidden;
-    border-radius: 16px;
-    background: var(--color-note-paper);
-  }
-
-  .notes-band {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    height: 48px;
-    /* The title keeps the text inset; the copy button sits 8px from the
-       band's top, bottom and right alike — a control in a corner is inset
-       the same on every side (doc/taste.md). */
-    padding-inline: 16px 8px;
-    color: var(--color-note-band-ink);
-    background: var(--color-note-band);
-  }
-
-  /* Icon only: a 32px circle in the band, its hit area stretched to 44px.
-     Copy swaps to a check on success and back after two seconds. */
-  .notes-copy {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 9999px;
-    color: inherit;
-    background: rgb(0 0 0 / 8%);
-    cursor: pointer;
-    transition: background 120ms ease-out;
-  }
-
-  .notes-copy::before {
-    content: "";
-    position: absolute;
-    inset: -6px;
-  }
-
-  .notes-copy:hover {
-    background: rgb(0 0 0 / 14%);
-  }
-
-  /* Icon swap, after transitions.dev: two icons stacked in one cell; the
-     outgoing one shrinks to a quarter and blurs out while the incoming one
-     grows in. data-state names which icon (data-icon a | b) is showing. */
-  .icon-swap {
-    display: inline-grid;
-  }
-
-  .icon-swap > [data-icon] {
-    grid-area: 1 / 1;
-    width: 16px;
-    height: 16px;
-    transition:
-      opacity var(--icon-swap-dur) var(--icon-swap-ease),
-      filter var(--icon-swap-dur) var(--icon-swap-ease),
-      transform var(--icon-swap-dur) var(--icon-swap-ease);
-  }
-
-  .icon-swap[data-state="a"] > [data-icon="b"],
-  .icon-swap[data-state="b"] > [data-icon="a"] {
-    opacity: 0;
-    filter: blur(var(--icon-swap-blur));
-    transform: scale(0.25);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .icon-swap > [data-icon] {
-      transition: none;
-    }
-  }
-
-  .notes-perforation {
-    height: 12px;
-    background-image: radial-gradient(
-      circle,
-      var(--color-note-perforation) 2px,
-      transparent 2.5px
-    );
-    background-size: 16px 12px;
-    background-position: 8px 0;
-  }
-
-  .notes-body {
-    padding: 12px 16px 21px;
-    background-image: linear-gradient(
-      to bottom,
-      transparent 20px,
-      var(--color-note-rule) 20px,
-      var(--color-note-rule) 21px
-    );
-    background-size: 100% 21px;
-    background-position: 0 12px;
-    background-origin: border-box;
-  }
-
-  .prose .notes-body > * + * {
-    margin-top: 21px;
-  }
-
-  .prose .notes-body :is(p, ul, ol, li) {
-    margin-block: 0;
-  }
-
-  .prose .notes-body li + li {
-    margin-top: 0;
-  }
-
   /* A screen recording filed like a folder (components/Recording.tsx): a
      caption tab at the top-left, an inside curve where the tab meets the
      recording, and the recording at full width beneath. The tab is the line
@@ -2951,7 +2784,25 @@
     display: block;
     width: 100%;
     height: auto;
+  }
+
+  .video-player-trigger {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
     cursor: pointer;
+  }
+
+  .video-player-start {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding-inline: 16px;
+    border-radius: 999px;
+    color: var(--color-on-ai-action);
+    background: var(--color-ai-action);
   }
 
   .video-player:fullscreen .video-player-frame {
@@ -2990,10 +2841,6 @@
     opacity: 0;
     transform: translateY(8px);
     pointer-events: none;
-  }
-
-  .video-player[data-controls="hidden"] .video-player-media {
-    cursor: none;
   }
 
   .video-player-button {
@@ -3057,10 +2904,14 @@
     transform: translate(-50%, -50%) scale(1);
   }
 
-  /* The page's focus ring is foreground-coloured, which disappears on a dark
-     strip in light mode. Same ring, drawn in the strip's own colour. */
-  .video-player-bar :focus-visible {
+  /* Draw the focus ring in the controls' foreground over the video. */
+  .video-player-bar :focus-visible,
+  .video-player-trigger:focus-visible {
     outline-color: var(--video-bar-fg);
+  }
+
+  .video-player-trigger:focus-visible {
+    outline-offset: -4px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -3077,6 +2928,12 @@
      goes and the remaining time carries the clock alone. */
   @media (max-width: 687px) {
     .video-player-time:first-of-type {
+      display: none;
+    }
+  }
+
+  @media (max-width: 359px) {
+    .video-player[data-has-sound] .video-player-time {
       display: none;
     }
   }

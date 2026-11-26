@@ -13,7 +13,8 @@ The supplied PDF has 22 A4 portrait pages. Show the front and back covers on the
 - **Desktop** shows a spread when the reader has enough width. Tap the right page to advance or the left page to go back. Previous and Next buttons and arrow keys also turn the spread.
 - The front cover slides right toward the spine as it opens. The last spread folds into the centered back cover. The cover turns mirror these motions when reading backwards.
 - **Phone** shows one page at a time. Tap the page or swipe horizontally to turn it. Vertical swipes scroll the site. Tap the page number to open the enlarged view for reading and panning.
-- Drag the bottom-right corner forward, or the bottom-left corner of the left page back. The corner follows the pointer along a flat crease. Releasing a short drag returns the sheet to its starting position.
+- Drag the bottom-right corner forward or the bottom-left corner back. Only the loose corners lift. The bound edge stays attached throughout the fold and ignores taps, drags, and swipes. Releasing a short drag returns the sheet to its starting position.
+- A one-pixel seam separates facing pages. The lifted sheet covers the seam where it passes over it. The front of the turning page and the page it reveals dim evenly during the turn. The facing page and the back of the lifted sheet stay fully lit.
 - Show the current page or range and the total beside the controls. Keep the reader's position when the viewport rotates or changes width. With reduced motion, change pages instantly. Keep focus on the active control and announce the page change to screen readers.
 
 ## Assets and implementation

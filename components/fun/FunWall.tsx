@@ -111,7 +111,7 @@ function Wall({
   category: FunCategory | null;
 }) {
   const shown = useMemo(
-    () => (category ? pieces.filter((p) => p.category === category) : pieces),
+    () => (category ? pieces.filter((p) => p.categories.includes(category)) : pieces),
     [pieces, category],
   );
   const three = useMemo(() => deal(shown, 3), [shown]);
@@ -120,7 +120,7 @@ function Wall({
   // A filter appears only once it has something to find, and the row only
   // once there is more than one to choose between.
   const inUse = FUN_CATEGORIES.filter((c) =>
-    pieces.some((p) => p.category === c.value),
+    pieces.some((p) => p.categories.includes(c.value)),
   );
 
   const columns = (sets: FunPiece[][]) =>

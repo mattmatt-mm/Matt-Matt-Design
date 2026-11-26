@@ -6,7 +6,7 @@ import { Intro } from "@/components/Intro";
 import { JsonLd } from "@/components/JsonLd";
 import { PortfolioLaunch } from "@/components/PortfolioLaunch";
 import { RowList } from "@/components/RowList";
-import { getComments, getExperience, getGallery, getSettings } from "@/lib/content";
+import { getBadgeStickers, getComments, getExperience, getGallery, getSettings } from "@/lib/content";
 import { person, siteDescription } from "@/lib/site";
 import { homeSchema } from "@/lib/structured-data";
 
@@ -26,7 +26,7 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={homeSchema(settings)} />
-      <PortfolioLaunch name={person.name} role={settings.role || person.jobTitle}>
+      <PortfolioLaunch name={person.name} role={settings.role || person.jobTitle} stickers={getBadgeStickers(settings.recognitions)}>
         <RowList rows={experience} />
       </PortfolioLaunch>
       <Header name={settings.name} role={settings.role} />
@@ -39,7 +39,7 @@ export default async function HomePage() {
       </div>
       <main id="portfolio-home" tabIndex={-1} className="mt-6 outline-none">
         <HomeOverview comments={comments} />
-        <HomeFeed entries={entries} email={settings.email} />
+        <HomeFeed entries={entries} />
       </main>
     </>
   );

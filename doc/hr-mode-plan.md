@@ -39,10 +39,8 @@ can see which work actually gets read.
 6. **Exit.** The dock is contracted, exactly as on a case study, but the circle
    holds an **X** instead of the back arrow. It leaves the walkthrough for Home.
 
-**Guided walkthrough** sits above the first-question composer, on the left — and above the follow-up composer once a conversation exists, between the answer and the field — so the
-walkthrough can be found again at any time. Someone who has already said yes
-goes straight to the checklist. The composer's review notice moved into an info
-button on the right of the same row, shown as a tooltip on hover, focus or tap.
+The **Guided walkthrough** shortcuts on Home and Browse open the checklist.
+The chat composer presents the question field and send button.
 
 The offer appears at most once every 24 hours per browser (Matt's choice,
 2026-10-18). `mmd:tour-offered` in localStorage holds when it last appeared, and
@@ -65,6 +63,9 @@ package for the opening, then hands off to the original title animation.
 - The eyebrow and selected titles rise 12px out of a 3px blur, 90ms apart.
 - Once the wave covers the page, the walkthrough loads underneath. The sheet
   wipes upward while the eyebrow and first title glide onto the real heading.
+  Font size and leading interpolate at their actual values, so Allo's optical
+  spacing changes throughout the glide. When the heading has different line
+  breaks, the two measured wraps crossfade during the movement.
 
 - The sheet is `--color-bg`, so it follows the system theme rather than
   flashing white in dark mode.
