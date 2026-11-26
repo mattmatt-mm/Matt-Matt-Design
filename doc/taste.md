@@ -115,7 +115,10 @@ not decorative borders and should remain where required.
   Grid cards and list groups share a 12px content inset at their outer edges.
   Grid labels align with their icons, and list dividers align with their labels.
 - Releases uses the reading column with the newest version first. Each version
-  shows its date, a short summary when available, and its GitHub source.
+  shows its date and a site-written summary. Link visual updates to where they
+  appear on the site. Show gesture-driven changes as simulations with a visible
+  cursor. Loop each while it is in the viewport and show a still with
+  reduced motion.
 - `Send to Matt` is full width and text only. It has no send icon.
 - Icon-only buttons need an accessible label and a minimum 44×44px hit area.
 - The AI back control is a 16px muted-gray Phosphor arrow inside a 44×44px hit
@@ -124,15 +127,14 @@ not decorative borders and should remain where required.
   surface with a uniform 4px padding, making the bar 48px tall and
   `count × 60 + 8` wide. No visible caption sits under the icon; the label lives
   in an `sr-only` span so the tab still announces itself.
-- On a detail page (`/work/<slug>`, `/writing/<slug>`) the bar contracts,
-  Dynamic Island style, into a 48px circle holding a 20px back arrow, beside
-  the AI trigger. The arrow returns to the page the visitor came from, or to
-  the page's list when they arrived from outside the site. The width morphs over 300ms on
-  `--ai-ease` while tabs and pill fade out with 3px blur and the arrow
-  resolves in. Detail pages are served contracted; only navigation animates.
-  Matt asked for this on 2026-10-16. See `doc/dock-back-button-plan.md`.
-- Settings and the Experience page use the same circular back control. It
-  returns to Browse on a direct visit.
+- On detail pages and Browse subpages, the dock contracts into a capsule with
+  Back on the left and Home on the right, beside the AI trigger. Each control
+  is one dock height wide and uses a 20px icon. Back returns to the visitor’s
+  previous site page or the section landing page on direct arrival. The width
+  morphs over 300ms on `--ai-ease`, with a 3px blur on the outgoing controls.
+  Detail pages are served contracted. See `doc/navigation-release-notes-plan.md`.
+- Settings and About Matt use the compact dock. Back returns to Browse on a
+  direct visit.
 - Bar and active tab are capsules — radius is half the height, 24px and 20px.
   The AI trigger is a 48×48px circle, a separate sibling with an 8px dock gap.
 - Every dock measurement derives from `--dock-tab-w`, `--dock-tab-h`,
@@ -239,8 +241,8 @@ not decorative borders and should remain where required.
   centred like any answer, 8px above the dock — never a smaller one-off bubble. "Please enjoy.", then "You can change what's shown by pressing
   me.", then nothing. Asked for from inside the AI, the tour steps aside back
   to the conversation (No thanks / Ask a question) instead of closing it.
-- On a walkthrough (`/tour/*`) the dock contracts exactly as on a detail page,
-  but the circle holds a 20px Phosphor X that leaves the walkthrough for Home.
+- On a walkthrough (`/tour/*`) the dock contracts into a circle with a 20px
+  Phosphor X that leaves the walkthrough for Home.
 
 ## 6. Icons and character
 
@@ -305,6 +307,9 @@ not decorative borders and should remain where required.
 - Standard resizing uses `cubic-bezier(0.22, 1, 0.36, 1)`, around 300ms open
   and 240ms close.
 - Ordinary content travel stays near 8px with at most 3px transient blur.
+- Switching among Home, Writing, Fun, and Browse fades the incoming page in
+  over 240ms with 8px of horizontal travel in dock order and 2px of blur.
+  Direct loads and reduced motion show the page immediately.
 - Animated text swaps use a brief blur and about 2px of vertical movement.
   For reduced motion, keep the opacity transition. [Emil Kowalski's design engineering skill](https://github.com/emilkowalski/skills/blob/main/skills/emil-design-eng/SKILL.md)
 - Avoid decorative bounce, parallax, and persistent page movement.
@@ -532,7 +537,7 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   intro. All, 3D, Motion, and Illustration are text links in the column, active
   in fg. Incipe Board pre-order appears under both 3D and Motion.
   A tile morphs into its piece's page, like a gallery card into a case
-  study, and the dock contracts to the back arrow. That page is the work
+  study, and the dock contracts to Back and Home. That page is the work
   centred with its colours as 32px dots on the left and its details on the
   right, label in fg and value muted, in Helvetica at 16/21 — the
   reference's uppercase monospace was declined. A piece with more than one

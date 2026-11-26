@@ -1,22 +1,9 @@
 # Releases
 
-Browse links to the static Releases page at `/browse/releases`. Each version
-has a date and a link to its GitHub pull request or commit. The page uses the
-reading column, a hairline between entries, and the shared 4px squircle for
-branch labels.
+Browse links to `/browse/releases`. The page uses the reading column, with the latest release first and a hairline between versions. The archived versions keep their original anchors.
 
-## Versioning
+Add one entry to `lib/releases.ts` in each visitor-facing PR. Increment the patch number and give the entry a date, a title, and a short description of what visitors can use. Link changes directly to their live pages. When a new component has a gesture worth showing, simulate it with a visible mouse gesture in the release grid. Each scene loops while visible and holds a still with reduced motion.
 
-- Backfill the 13 merged pull requests as v0.1.1 through v0.1.13. The archive
-  records each verified branch, merge SHA, and a summary of the change.
-- During a production build, read the first-parent history from the build's
-  commit to the archived checkpoint. Assign one successive patch number to
-  each integrated revision. This gives rebuilds of the same commit the same
-  version and groups a merge's branch commits into one entry.
-- For GitHub merge and squash commits, link to the recorded pull request.
-  Direct commits link to their revision. Preview builds can show releases
-  already present on `origin/main`.
-- On a shallow production checkout, fetch the pinned commit's public history
-  into a temporary repository. The Releases page is generated at build time.
-  When the build cannot retrieve the history, the page displays the verified
-  archive and identifies that state.
+The page prerenders from the checked-in notes. The implementation and acceptance checks for the curated archive and StageShow simulations are in [Reliable dock navigation and curated releases](navigation-release-notes-plan.md).
+
+The release grid uses the StageShow renderer in `components/releases/stageshow` under its MIT license. The scenes are authored in `components/releases/ReleaseScenes.tsx`.

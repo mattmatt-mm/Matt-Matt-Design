@@ -1,0 +1,238 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
+  grid-template-areas: "hero hero" "pull notes" "pull dock" "pull book";
+  gap: calc(var(--spacing, 4px) * 3);
+  margin-block-start: calc(var(--spacing, 4px) * 6);
+}
+
+.tile { min-width: 0; }
+.tile[data-preview="dock-transition"] { grid-area: hero; }
+.tile[data-preview="pull-card-transition"] { grid-area: pull; }
+.tile[data-preview="notes"] { grid-area: notes; }
+.tile[data-preview="dynamic-dock"] { grid-area: dock; }
+.tile[data-preview="flipbook"] { grid-area: book; }
+
+.frame {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-surface-active);
+}
+
+.hero, .dockScene, .notesScene, .bookScene, .pullScene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero { background: #dbe8f5; }
+.hero > img { object-fit: cover; object-position: 50% 41%; }
+
+.hero::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: 48%;
+  background: linear-gradient(transparent, rgb(243 248 252 / 87%));
+  pointer-events: none;
+  content: "";
+}
+
+.storyTarget {
+  position: absolute;
+  z-index: 1;
+  inset: 12% 32% 34%;
+  border-radius: 16px;
+}
+
+.storyTarget[data-pressed] { background: rgb(34 68 104 / 8%); }
+
+.heroDock {
+  position: absolute;
+  z-index: 2;
+  inset: auto 0 16%;
+  display: flex;
+  justify-content: center;
+}
+
+.heroDock > div { flex-shrink: 0; }
+
+.dockScene, .notesScene, .bookScene { display: grid; place-items: center; }
+.dockScene { background: #ebeff5; }
+.dragDock { width: 248px; max-width: 90%; }
+.notesScene { background: #ede9df; }
+
+.note { width: 76%; transform: translateY(14px); }
+.note :global(.notes-band) { height: 38px; }
+.note :global(.notes-copy)[data-pressed] { scale: 0.94; }
+.noteRule { width: 30%; height: 2px; background: rgb(0 0 0 / 22%); }
+.noteBody { height: 72px; }
+
+.bookScene { background: #e4e9ec; }
+
+.book {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  width: 174px;
+  height: 99px;
+  perspective: 520px;
+  box-shadow: 0 4px 16px rgb(21 32 38 / 12%);
+}
+
+.bookLeft, .bookRight, .leafFront, .leafBack {
+  display: grid;
+  place-items: center;
+  background: #f6f1e6;
+}
+
+.leaf {
+  position: absolute;
+  inset: 0 0 0 50%;
+  transform: rotateY(var(--page-turn));
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.leafFront, .leafBack {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.leafFront { box-shadow: inset 8px 0 10px -8px rgb(39 32 19 / 38%); }
+.leafBack { transform: rotateY(180deg); }
+
+.spine {
+  position: absolute;
+  inset: 0 auto 0 calc(50% - 1px);
+  width: 2px;
+  background: rgb(71 61 43 / 18%);
+  pointer-events: none;
+}
+
+.circle, .ellipse {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #5275ad;
+}
+
+.ellipse { width: 52px; height: 32px; transform: rotate(-24deg); background: #ca694a; }
+.semicircle { width: 52px; height: 26px; border-radius: 0 0 26px 26px; background: #e4a841; }
+
+.bookPattern {
+  width: 48px;
+  height: 48px;
+  background-image: radial-gradient(circle, #4e7969 3px, transparent 3.5px);
+  background-size: 12px 12px;
+}
+
+.corner { position: absolute; inset: auto 0 0 auto; width: 20px; height: 20px; }
+.leafBack .corner { right: auto; left: 0; }
+
+.pullScene, .pullBackdrop { background: #ecebea; }
+
+.pullBackdrop { position: absolute; inset: 0; }
+
+.lanyard {
+  --splash-feather: 160px;
+  background: transparent;
+  opacity: 1;
+  transition: mask-position 600ms var(--ai-ease);
+}
+
+.lanyard[data-revealed="true"] { mask-position: 0 100%; }
+
+.strap {
+  position: absolute;
+  inset: 0 auto auto calc(50% - 17px);
+  width: 34px;
+  height: calc(119px + var(--pull-y));
+  background: repeating-linear-gradient(0deg, #28292b 0 1px, #242528 1px 4px);
+}
+
+.badge {
+  position: absolute;
+  top: 114px;
+  left: calc(50% - 85px);
+  width: 170px;
+  height: 229px;
+  background: #faf9f5;
+  transform: translate(var(--pull-x), var(--pull-y)) rotate(calc(-10deg + var(--pull) * 10deg));
+  box-shadow: inset 0 0 0 1px #d8d7d0;
+}
+
+.badge::before {
+  position: absolute;
+  inset: 12px auto auto calc(50% - 14px);
+  width: 28px;
+  height: 5px;
+  border-radius: 8px;
+  background: #b9bac0;
+  content: "";
+}
+
+.badgeMark {
+  position: absolute;
+  inset: 36px auto auto 18px;
+  width: 43px;
+  height: 5px;
+  border-radius: 8px;
+  background: #44464b;
+}
+
+.badgeSticker {
+  position: absolute;
+  inset: 36px 20px auto auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #e4bd70 0 27%, #fbefce 28% 48%, #ddc98d 49% 53%, #fbefce 54%);
+  box-shadow: -12px 17px 0 -2px #ccddeb;
+}
+
+.badgeRules {
+  position: absolute;
+  inset: auto 25px 32px 19px;
+  height: 76px;
+  background: repeating-linear-gradient(180deg, #cfd0d2 0 2px, transparent 2px 12px);
+}
+
+.revealPage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 12px;
+  background: #f8f8f5;
+}
+
+.revealPage > span {
+  --pull-row-ink: #dadee4;
+  width: 64%;
+  height: 46px;
+  border-block-end: 1px solid #cfd3d9;
+  background: linear-gradient(var(--pull-row-ink) 0 0) 0 50% / 48% 4px no-repeat;
+}
+
+@media (width >= 528px) {
+  .tile[data-preview="pull-card-transition"] .frame { container-type: size; }
+
+  .pullStage {
+    position: absolute;
+    inset: 0 auto auto 50%;
+    translate: -50% 0;
+    /* Cover the grid cell at the scene's aspect ratio. StageShow measures whole pixels. */
+    width: calc(max(100%, 100cqh * var(--pull-stage-ratio)) + 1px);
+  }
+}
+
+@media (width < 528px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "hero" "pull" "notes" "dock" "book";
+  }
+}
+

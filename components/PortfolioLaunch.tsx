@@ -1,10 +1,10 @@
 "use client";
 
-import { defaultStyle, duration, snapshot, WaveController, type CaptureFunction, type WaveOptions } from "distortion-waves";
+import { snapshot, WaveController, type CaptureFunction, type WaveOptions } from "distortion-waves";
 import { type CSSProperties, type MouseEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ExperienceBadge } from "@/components/ExperienceBadge";
 import { signatureImages } from "@/components/Signature";
-import { GRADIENT_FEATHER, gradientWave, wipeGradientSheet } from "@/components/effects/gradient-reveal";
+import { GRADIENT_FEATHER, gradientWave, pullCardWaveStyle, scrubForPull, wipeGradientSheet } from "@/components/effects/gradient-reveal";
 import type { LanyardPull } from "@/components/vendor/react-bits-lanyard/Lanyard";
 import type { BadgeSticker } from "@/lib/content";
 import { endPortfolioLaunch } from "@/lib/portfolio-launch";
@@ -20,28 +20,8 @@ const loadingSteps = signatureSources.length + 1;
 const percentages = Array.from({ length: loadingSteps + 1 }, (_, step) =>
   Math.max(1, Math.round(100 * step / loadingSteps)),
 );
-const waveStyle = {
-  ...defaultStyle("vertical"),
-  anticipation: 0.42,
-  travel: 1.8,
-  particleLife: 1.2,
-  gatherGlow: 0.85,
-  pull: 32,
-  rimStrength: 0,
-  rimFade: 0,
-  hairlineWidth: 0,
-  hairlineFade: 0,
-};
-// Hold the wave just before it opens onto Home, with room for a longer pull.
-const PULL_WAVE_LIMIT = (waveStyle.anticipation - 0.015) / duration(waveStyle);
-
 type GrabPoint = Parameters<LanyardPull>[2];
 type PullRelease = { point: GrabPoint; progress: number };
-
-function scrubForPull(progress: number) {
-  const heldExtent = 0.28;
-  return PULL_WAVE_LIMIT * (1 - (1 - heldExtent) * Math.exp(-2 * progress));
-}
 
 function moveWaveOrigin(controller: WaveController, button: HTMLButtonElement, point: GrabPoint) {
   const bounds = controller.root.getBoundingClientRect();
@@ -221,7 +201,7 @@ export function PortfolioLaunch({
     const options: WaveOptions = {
       ...gradientWave,
       source: enterButton.current,
-      waveStyle,
+      waveStyle: pullCardWaveStyle,
       capture: (request) => pictureSurface(request.slot === "revealed" ? document.body : before, request),
       onFinish: (revealed) => {
         if (revealed && entered.current) finish();

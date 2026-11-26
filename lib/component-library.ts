@@ -3,7 +3,7 @@ import { siteName, siteSocialImage } from "@/lib/site";
 
 export const componentsPath = "/components";
 export const componentLibraryTitle = "React Component Library";
-export const componentLibraryDescription = "Try the React components behind Matt Matt Design, with live demos, copyable prompts, and source code for selected components.";
+export const componentLibraryDescription = "Try the interactions used across the portfolio, from copying a motion recipe to pulling the badge that opens Home.";
 const phosphorDependency = "@phosphor-icons/react@^2.1.10";
 
 export function componentPageMetadata(title: string, description: string, path: string): Metadata {
@@ -29,7 +29,7 @@ export const componentCatalog = [
     title: "Notes",
     searchTitle: "Notes Card with Markdown Copy for React",
     group: "Editorial",
-    description: "A ruled React notes card with one-click Markdown copying.",
+    description: "Copy an interaction recipe as Markdown from the ruled Notes card used in the case studies.",
     instruction: "Copy the sample recipe from the note.",
     exampleHref: "/work/incipe-workspace",
     dependencies: "React, TypeScript, Phosphor Icons, and @squircle-js/react",
@@ -53,9 +53,9 @@ export const componentCatalog = [
     title: "Dynamic dock",
     searchTitle: "Dynamic Dock Navigation for React",
     group: "Navigation",
-    description: "A draggable React navigation dock that contracts into a back button.",
-    instruction: "Drag the active tab, or open a detail to try the back button.",
-    exampleHref: "/writing",
+    description: "Drag the active tab to switch sections, or open a detail to see the dock contract to Back and Home.",
+    instruction: "Drag the active tab, or open a detail to try Back and Home.",
+    exampleHref: "/writing/what-a-transition-is-for",
     dependencies: "React 19, TypeScript, Phosphor Icons, and CSS Modules",
     installDependencies: [phosphorDependency],
     usage: [
@@ -70,15 +70,27 @@ export const componentCatalog = [
       '',
       'export function Example() {',
       '  const [activeIndex, setActiveIndex] = useState(0);',
-      '  return <DynamicDock tabs={tabs} activeIndex={activeIndex} onSelect={setActiveIndex} detail={false} onBack={() => {}} />;',
+      '  const [detail, setDetail] = useState(false);',
+      '  function goHome() {',
+      '    setActiveIndex(0);',
+      '    setDetail(false);',
+      '  }',
+      '  return (',
+      '    <>',
+      '      <button onClick={() => setDetail(true)}>Open detail</button>',
+      '      <DynamicDock tabs={tabs} activeIndex={activeIndex} detail={detail}',
+      '        onSelect={setActiveIndex} onBack={() => setDetail(false)} onHome={goHome} />',
+      '    </>',
+      '  );',
       '}',
     ].join("\n"),
     props: [
       { name: "tabs", type: "readonly { label: string; icon: Icon }[]", defaultValue: "Required", description: "The ordered Phosphor icons and accessible tab names." },
       { name: "activeIndex", type: "number", defaultValue: "Required", description: "The zero-based index of the selected tab." },
-      { name: "detail", type: "boolean", defaultValue: "Required", description: "Shows the circular Back control when true." },
+      { name: "detail", type: "boolean", defaultValue: "Required", description: "Switches to the compact controls when true." },
       { name: "onSelect", type: "(index: number) => void", defaultValue: "Required", description: "Receives the tab index after a click or drag." },
       { name: "onBack", type: "() => void", defaultValue: "Required", description: "Handles activation of the Back control." },
+      { name: "onHome", type: "() => void", defaultValue: "undefined", description: "Adds the Home control to the compact dock and handles its activation." },
       { name: "className", type: "string", defaultValue: "undefined", description: "Adds a class to the outer dock for placement." },
       { name: "label", type: "string", defaultValue: '"Navigation"', description: "Names the navigation landmark." },
     ],
@@ -86,7 +98,7 @@ export const componentCatalog = [
       "Build a capsule navigation dock with four icon tabs and a shared active pill.",
       "- Set desktop tabs to 60 × 40 px with 4 px of dock padding. Slide the pill between columns in 250 ms.",
       "- Let the active tab follow a horizontal mouse or touch drag. Stretch the pill with resistance past either edge and snap to the release column.",
-      "- Contract the bar into a circular Back control over 300 ms on detail views. Add accessible names and keep clicks and keyboard navigation working with reduced motion.",
+      "- Contract the bar into a compact capsule with Back and an optional Home control over 300 ms on detail views. Add accessible names and support keyboard navigation and reduced motion.",
     ].join("\n\n"),
   },
   {
@@ -94,7 +106,7 @@ export const componentCatalog = [
     title: "Flipbook",
     searchTitle: "React Flipbook with Draggable Page Turns",
     group: "Motion and media",
-    description: "A React flipbook with draggable page turns, responsive spreads, and a fixed spine.",
+    description: "Turn the pages of the portfolio’s flipbook by dragging a corner or using the arrow keys. The spine stays in place as each page folds.",
     instruction: "Turn a page by dragging its loose bottom corner or using the arrows.",
     exampleHref: "/fun/chan-kee-pattern",
     dependencies: "React, TypeScript, Phosphor Icons, and CSS Modules",
@@ -131,7 +143,7 @@ export const componentCatalog = [
     title: "Pull card transition",
     searchTitle: "Pull Card Transition Demo for React",
     group: "Motion and media",
-    description: "A React motion demo where pulling a hanging card reveals the next view.",
+    description: "Pull the hanging badge to reveal Home through a color wave. A short pull lets the badge spring back.",
     instruction: "Pull the card down and release. A short pull springs back.",
     exampleHref: "/",
     usage: `"use client";

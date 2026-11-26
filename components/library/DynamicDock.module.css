@@ -19,7 +19,7 @@
 }
 
 .row[data-detail="true"] {
-  --dock-w: var(--dock-h);
+  --dock-w: calc(var(--dock-compact-count) * var(--dock-h));
 }
 
 @media (max-width: 480px) {
@@ -28,21 +28,21 @@
   }
 }
 
-.tab, .back {
+.tab, .compactControl {
   padding: 0;
   border: 0;
   background: transparent;
   cursor: pointer;
 }
 
-.tab:focus-visible, .back:focus-visible {
+.tab:focus-visible, .compactControl:focus-visible {
   border-radius: var(--dock-tab-radius);
   outline: 1px solid currentColor;
   outline-offset: -2px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .tab:active, .back:active {
+  .tab:active, .compactControl:active {
     transform: scale(0.98);
   }
 }
@@ -98,39 +98,42 @@
     transform 120ms ease-out;
 }
 
-/* The tabs and the recess give way inside the contracting bar while the
-   arrow resolves at its centre: a cross-fade inside a changing shape. */
+/* Cross-fade the controls inside the contracting bar. */
 .row[data-detail="true"] :is(.tab, .pill) {
   opacity: 0;
   filter: blur(var(--dock-detail-blur));
   pointer-events: none;
 }
 
-.back {
+.compact {
   position: absolute;
   z-index: 2;
   inset: 0;
   display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--color-fg, CanvasText);
-  text-decoration: none;
+  grid-template-columns: repeat(var(--dock-compact-count), minmax(0, 1fr));
   opacity: 0;
   filter: blur(var(--dock-detail-blur));
   pointer-events: none;
   transition:
     opacity var(--dock-contract-dur) var(--dock-ease),
-    filter var(--dock-contract-dur) var(--dock-ease),
-    transform 120ms ease-out;
+    filter var(--dock-contract-dur) var(--dock-ease);
 }
 
-.row[data-detail="true"] .back {
+.row[data-detail="true"] .compact {
   opacity: 1;
   filter: none;
   pointer-events: auto;
 }
 
-.back:hover {
+.compactControl {
+  display: grid;
+  place-items: center;
+  border-radius: var(--dock-radius);
+  color: var(--color-fg, CanvasText);
+  transition: transform 120ms ease-out;
+}
+
+.compactControl:hover {
   color: var(--color-muted, GrayText);
 }
 
@@ -222,7 +225,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row, .tab, .back, .pill, .pill::before, .pill::after {
+  .row, .tab, .compact, .compactControl, .pill, .pill::before, .pill::after {
     transition: none;
   }
 }
