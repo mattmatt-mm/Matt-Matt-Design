@@ -15,12 +15,13 @@ import {
   useEffect,
   useOptimistic,
   useRef,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import { CloudAvatar } from "@/components/ai/CloudAvatar";
 import type { BloubExpressionId } from "@/components/ai/vendor/bloub/bloub";
 import { useDockDrag } from "@/components/library/useDockDrag";
 import { track } from "@/lib/analytics";
+import { dockBackSteps, noDockBackSteps, subscribeToDockHistory } from "@/lib/dock-history";
 import { letsWorkPath, profilePath, profileTitle } from "@/lib/site";
 
 const tabs = [
@@ -50,9 +51,7 @@ export function AiDock({
   const pathname = usePathname();
   const tapSound = useRef<HTMLAudioElement | null>(null);
 
-  // Detail pages and Browse subpages contract the bar to Back.
-  // A guided walkthrough (doc/hr-mode-plan.md) wears the same contracted bar,
-  // but its circle is the way out of the walkthrough rather than a step back.
+  // Detail pages use compact navigation. A walkthrough has a single exit.
   const walkthrough = pathname.startsWith("/tour/");
   const browseSubpage = pathname.startsWith("/browse/");
   const letsWork = pathname === letsWorkPath;
@@ -73,36 +72,9 @@ export function AiDock({
               : [profilePath, `Back to ${profileTitle}`];
   const tabsHidden = aiOpen || detail;
 
-  // The arrow means "back to where I was": a gallery item returns to the
-  // gallery, a row to its list. That is only safe as a real history step when
-  // this detail page was pushed from a page of ours just now — otherwise (a
-  // shared link, or arriving here with the browser's own back/forward) the
-  // entry behind it may not be ours, and the arrow falls back to the list.
   const router = useRouter();
-  const previousPath = useRef<string | null>(null);
-  const poppedHistory = useRef(false);
-  const [canStepBack, setCanStepBack] = useState(false);
-
-  useEffect(() => {
-    const onPop = () => {
-      poppedHistory.current = true;
-    };
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, []);
-
-  useEffect(() => {
-    const previous = previousPath.current;
-    const previousWasContentDetail = previous !== null && CONTENT_DETAIL.test(previous);
-    // Moving between entries of one detail page (the scroll tour replacing
-    // the URL) keeps whatever the arrow already knew.
-    if (!detail) setCanStepBack(false);
-    else if (!previousWasContentDetail || browseSubpage || letsWork || componentDetail) {
-      setCanStepBack(previous !== null && previous !== pathname && !poppedHistory.current);
-    }
-    poppedHistory.current = false;
-    previousPath.current = pathname;
-  }, [pathname, detail, browseSubpage, letsWork, componentDetail]);
+  const backSteps = useSyncExternalStore(subscribeToDockHistory, dockBackSteps, noDockBackSteps);
+  const compactHidden = !detail || aiOpen;
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
@@ -156,6 +128,7 @@ export function AiDock({
         className="site-dock-row"
         data-ai-open={aiOpen ? "true" : "false"}
         data-detail={detail ? "true" : "false"}
+        data-walkthrough={walkthrough ? "true" : undefined}
         style={
           {
             "--dock-count": tabs.length,
@@ -177,32 +150,37 @@ export function AiDock({
             {/* One pill for the whole bar, not a surface per tab: it travels
                 between columns so the recess slides rather than jumps. */}
             <div ref={pillRef} className="site-dock-pill" aria-hidden="true" />
-            <Link
-              href={backHref}
-              aria-hidden={detail && !aiOpen ? undefined : "true"}
-              tabIndex={detail && !aiOpen ? undefined : -1}
-              className="site-dock-back press-shrink"
-              onClick={(event) => {
-                tap();
-                if (walkthrough) {
-                  track("tour_exited", { focus: pathname.slice(6) });
-                } else if (canStepBack) {
-                  event.preventDefault();
-                  router.back();
-                }
-              }}
-            >
-              <span className="site-dock-icon" aria-hidden="true">
-                {walkthrough ? (
-                  <X size={20} weight="regular" />
-                ) : (
-                  <ArrowLeft size={20} weight="regular" />
-                )}
-              </span>
-              <span className="sr-only">
-                {canStepBack && !walkthrough ? "Back" : backLabel}
-              </span>
-            </Link>
+            <div className="site-dock-compact" inert={compactHidden} aria-hidden={compactHidden || undefined}>
+              <Link
+                href={backHref}
+                replace={!walkthrough}
+                className="site-dock-compact-control press-shrink"
+                onClick={(event) => {
+                  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  tap();
+                  if (walkthrough) {
+                    track("tour_exited", { focus: pathname.slice(6) });
+                    return;
+                  }
+                  const steps = dockBackSteps();
+                  if (steps > 0) {
+                    event.preventDefault();
+                    window.history.go(-steps);
+                  }
+                }}
+              >
+                <span className="site-dock-icon" aria-hidden="true">
+                  {walkthrough ? <X size={20} /> : <ArrowLeft size={20} />}
+                </span>
+                <span className="sr-only">{backSteps > 0 && !walkthrough ? "Back" : backLabel}</span>
+              </Link>
+              {!walkthrough && (
+                <Link href="/" className="site-dock-compact-control press-shrink" onClick={tap}>
+                  <span className="site-dock-icon" aria-hidden="true"><House size={20} /></span>
+                  <span className="sr-only">Home</span>
+                </Link>
+              )}
+            </div>
             {tabs.map((tab) => {
               const active = isActive(tab.href);
               const Icon = tab.icon;

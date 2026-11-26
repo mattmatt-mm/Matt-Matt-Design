@@ -19,13 +19,18 @@ export function DockExample() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [detail, setDetail] = useState(false);
 
+  function goHome() {
+    setActiveIndex(0);
+    setDetail(false);
+  }
+
   return (
     <div className={styles.dockExample}>
       <p className="text-title" aria-live="polite">{detail ? `${tabs[activeIndex].label} detail` : tabs[activeIndex].label}</p>
       <button type="button" className={`${styles.action} press-shrink`} onClick={() => setDetail(true)} disabled={detail}>
         Open detail
       </button>
-      <DynamicDock tabs={tabs} activeIndex={activeIndex} detail={detail} onSelect={setActiveIndex} onBack={() => setDetail(false)} className={styles.demoDock} label="Demo dock" />
+      <DynamicDock tabs={tabs} activeIndex={activeIndex} detail={detail} onSelect={setActiveIndex} onBack={() => setDetail(false)} onHome={goHome} className={styles.demoDock} label="Demo dock" />
     </div>
   );
 }

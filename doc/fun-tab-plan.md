@@ -90,7 +90,7 @@ Titles, subtitles and dates are guesses except the poster's July 16.
 
 `components/ai/AiDock.tsx` (tab, detail route, "Back to Fun"),
 `components/PageSlide.tsx` (order), `components/effects/ThumbnailMorph.tsx`
-(lands on `[data-fun-hero]`), `app/fun/page.tsx`,
+(lands on `[data-fun-hero]`), `app/(site)/fun/page.tsx`,
 `app/fun/[slug]/page.tsx`, `components/fun/*`, `lib/content.ts` (`getFun`,
 palette), `lib/fun-categories.ts`, `keystatic.config.ts`, `app/sitemap.ts`,
 `app/globals.css`.

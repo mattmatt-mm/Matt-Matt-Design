@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import Markdoc, {
   type Config,
   type Node,
@@ -50,6 +51,15 @@ function slugify(text: string) {
 
 const config = {
   nodes: {
+    link: {
+      ...Markdoc.nodes.link,
+      transform(node: Node, cfg: Config) {
+        const attributes = node.transformAttributes(cfg);
+        const { href } = attributes;
+        const local = typeof href === "string" && /^\/(?![/\\])/.test(href);
+        return new Markdoc.Tag(local ? "PortfolioLink" : "a", attributes, node.transformChildren(cfg));
+      },
+    },
     // Headings carry an id so the section rail can link to them. A tour puts
     // several entries on one page, so the id leads with the entry's slug.
     heading: {
@@ -214,6 +224,7 @@ const components = {
   Notes,
   Point,
   Points,
+  PortfolioLink: Link,
   Recording,
   Stat,
   Stats,

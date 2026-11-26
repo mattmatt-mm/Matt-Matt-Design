@@ -218,9 +218,13 @@
     transition: width var(--ai-open-dur) var(--ai-ease);
   }
 
-  /* The detail bar contracts to a circle around the back control. */
   .site-dock-row[data-detail="true"] {
-    --dock-w: var(--dock-h);
+    --dock-compact-count: 2;
+    --dock-w: calc(var(--dock-compact-count) * var(--dock-h));
+  }
+
+  .site-dock-row[data-walkthrough="true"] {
+    --dock-compact-count: 1;
   }
 
   @media (max-width: 480px) {
@@ -394,43 +398,46 @@
       transform 120ms ease-out;
   }
 
-  /* The tabs and the recess give way inside the contracting bar while the
-     arrow resolves at its centre: a cross-fade inside a changing shape. */
+  /* Cross-fade the controls inside the contracting bar. */
   .site-dock-row[data-detail="true"] :is(.site-dock-tab, .site-dock-pill) {
     opacity: 0;
     filter: blur(var(--ai-blur));
     pointer-events: none;
   }
 
-  .site-dock-back {
+  .site-dock-compact {
     position: absolute;
     z-index: 2;
     inset: 0;
     display: grid;
-    place-items: center;
-    border-radius: 50%;
-    color: var(--color-fg);
-    text-decoration: none;
+    grid-template-columns: repeat(var(--dock-compact-count, 2), minmax(0, 1fr));
     opacity: 0;
     filter: blur(var(--ai-blur));
     pointer-events: none;
     transition:
       opacity var(--ai-open-dur) var(--ai-ease),
-      filter var(--ai-open-dur) var(--ai-ease),
-      transform 120ms ease-out;
+      filter var(--ai-open-dur) var(--ai-ease);
   }
 
-  .site-dock-row[data-detail="true"] .site-dock-back {
+  .site-dock-row[data-detail="true"] .site-dock-compact {
     opacity: 1;
     filter: none;
     pointer-events: auto;
   }
 
-  .site-dock-row[data-ai-open="true"] .site-dock-back {
+  .site-dock-row[data-ai-open="true"] .site-dock-compact {
     pointer-events: none;
   }
 
-  .site-dock-back:hover {
+  .site-dock-compact-control {
+    display: grid;
+    place-items: center;
+    border-radius: var(--dock-radius);
+    color: var(--color-fg);
+    text-decoration: none;
+  }
+
+  .site-dock-compact-control:hover {
     color: var(--color-muted);
   }
 
@@ -1607,7 +1614,7 @@
   @media (prefers-reduced-motion: reduce) {
     .ai-morph-surface,
     .site-dock-row,
-    .site-dock-back,
+    .site-dock-compact,
     .site-dock,
     .site-dock-pill,
     .site-dock-pill::before,
@@ -1631,6 +1638,7 @@
 @layer base {
   :root {
     color-scheme: light;
+    --wide-page-width: min(1200px, 100vw - 48px);
 
     @variant site-dark {
       color-scheme: dark;
@@ -3195,8 +3203,8 @@
   }
 
   .fun-wall {
-    width: min(1200px, 100vw - 48px);
-    margin-inline: calc((100% - min(1200px, 100vw - 48px)) / 2);
+    width: var(--wide-page-width);
+    margin-inline: calc((100% - var(--wide-page-width)) / 2);
   }
 
   /* A set's tile is a stack. At rest its next pictures peek above the

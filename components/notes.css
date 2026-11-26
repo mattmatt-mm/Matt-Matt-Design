@@ -60,11 +60,11 @@
   /* Icon swap, after transitions.dev: two icons stacked in one cell; the
      outgoing one shrinks to a quarter and blurs out while the incoming one
      grows in. data-state names which icon (data-icon a | b) is showing. */
-  .notes .icon-swap {
+  .icon-swap {
     display: inline-grid;
   }
 
-  .notes .icon-swap > [data-icon] {
+  .icon-swap > [data-icon] {
     grid-area: 1 / 1;
     width: 16px;
     height: 16px;
@@ -74,15 +74,15 @@
       transform 250ms ease-in-out;
   }
 
-  .notes .icon-swap[data-state="a"] > [data-icon="b"],
-  .notes .icon-swap[data-state="b"] > [data-icon="a"] {
+  .icon-swap[data-state="a"] > [data-icon="b"],
+  .icon-swap[data-state="b"] > [data-icon="a"] {
     opacity: 0;
     filter: blur(2px);
     transform: scale(0.25);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .notes .icon-swap > [data-icon] {
+    .icon-swap > [data-icon] {
       transition: none;
     }
   }

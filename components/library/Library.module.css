@@ -1,10 +1,10 @@
 .layout {
-  width: min(1120px, 100% - 48px);
+  width: var(--wide-page-width);
   margin-inline: auto;
   padding-block: 60px 128px;
 }
 
-.detail { max-width: 960px; }
+.detail { width: min(960px, 100% - 48px); }
 
 .header {
   display: flex;
@@ -213,6 +213,10 @@
 .labSource { padding: 0 var(--lab-inset) var(--lab-inset); }
 .sourceFiles { display: grid; gap: calc(var(--spacing) * 3); }
 .sourceFile { min-width: 0; padding: calc(var(--spacing) * 2); }
+.codeDisclosure {
+  --code-control-height: calc(var(--spacing) * 11);
+  --code-control-clearance: max(min(120px, 16dvh), calc(var(--ai-control-bottom) + var(--dock-h) + var(--spacing) * 3));
+}
 .codeSummary {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -245,6 +249,25 @@
 .codeSummary:hover .codeToggle { background: color-mix(in srgb, var(--color-surface) 94%, var(--color-fg)); }
 .hideCode,
 .codeDisclosure[open] :is(.codeTeaser, .viewCode) { display: none; }
+.codeDisclosure[open] .codeSummary {
+  position: sticky;
+  top: max(0px, calc(100dvh - var(--code-control-clearance) - var(--code-control-height)));
+  z-index: 1;
+  width: max-content;
+  height: var(--code-control-height);
+  margin-inline: auto;
+  margin-block-end: calc(-1 * var(--code-control-height));
+  border-radius: 999px;
+  transition: opacity var(--ai-close-dur) ease-out;
+}
+.codeDisclosure[open] .codeToggle {
+  margin-block-end: 0;
+  filter: var(--filter-elevated);
+}
+.codeDisclosure[data-code-past] .codeSummary:not(:focus-visible) {
+  opacity: 0;
+  pointer-events: none;
+}
 .codeDisclosure[open] .hideCode { display: inline; }
 .codeDisclosure[open] .codeToggle svg { transform: rotate(180deg); }
 .codeToolbar {
@@ -254,7 +277,11 @@
   gap: calc(var(--spacing) * 2);
   padding: 0 0 calc(var(--spacing) * 2) calc(var(--spacing) * 2);
 }
-.codeToolbar .action { flex: none; }
+.copyIcon {
+  flex: none;
+  width: calc(var(--spacing) * 11);
+  padding-inline: 0;
+}
 .fileTitle { overflow-wrap: anywhere; }
 .codeBlock {
   padding: calc(var(--spacing) * 4);
@@ -263,8 +290,8 @@
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
-@media (width < 560px) {
-  .codeToolbar .action { padding-inline: calc(var(--spacing) * 3); }
+@media (prefers-reduced-motion: reduce) {
+  .codeDisclosure[open] .codeSummary { transition: none; }
 }
 .spec {
   display: grid;

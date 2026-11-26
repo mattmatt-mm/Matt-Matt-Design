@@ -103,8 +103,9 @@ Verify changes against the export by measuring the live DOM (`getBoundingClientR
 - Row hover: title `opacity: .6`. No fills, shadows, or scale.
 - The dock links to **Home** `/` (the Gallery), **Writing** `/writing`, **Fun** `/fun`, and **Browse** `/browse` (magnifying glass). Browse puts **About Matt** `/browse/profile` and **Components** `/components` side by side below search, then keeps the remaining shortcut groups full width.
 - The dock is icon-only. Tabs are `60×40` on desktop inside `4px` padding. On phones the columns narrow to fit, and the tabs are `44px` tall. The circular AI trigger sits beside the capsule with an `8px` gap. The dock and AI overlay share the `--dock-*` tokens.
-- On detail pages, Settings, and the Experience page, the dock contracts to a circular Back control. Back uses history when the visitor came from within the site and falls back to the section list or Browse. On a walkthrough, the X exits to Home. The width morphs over `300ms`.
+- On detail pages and Browse subpages, the dock contracts to a capsule with Back and Home. Back uses the return target recorded on the browser history entry and falls back to the section landing page. On a walkthrough, a single X exits to Home. The width morphs over `300ms`.
 - The active tab is one pill that slides between columns in `250ms`, moved by `translateX` in multiples of its own width. The column index is resolved during render, so the server ships it in position — no measurement, no first-paint snap.
+- Home, Writing, Fun, and Browse share a `240ms` page entrance. Content moves in `8px` from the side of the dock you navigated toward and resolves from `2px` blur. Reduced motion skips the entrance animation.
 - Dock tabs use the shared `press-shrink` interaction and play `public/sounds/tap.wav` at volume `0.5`. Each icon has an `sr-only` label.
 - The intro links (LinkedIn, Github, email) and AI Thinking text share the same
   sunset gradient sweep from `components/effects/SunsetShimmer.tsx`. The intro
@@ -138,12 +139,13 @@ The page gutters switch at `688px` — `24px` inline padding below it, none abov
 ```
 app/
   layout.tsx                            fonts, metadata defaults
-  (site)/layout.tsx                     Header + Intro — shared, must not remount
+  (site)/layout.tsx                     shared column and transition for the four dock tabs
   (site)/page.tsx                       /          Home: the Gallery
   browse/profile/page.tsx              /browse/profile   Experience badge and comments
   (site)/writing/page.tsx               /writing
   lets-work/page.tsx                     /lets-work   services and contact
-  fun/page.tsx                          /fun       Fun: side work as masonry, ?c= filters, no intro
+  (site)/fun/page.tsx                    /fun       Fun: side work as masonry, ?c= filters, no intro
+  (site)/browse/page.tsx                 /browse    search and portfolio shortcuts
   fun/[slug]/page.tsx                   one Fun piece (detail page)
   work/[slug]/page.tsx                  experience detail
   tour/[focus]/page.tsx                 HR-mode walkthrough — the chain filtered by discipline, noindex

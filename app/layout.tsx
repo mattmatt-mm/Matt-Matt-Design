@@ -18,6 +18,7 @@ import { ThumbnailMorph } from "@/components/effects/ThumbnailMorph";
 import { ViewCursor } from "@/components/effects/ViewCursor";
 import { restoreAppearance, THEME_COLORS, THEME_COLOR_META_ID } from "@/lib/site-appearance";
 import { preparePortfolioLaunch } from "@/lib/portfolio-launch";
+import { prepareDockHistory } from "@/lib/dock-history";
 import "allo-font";
 import "./globals.css";
 
@@ -76,6 +77,7 @@ export default async function RootLayout({
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content={THEME_COLORS.dark} />
         <script dangerouslySetInnerHTML={{ __html: restoreAppearance }} />
         <script dangerouslySetInnerHTML={{ __html: preparePortfolioLaunch }} />
+        <script dangerouslySetInnerHTML={{ __html: prepareDockHistory }} />
       </head>
       {/* Browser extensions (Grammarly, password managers) add attributes to
           <body> before React hydrates, which otherwise reports a mismatch that
