@@ -1638,6 +1638,7 @@
 @layer base {
   :root {
     color-scheme: light;
+    --wide-page-width: min(1200px, 100vw - 48px);
 
     @variant site-dark {
       color-scheme: dark;
@@ -3202,8 +3203,8 @@
   }
 
   .fun-wall {
-    width: min(1200px, 100vw - 48px);
-    margin-inline: calc((100% - min(1200px, 100vw - 48px)) / 2);
+    width: var(--wide-page-width);
+    margin-inline: calc((100% - var(--wide-page-width)) / 2);
   }
 
   /* A set's tile is a stack. At rest its next pictures peek above the

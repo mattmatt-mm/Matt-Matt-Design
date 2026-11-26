@@ -7,6 +7,7 @@ import { Copy } from "@phosphor-icons/react/dist/ssr/Copy";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { SITE_SQUIRCLE_RADIUS, SiteSquircle } from "@/components/SiteSquircle";
 import type { SourceFile } from "@/lib/component-library";
+import "../notes.css";
 import styles from "./Library.module.css";
 
 const LAB_INSET = 8;
@@ -18,7 +19,12 @@ const LAB_VIEWS = [
   { label: "Code", code: true },
 ];
 
-export function CopyLibraryText({ text, label, context }: { text: string; label: string; context?: string }) {
+export function CopyLibraryText({ text, label, context, iconOnly = false }: {
+  text: string;
+  label: string;
+  context?: string;
+  iconOnly?: boolean;
+}) {
   const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
   const timer = useRef<number>(0);
   useEffect(() => () => window.clearTimeout(timer.current), []);
@@ -35,11 +41,22 @@ export function CopyLibraryText({ text, label, context }: { text: string; label:
   }
 
   const caption = status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : label;
+  const contextLabel = context ? ` for ${context}` : "";
 
   return (
-    <button type="button" className={`${styles.action} press-shrink`} onClick={copy}>
-      {status === "copied" ? <Check size={18} aria-hidden /> : <Copy size={18} aria-hidden />}
-      <span aria-live="polite">{caption}{context && <span className="sr-only"> for {context}</span>}</span>
+    <button
+      type="button"
+      className={`${styles.action} ${iconOnly ? styles.copyIcon : ""} press-shrink`}
+      aria-label={iconOnly ? label + contextLabel : undefined}
+      onClick={copy}
+    >
+      <span className="icon-swap" data-state={status === "copied" ? "b" : "a"} aria-hidden>
+        <Copy data-icon="a" />
+        <Check data-icon="b" />
+      </span>
+      <span className={iconOnly ? "sr-only" : undefined} aria-live="polite">
+        {iconOnly && status === "idle" ? "" : caption + contextLabel}
+      </span>
     </button>
   );
 }
@@ -50,7 +67,7 @@ export function CopyableCode({ title, text }: { title: string; text: string }) {
       <SiteSquircle className={styles.labSurface} aria-hidden />
       <div className={styles.codeToolbar}>
         <span>{title}</span>
-        <CopyLibraryText text={text} label="Copy" context={title} />
+        <CopyLibraryText text={text} label="Copy" context={title} iconOnly />
       </div>
       <SiteSquircle asChild cornerRadius={LAB_INNER_RADIUS}>
         <pre className={styles.codeBlock}><code>{text}</code></pre>
@@ -79,33 +96,74 @@ export function LibraryInstall({ canonicalOrigin, registryPath, dependencies }: 
 export function LibrarySource({ files }: { files: readonly SourceFile[] }) {
   return (
     <div className={styles.sourceFiles}>
-      {files.map(({ name, text }) => (
-        <div key={name} className={styles.sourceFile}>
-          <SiteSquircle className={styles.labSurface} aria-hidden />
-          <div className={styles.codeToolbar}>
-            <code className={styles.fileTitle}>{name}</code>
-            <CopyLibraryText text={text} label="Copy code" context={name} />
-          </div>
-          <details className={styles.codeDisclosure}>
-            <summary className={styles.codeSummary}>
-              <SiteSquircle asChild cornerRadius={LAB_INNER_RADIUS}>
-                <span className={styles.codeTeaser} aria-hidden="true">
-                  <code>{text.split("\n", 4).join("\n")}</code>
-                </span>
-              </SiteSquircle>
-              <span className={`${styles.action} ${styles.codeToggle}`}>
-                <span className={styles.viewCode}>View code</span>
-                <span className={styles.hideCode}>Hide code</span>
-                <span className="sr-only"> for {name}</span>
-                <CaretDown size={16} aria-hidden />
-              </span>
-            </summary>
-            <SiteSquircle asChild cornerRadius={LAB_INNER_RADIUS}>
-              <pre className={styles.codeBlock} aria-label={name}><code>{text}</code></pre>
-            </SiteSquircle>
-          </details>
-        </div>
-      ))}
+      {files.map((file) => <SourceCodeFile key={file.name} {...file} />)}
+    </div>
+  );
+}
+
+function SourceCodeFile({ name, text }: SourceFile) {
+  const fileRef = useRef<HTMLDivElement>(null);
+  const disclosureRef = useRef<HTMLDetailsElement>(null);
+  const summaryRef = useRef<HTMLElement>(null);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const disclosure = disclosureRef.current;
+    const summary = summaryRef.current;
+    if (!open || !disclosure || !summary) return;
+
+    const updateVisibility = () => {
+      const bounds = disclosure.getBoundingClientRect();
+      const pinnedTop = Number.parseFloat(getComputedStyle(summary).top);
+      // Keep short files collapsible when they fit above the pinned position.
+      const past = bounds.top < 0 && bounds.bottom <= pinnedTop + summary.offsetHeight;
+      disclosure.toggleAttribute("data-code-past", past);
+    };
+
+    updateVisibility();
+    window.addEventListener("scroll", updateVisibility, { passive: true });
+    window.addEventListener("resize", updateVisibility);
+    return () => {
+      window.removeEventListener("scroll", updateVisibility);
+      window.removeEventListener("resize", updateVisibility);
+      disclosure.removeAttribute("data-code-past");
+    };
+  }, [open]);
+
+  return (
+    <div ref={fileRef} className={styles.sourceFile}>
+      <SiteSquircle className={styles.labSurface} aria-hidden />
+      <div className={styles.codeToolbar}>
+        <code className={styles.fileTitle}>{name}</code>
+        <CopyLibraryText text={text} label="Copy code" context={name} iconOnly />
+      </div>
+      <details ref={disclosureRef} className={styles.codeDisclosure} onToggle={(event) => setOpen(event.currentTarget.open)}>
+        <summary
+          ref={summaryRef}
+          className={styles.codeSummary}
+          onClick={() => {
+            const file = fileRef.current;
+            if (disclosureRef.current?.open && file && file.getBoundingClientRect().top < 0) {
+              file.scrollIntoView({ block: "start", behavior: "instant" });
+            }
+          }}
+        >
+          <SiteSquircle asChild cornerRadius={LAB_INNER_RADIUS}>
+            <span className={styles.codeTeaser} aria-hidden="true">
+              <code>{text.split("\n", 4).join("\n")}</code>
+            </span>
+          </SiteSquircle>
+          <span className={`${styles.action} ${styles.codeToggle}`}>
+            <span className={styles.viewCode}>View code</span>
+            <span className={styles.hideCode}>Hide code</span>
+            <span className="sr-only"> for {name}</span>
+            <CaretDown size={16} aria-hidden />
+          </span>
+        </summary>
+        <SiteSquircle asChild cornerRadius={LAB_INNER_RADIUS}>
+          <pre className={styles.codeBlock} aria-label={name}><code>{text}</code></pre>
+        </SiteSquircle>
+      </details>
     </div>
   );
 }

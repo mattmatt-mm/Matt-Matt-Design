@@ -77,6 +77,9 @@ The interface should feel quiet, exact, warm, and intentional.
   inside the list with 4px corners.
 - Component pages keep the live demo visible. Each source file below it has
   a faded excerpt that opens with **View code** and expands to its full height.
+  **Hide code** floats above the dock while reading the expanded file, then
+  fades as the reader passes its end. Code copy buttons use the Notes
+  copy-to-check icon animation and announce the result to screen readers.
 
 ## 4. Elevation, not borders
 
@@ -545,6 +548,8 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   out to either side under the pointer — the one place a wall picture moves
   on hover, because Matt asked for it to reveal more of the set. See
   `doc/fun-tab-plan.md`.
+- The Components catalog shares the Fun wall’s 1200px maximum width and
+  24px minimum side gutters.
 - Video tiles in Fun play muted. Detail videos with a soundtrack start with
   sound when the browser allows autoplay. A **Play with sound** button starts
   playback when autoplay is blocked or reduced motion is enabled. Detail
