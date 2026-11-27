@@ -106,7 +106,7 @@ export default async function WritingPost({ params }: Props) {
                     />
                   </ThumbnailSquircle>
                 )}
-                <Prose node={post.body} lang={post.lang} idPrefix={post.slug} />
+                <Prose node={post.body} lang={post.lang} idPrefix={post.slug} roundImages />
               </div>
             </article>
           );

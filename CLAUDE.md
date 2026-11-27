@@ -82,7 +82,7 @@ The blur grows stronger and reaches higher when the AI opens.
 Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two documented exceptions are the 21/42px line boxes and the signature's 5px optical offset.
 
 ### Layout — all values measured from `raw/*.svg`, not guessed
-- Content column **640px** on every page, centered (`--container-column`). `24px` inline gutters below 688px (`--breakpoint-column`, the column plus both gutters), none above. Matt widened it from 500px on 2026-10-17.
+- The default content column is **640px**, centered (`--container-column`). `24px` inline gutters below 688px (`--breakpoint-column`, the column plus both gutters), none above. Matt widened it from 500px on 2026-10-17.
 - Page padding: top `60`, bottom `128`.
 - Home shows the name, role, and intro, followed by the overview and the two actions. Guided walkthrough opens the AI walkthrough, including its checklist, confirmation, and Distortion Waves transition onto the first matching case study. Let’s work opens `/lets-work`, with rates and contact links for meetings, website sprints, and monthly design work.
 - Tab bar: `12` top padding, label, `12` bottom padding, `1px` `--color-line` rule. Each tab has `4px` horizontal padding and tabs are `8px` apart; the active tab's `2px` fg marker spans the **padded** box and overlaps the hairline.
@@ -93,7 +93,7 @@ Scale: `4 8 12 16 24 32 48 60 64 96 128`. Nothing off-scale — the two document
 - Gallery item: image → `12` → caption → project name (two 21px lines) → `12` → next item. Pitch with a 5:3 image (640×384) is exactly 450px.
 - **A case study's thumbnail is the one thing that leaves the column.** Whatever sits before the first `##` heading — an image, a video or a Lottie sequence — opens the page at `min(840px, 100vw - 48px)`, centred on the 640px measure and inside the 24px gutters on a phone. Images, video and animation inside a section sit at the text's own 640px. Use symmetric negative margins, never a transform. To make an image the thumbnail, move it above the first heading.
 - **Profile comments** are the second thing that leaves the column: below the Experience badge (no heading), a full-bleed view pins to the screen while the cards travel through it. Without JavaScript or under reduced motion they stack in the column (`components/Comments.tsx`, `doc/profile-comments-plan.md`).
-- **The Fun wall** is the third: `/fun` breaks out to `min(1200px, 100vw - 48px)` centred on the measure, 3 masonry columns with 24px gaps from 688px and 2 with 16px below. Its title and filters stay in the column. Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
+- **Fun** uses the same wide layout as Components (`--wide-page-width`), with the title, filters, and masonry aligned at the left edge. The wall has 3 columns with 24px gaps from 688px and 2 with 16px below. Tiles are dealt left to right into the shortest column, both layouts are rendered and one is `display: none`, so first paint needs no measuring (`components/fun/FunWall.tsx`, `doc/fun-tab-plan.md`).
 - Signature: `101×32`, `mt-[5px]` — optical alignment to the name's x-height, exempt from the grid.
 
 Verify changes against the export by measuring the live DOM (`getBoundingClientRect`) rather than eyeballing screenshots; `raw/*.svg` glyph positions are exact.
@@ -139,7 +139,7 @@ The page gutters switch at `688px` — `24px` inline padding below it, none abov
 ```
 app/
   layout.tsx                            fonts, metadata defaults
-  (site)/layout.tsx                     shared column and transition for the four dock tabs
+  (site)/layout.tsx                     shared column for the four dock tabs
   (site)/page.tsx                       /          Home: the Gallery
   browse/profile/page.tsx              /browse/profile   Experience badge and comments
   (site)/writing/page.tsx               /writing
@@ -154,7 +154,7 @@ app/
   keystatic/[[...params]]/page.tsx      admin UI
   api/keystatic/[...params]/route.ts    admin API
   sitemap.ts · robots.ts · feed.xml/route.ts · llms.txt/route.ts
-components/  Comments Column Header Intro PageSlide RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats Engraving
+components/  Comments Column Header Intro RowList GalleryList Prose Signature ShimmerLink SiteSquircle Demo VideoPlayer DetailChain ChainGate SectionRail Stats Engraving
              ai/ — AIExperience (mounted in app/layout.tsx) wraps AiDock, the icon+label bottom navigation
              effects/ — includes ViewCursor, the dot + "View project" cursor (mounted in app/layout.tsx)
              fun/ — FunWall (masonry + filters), FunPiece (a piece's page), FunVideo (on-screen silent loop)
@@ -177,7 +177,7 @@ Rules:
 
 **experience** — `title` (slug), `profileTitle?` (display name on the Profile badge), `label`, `order`, `start?`, `end?`, `role?`, `team?`, `hasPage`, `externalUrl?`, `disciplines` (`branding` | `uiux` | `frontend`, multiselect — which tour checklist rows find it; never shown; values in `lib/disciplines.ts`), `summary`, `cover?`, `body` (markdoc). Timeline (`start – end`), Role, and Team appear below the opening thumbnail, or above the body when there is no thumbnail. Empty figures are left out.
 
-Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a `caption` (two to four words) and are filed under it as a folder tab, the recording at full width (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
+Case-study prose describes what an interaction feels like, never its measurements; exact numbers go in a Notes module written as a copyable AI prompt — read `doc/case-study-voice.md` before writing case-study copy. Case studies are built from named modules — `doc/case-study-modules.md` is the vocabulary Matt uses to ask for them (Stat row, Point row, Drawn point row, Step comparison, Framed recording, …); keep it current. Screen recordings take a short `caption` centred below the full-width video (Framed recording). The HKUST AIS thumbnail is the ISD dot hero (`{% isd-hero /%}`, `components/isd/`), a canvas animation; its data is packed into `public/isd/hero.json` by `scripts/pack-isd-hero.py` and tuned on the unlinked `/lab/isd-hero` review page. Case studies follow `doc/case-study-structure-plan.md`: a muted `####` eyebrow (Overview, Problem, …) directly above a `##` claim heading that says what the section concludes; the section rail lists the eyebrows. Body blocks: Stats, Points (`{% points %}{% point title text figure? /%}`, where `figure` is a token-drawn line drawing from `components/PointFigure.tsx`), Step comparison (`{% flows outcome note %}{% flow title steps="a | b" /%}`), Lottie sequence, Video.
 **gallery** — `caption` (slug), `projectName`, `image?`, `alt`, `date` → `content/gallery/*.yaml`
 **writing** — `title` (slug), `lang` (`en`|`zh`), `publishedAt`, `draft`, `summary?` (list preview and meta description in the post's own language, with the opening paragraph as fallback), `cover?` (Writing thumbnail and share image), `body` (markdoc). The Writing list shows newest posts first, with the date above each title.
 **comments** — `name` (slug, first name only), `role` ("CEO, Neardeal"), `comment` (multiline; line breaks kept), `rating` (half stars, optional), `logo?` (`public/images/comments/`), `initials` (shown when there is no logo), `order` → `content/comments/*.yaml`, shown on `/browse/profile`.

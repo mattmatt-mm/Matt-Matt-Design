@@ -9,11 +9,12 @@ import styles from "./SelectMenu.module.css";
 const MENU_RADIUS = 8;
 const MENU_INSET = 4;
 
-export function SelectMenu<Value extends string>({ label, options, value, onChange }: {
+export function SelectMenu<Value extends string>({ label, options, value, onChange, placement }: {
   label: string;
   options: readonly { value: Value; label: string; className?: string }[];
   value: Value;
   onChange: (value: Value) => void;
+  placement?: "above" | "below";
 }) {
   const listId = useId();
   const root = useRef<HTMLDivElement>(null);
@@ -74,7 +75,7 @@ export function SelectMenu<Value extends string>({ label, options, value, onChan
   }
 
   return (
-    <div ref={root} className={styles.root}>
+    <div ref={root} className={styles.root} data-placement={placement}>
       <button
         ref={trigger}
         type="button"

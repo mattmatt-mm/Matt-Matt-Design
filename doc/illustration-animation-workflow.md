@@ -248,10 +248,11 @@ If a panel stays too fine, ask for a stronger pressure contrast in a targeted
 regeneration. Numeric widths in prompts are creative guidance, not measured
 output guarantees. Do not simulate this by globally thickening every line.
 
-Current sources: `output/imagegen/hermes-problems/*-pen-v3.png`. Current runtime
-assets: `public/figures/hermes/*-pen-v3.webp`. The `pen-final-theme-preview.png`
-contact sheet shows the selected masks in both theme colours. These revisions
-were generated with the built-in image tool and retain transparent interiors.
+The October pressure revisions used `output/imagegen/hermes-problems/*-pen-v3.png`
+as sources and `public/figures/hermes/*-pen-v3.webp` on the page. The
+`pen-final-theme-preview.png` contact sheet shows those masks in both theme
+colours. The [editorial redraws](editorial-ink-illustrations.md#hermes-task-case-study-spots)
+now appear in the case study.
 
 
 ## Hermes moving illustrations

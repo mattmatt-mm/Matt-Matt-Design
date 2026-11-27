@@ -149,3 +149,75 @@ ImageGen edit prompt applied to the generated cover
 ```text
 Edit the supplied mist-blue illustration. Change the reader on the left into a different, older person with hair gathered into a small neat ink-black bun, a longer nose in profile, a lightly drawn collarless jacket, and no glasses. Keep the existing full-body stance, the palm touching the upright, and the reader's attention on the moving page. Preserve the stationary black frame, single angled page with two short content rules, horizontal motion marks, the equal breathing room at the outer edges, and the opaque mist-blue field. Draw fine facial and hand marks, bold ink shapes, and pressure-tapered black contours. Preserve the 1200:630 wide aspect and leave the surface free of text, soft shadows, and hatching.
 ```
+
+### Follow nature
+
+[Cream cover](../public/images/writing/follow-nature.png)
+
+```text
+Create an original editorial illustration for the Writing cover “Follow nature.” The essay is about becoming a reference over time by helping a good idea grow in its own direction. Show one gardener with a short black haircut in profile, looking closely at the curved branch of a young tree. The gardener gently guides the branch with an open hand, following the direction it already bends. Make the curve and the point where the hand meets it legible at thumbnail size. Keep the tree to one clear fork and a few bold leaves. Show the gardener from the waist up in simple dark work clothes and set the complete scene within broad empty margins.
+
+Use the illustrated brush scene in image 1 for the balance of bold ink and open space. Use only the character drawings in image 2 for the construction of the eyes and hands. Use the lavender cover in image 3 for optical scale, line weight, and landscape framing. Invent a new character and pose.
+
+Editorial pen-and-ink drawing with pressure-sensitive contours that swell and taper, two or three solid black silhouette shapes, finer facial and hand details, open interiors, restrained motion marks, and generous negative space.
+
+Use one opaque, perfectly flat cream background (#F1EDE0) and neutral black ink (#111111). Let the cream show through the open shapes. Compose for a 1200 × 630 landscape center crop with the full scene inside the central 75% of width and 65% of height. Use clear contours and simplified leaves. Keep the image free of lettering, logos, watermarks, gradients, grain, shadows, and hatching.
+```
+
+ImageGen edit prompt applied to the generated cover
+
+```text
+Edit the gardener in this cream editorial illustration into a distinct character. Give the gardener closely cropped black hair, no glasses, a longer nose in profile, and a small simple eye mark. Keep the leaning pose, open palm gently supporting the branch, dark short sleeves and apron, the tree and its leaves, scale, central framing, and pressure-sensitive black ink. Keep the background uniformly opaque cream (#F1EDE0), including the open spaces inside the drawing. Maintain the 1200:630 cover proportions and the clear, text-free silhouette.
+```
+
+## Hermes Task case study spots
+
+The Problem section uses three 960 × 600 transparent WebP masks. The built-in
+ImageGen tool used the brush illustration, character lineup, and lavender
+Writing cover as references in that order. The page tints each mask with the
+foreground colour in light and dark themes. The panels use the same framing
+and ink scale.
+
+| Point | Asset |
+| --- | --- |
+| People pile up | [Contact cards](../public/figures/hermes/people-editorial.webp) |
+| Promises slip | [Slipping reminder](../public/figures/hermes/promises-editorial.webp) |
+| Clear action > dashboard | [Phone message](../public/figures/hermes/apps-editorial.webp) |
+
+### ImageGen prompts
+
+Each prompt pairs its scene brief with the shared style and framing.
+
+**People pile up**
+
+```text
+Create an original in-article spot for “People pile up.” After a conference, more contacts arrive than one person can keep track of. Show a close-up of two expressive hands from opposite bottom corners trying to hold a fan of three oversized business cards, with a fourth card just slipping upward out of the fan. Give the cards sparse, varied marks: one or two contain a small profile silhouette and a single abstract stroke. Make the thumb bracing the stack and the loose card instantly readable. Use two solid black sleeve cuffs to anchor the drawing. Keep fingers and card corners clearly separated.
+```
+
+**Promises slip**
+
+```text
+Create an original in-article spot for “Promises slip.” A follow-up can be forgotten the moment a meeting ends. Show an expressive handshake across the upper half, with two angled sleeves entering from opposite sides, and one small square reminder note slipping downward out of the handshake. Put an empty hand-drawn checkbox on the note and one curved motion mark beside it. Keep the note visually separate from the hands as the only falling object. Use bold shapes in the sleeves and delicate, readable linework in the fingers. Give the handshake and falling note comparable visual weight.
+```
+
+**Apps wait to be opened**
+
+```text
+Create an original in-article spot for “Apps wait to be opened.” After a day of meetings, one message is easier than opening another app. Show one tired worker in simple side profile choosing to lift a small phone beside a closed laptop. A single oversized hand-drawn speech bubble with one tapered wobble in its contour and two tiny abstract ink strokes floats above the phone. The person and the speech bubble form one clear gesture. Use a bold black hair silhouette and one broad black sleeve shape, a few light facial marks, and keep the closed laptop low and unobtrusive. Give the message bubble the clearest outline in the composition.
+```
+
+**Shared style and framing**
+
+```text
+Use the brush illustration in image 1 for the balance of solid ink and open space. Use only the illustrated figures in image 2 for expressive anatomy. Use the lavender Writing cover in image 3 for pen weight and simplification. Draw a new composition with these stylistic qualities.
+
+Editorial pen-and-ink drawing with pressure-sensitive contours that swell and taper, two or three solid black silhouette shapes, finer facial and hand details, open interiors, restrained motion marks, and generous negative space.
+
+Draw with solid neutral black ink on genuine transparent alpha. The skin, paper, and other open shapes also have transparent interiors. Make one isolated landscape in-article spot for an 8:5 slot about 200 pixels wide, with the action centered and all marks inside roomy clear margins. Give the main gesture a bold, readable silhouette at thumbnail size. Use only ink and transparency. Keep the image free of lettering, logos, frames, shadows, gradients, grain, and dense hatching.
+```
+
+**Phone message lettering**
+
+```text
+Edit this transparent editorial illustration of a person sending a message. Add this exact handwritten text inside the speech bubble: “Meet John tmr”. Use two optically centered lines, “Meet John” above “tmr”, without the quotation marks or punctuation. Draw it in a relaxed, legible hand with simple letterforms and subtly tapered, medium-weight black pen strokes. The lettering should take up most of the space inside the oval while leaving a comfortable margin, so it still reads when the whole illustration is about 200 px wide. Preserve the person, phone, laptop, bubble outline, orientation, all existing ink strokes, and the 8:5 framing. Use the same black ink and genuine transparent alpha, including inside the bubble and between the letters.
+```

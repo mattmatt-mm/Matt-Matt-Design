@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function FunPage() {
   const pieces = await getFun();
   return (
-    <main>
+    <main className="fun-layout">
       <h1 className="mb-6 text-title">Fun</h1>
       <FunWall pieces={pieces} />
     </main>

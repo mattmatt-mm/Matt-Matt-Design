@@ -8,7 +8,7 @@ import { Play } from "@phosphor-icons/react/dist/ssr/Play";
 import { SpeakerSimpleHigh } from "@phosphor-icons/react/dist/ssr/SpeakerSimpleHigh";
 import { SpeakerSimpleX } from "@phosphor-icons/react/dist/ssr/SpeakerSimpleX";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SiteSquircle } from "@/components/SiteSquircle";
+import { SiteSquircle, THUMBNAIL_SQUIRCLE_RADIUS } from "@/components/SiteSquircle";
 
 /** How long the bar stays up after the pointer stops moving over a playing video. */
 const IDLE_MS = 2000;
@@ -49,8 +49,7 @@ export function VideoPlayer({
   height?: number;
   hasSound?: boolean;
   autoPlayWithSound?: boolean;
-  /** Square corners, for a player whose shape comes from a frame around it
-   *  (components/Recording.tsx). */
+  /** Square corners when the surrounding media frame supplies the shape. */
   flush?: boolean;
 }) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -212,8 +211,7 @@ export function VideoPlayer({
     >
       <SiteSquircle
         className="video-player-frame"
-        cornerRadius={flush ? 0 : undefined}
-        data-flush={flush || undefined}
+        cornerRadius={flush ? 0 : THUMBNAIL_SQUIRCLE_RADIUS}
       >
         <video
           ref={videoRef}

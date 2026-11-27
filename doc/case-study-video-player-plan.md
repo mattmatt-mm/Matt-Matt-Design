@@ -19,10 +19,10 @@ desktop and phone demos, with a control bar modelled on the Video.js v10 player
 - Left out from the reference: volume, because the recordings are silent;
   settings and cast, because there is nothing behind them; the "sponsored by"
   credit, which is Video.js's own.
-- The frame and the bar are `SiteSquircle`s at 16px, not a capsule — capsules
-  belong to the navigation dock. The bar sits 12px inside the frame, is 48px
-  tall, and holds 44px buttons. It stays white on translucent black in both
-  themes, because it sits on the video, not on the page.
+- The frame uses a 4px `SiteSquircle` and the bar uses a 16px `SiteSquircle`.
+  The bar sits 12px inside the frame, is 48px tall, and holds 44px buttons.
+  Its white controls sit on translucent black in both themes.
+- A caption sits centred below the video in regular muted text.
 - The video plays muted and looped while at least half of it is on screen and
   pauses when it leaves. Once the reader pauses, scrolling never restarts it.
   No autoplay under reduced motion.

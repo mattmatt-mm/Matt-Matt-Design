@@ -71,8 +71,7 @@ const DEMOS: Record<DemoKind, { hint: string; variants: [Variant, Variant] }> = 
     hint: "Switch pages in either box — both follow, so the two stay comparable.",
     variants: [
       { label: "Don't", className: "", note: "cut" },
-      // The real thing: the same class this site's own pages arrive with.
-      { label: "Do", className: "page-slide", note: "240ms, from the tapped side" },
+      { label: "Do", className: "demo-page-slide", note: "240ms, from the tapped side" },
     ],
   },
   squash: {
@@ -205,8 +204,7 @@ function SwapPane({
   view: View;
   onSelect: (page: number) => void;
 }) {
-  // Nothing animates until the reader has actually changed page, so the first
-  // paint is a cut in both boxes — the same rule the site itself follows.
+  // Start the comparison when the reader switches pages.
   const animated = variant.className !== "" && view.direction !== null;
 
   return (

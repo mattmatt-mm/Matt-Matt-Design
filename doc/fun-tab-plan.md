@@ -17,7 +17,7 @@ the piece, and the dock contracts to the back arrow as on a case study.
 | Question | Answer |
 |---|---|
 | Route and dock spot | `/fun`, third: Home · Writing · Fun · Profile. The bar becomes `4 × 60 + 8 = 248px`; nothing new, `--dock-count` already drives it. |
-| Width | The grid **leaves the column**: `min(1200px, 100vw − 48px)` (840px at first; Matt widened it on 2026-10-23), centred on the 640px measure. Name, role and filter row stay in the column. |
+| Width | The title, filter row, and grid share `--wide-page-width` with Components. Their left edges align within the centred layout at `min(1200px, 100vw − 48px)`. |
 | Intro | None on `/fun` (Matt, 2026-10-23): the page sits outside `(site)` with the Header alone, at the same position as on every tab. |
 | Columns | 3 from 688px, 2 below it. Gap 24px (16px below 688px). |
 | Filters | Text links for **All · 3D · Motion · Illustration**. Active in fg, others muted, 16/21, 16px apart, wrapping on a phone. The grid filters on the client using links such as `/fun?c=3d` and the server ships All. The row appears when at least two categories have pieces. |
@@ -89,7 +89,7 @@ Titles, subtitles and dates are guesses except the poster's July 16.
 ## Touch points
 
 `components/ai/AiDock.tsx` (tab, detail route, "Back to Fun"),
-`components/PageSlide.tsx` (order), `components/effects/ThumbnailMorph.tsx`
+`components/effects/ThumbnailMorph.tsx`
 (lands on `[data-fun-hero]`), `app/(site)/fun/page.tsx`,
 `app/fun/[slug]/page.tsx`, `components/fun/*`, `lib/content.ts` (`getFun`,
 palette), `lib/fun-categories.ts`, `keystatic.config.ts`, `app/sitemap.ts`,

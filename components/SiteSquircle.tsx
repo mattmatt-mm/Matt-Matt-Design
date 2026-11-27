@@ -5,7 +5,7 @@ import type { ComponentPropsWithoutRef, ReactElement } from "react";
 
 export const SITE_SQUIRCLE_SMOOTHING = 0.6;
 export const SITE_SQUIRCLE_RADIUS = 16;
-const THUMBNAIL_SQUIRCLE_RADIUS = 4;
+export const THUMBNAIL_SQUIRCLE_RADIUS = 4;
 
 type SiteSquircleProps = SquircleProps & ComponentPropsWithoutRef<"div">;
 

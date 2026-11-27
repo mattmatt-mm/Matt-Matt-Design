@@ -2,6 +2,7 @@ import { config, fields, collection, singleton } from "@keystatic/core";
 import { block, repeating, wrapper } from "@keystatic/core/content-components";
 import { DISCIPLINES } from "./lib/disciplines";
 import { FUN_CATEGORIES } from "./lib/fun-categories";
+import { INTERFACE_DEMOS } from "./lib/interface-demos";
 import { letsWorkDefaults } from "./lib/lets-work";
 
 /**
@@ -438,7 +439,7 @@ export default config({
                 caption: fields.text({
                   label: "Caption",
                   description:
-                    "A few words shown above the recording, e.g. \"Live board preview\". With a caption the recording is filed under a caption tab; without one it is the bare player.",
+                    "A few words centred below the recording, e.g. \"Live board preview\".",
                 }),
               },
             }),
@@ -702,6 +703,35 @@ export default config({
           components: {
             ...statsComponents,
             ...explainerComponents,
+            "media-figure": wrapper({
+              label: "Media figure",
+              description: "Group an image or image pair with its caption.",
+              schema: {},
+            }),
+            "media-caption": wrapper({
+              label: "Media caption",
+              description: "Text or a source credit centred below the media.",
+              schema: {},
+            }),
+            "image-pair": wrapper({
+              label: "Image pair",
+              description: "Place two images side by side in the article.",
+              schema: {},
+            }),
+            "ui-demo": block({
+              label: "Interface comparison",
+              description: "Two working controls that demonstrate an animation principle.",
+              schema: {
+                kind: fields.select({
+                  label: "Principle",
+                  options: Object.entries(INTERFACE_DEMOS).map(([value, { name }]) => ({
+                    label: name,
+                    value,
+                  })),
+                  defaultValue: "squash",
+                }),
+              },
+            }),
             // Registered here too, so the editor keeps the tag intact on save
             // rather than treating it as unknown markup.
             demo: block({

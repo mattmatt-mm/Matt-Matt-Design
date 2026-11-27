@@ -156,13 +156,13 @@ function Wall({
       {pieces.length === 0 ? (
         <p className="text-muted">Nothing here yet.</p>
       ) : (
-        <div className="fun-wall">
+        <>
           {/* Both layouts are sent and one is display: none at each width, so
               the first paint is already right. A hidden copy is out of the
               accessibility tree and its lazy images never load. */}
           <div className="hidden gap-6 column:flex">{columns(three)}</div>
           <div className="flex gap-4 column:hidden">{columns(two)}</div>
-        </div>
+        </>
       )}
     </>
   );

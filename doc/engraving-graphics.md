@@ -116,9 +116,9 @@ breathe.**
 | File | Subject | Source | Where |
 |---|---|---|---|
 | `public/figures/404-tree-growth.gif` | Growing oak sapling, then a falling leaf | Original AI-generated sprite animation selected by Matt, 2026-10-19 | 404 page (`app/not-found.tsx`), 96–128px; final PNG frame under reduced motion |
-| `public/figures/hermes/people-motion.webp` | Hands overwhelmed by contact cards | Original AI-generated ink illustration, 2026-10-19 | Hermes Task, People pile up |
-| `public/figures/hermes/promises-motion.webp` | Follow-up note slipping below a handshake | Original AI-generated ink illustration, 2026-10-19 | Hermes Task, Promises slip |
-| `public/figures/hermes/apps-motion.webp` | Tired person, closed laptop, phone message | Original AI-generated ink illustration, 2026-10-19 | Hermes Task, Apps wait to be opened |
+| `public/figures/hermes/people-editorial.webp` | Hands overwhelmed by contact cards | [Editorial redraw](editorial-ink-illustrations.md#hermes-task-case-study-spots) | Hermes Task, People pile up |
+| `public/figures/hermes/promises-editorial.webp` | Follow-up note slipping below a handshake | [Editorial redraw](editorial-ink-illustrations.md#hermes-task-case-study-spots) | Hermes Task, Promises slip |
+| `public/figures/hermes/apps-editorial.webp` | A phone message beside a closed laptop | [Editorial redraw](editorial-ink-illustrations.md#hermes-task-case-study-spots) | Hermes Task, Apps wait to be opened |
 
 The earlier `fiddler-crab.svg` remains available in the engraving registry but
 is no longer used on the 404 page. The tree is a raster animation exception:
@@ -130,19 +130,11 @@ in `components/Engraving.tsx`; the animated tree uses its own SVG filter wrapper
 
 ## Hermes Task illustrations
 
-On 2026-10-19 Matt requested new graphics based on the meaning of the three
-problem sections, explicitly excluding the earlier graphics as references.
-The page now uses original generated ink illustrations rather than the older
-geometric or programmatic engraved figures. Those older variants remain
-available but are not the current Hermes Problem artwork.
-
-These three animated explainers are allowed together in a point row; the one-ornament
-limit below applies to decorative ornaments. Their source PNGs are in
-`output/imagegen/hermes-problems/`; lossless runtime WebPs are in
-`public/figures/hermes/`. They play once on entry through `components/InkSprite.tsx`, with CSS frame
-stepping over a 3 × 3 sheet. The SVG filter removes pale source fills and
-paints `--color-fg`. Reduced motion shows the final frame. The approved
-static `*-pen-v3` files remain available.
+The [editorial redraws](editorial-ink-illustrations.md#hermes-task-case-study-spots)
+are three still explainers in a point row. They use transparent WebP masks
+painted in `--color-fg`. Earlier versions included static studies and
+3 × 3 sprite sheets. Their illustration and sprite process is documented in
+[`illustration-animation-workflow.md`](illustration-animation-workflow.md).
 
 ## What it is for, and what it is not for
 

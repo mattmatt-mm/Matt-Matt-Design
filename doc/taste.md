@@ -38,11 +38,17 @@ The interface should feel quiet, exact, warm, and intentional.
 - Use continuous squircle corners for every non-circular rounded element on the
   site. The shared implementation is `SiteSquircle`, backed by
   [`@squircle-js/react`](https://github.com/bring-shrubbery/squircle-js).
-- Use the 4px `ThumbnailSquircle` for Writing covers and Do and Don’t frames,
-  Home gallery images, and Fun tiles including stacked previews. It uses
-  the shared 0.6 smoothing.
+- Use the 4px thumbnail squircle for Writing covers, inline images, Do and
+  Don’t frames, case-study videos, Home gallery images, and Fun tiles
+  including stacked previews. It uses the shared 0.6 smoothing.
 - Inside the Writing demos, animated squares and Press buttons use 2px
   squircles.
+- Writing comparisons of working UI share one quiet 16px squircle frame.
+  Put the variant labels below the controls and give open panels room
+  within the frame. Use real layout where the interaction needs context,
+  such as file rows behind a menu that shows elevation.
+  Reserve space for the expanded state so the article stays in place
+  when a demo opens or closes.
 - Use a 16px corner-radius input and `0.6` corner smoothing for elevated control
   surfaces. This includes the AI composer, response, contact form, and
   `Send to Matt` button.
@@ -109,6 +115,8 @@ not decorative borders and should remain where required.
 ## 5. Buttons and navigation
 
 - Buttons use direct, short labels.
+- A text field and an adjacent button in the same row share a visible height.
+  Align the top and bottom edges of their surfaces.
 - **Contact me** on Let’s work reuses the filled Home action pill.
 - A magnifying glass opens Browse from the dock. **About Matt** and
   **Components** sit side by side below search. The full-width groups below
@@ -130,6 +138,7 @@ not decorative borders and should remain where required.
   surface with a uniform 4px padding, making the bar 48px tall and
   `count × 60 + 8` wide. No visible caption sits under the icon; the label lives
   in an `sr-only` span so the tab still announces itself.
+- Switching dock tabs shows the destination as soon as it is ready.
 - On detail pages and Browse subpages, the dock contracts into a capsule with
   Back on the left and Home on the right, beside the AI trigger. Each control
   is one dock height wide and uses a 20px icon. Back returns to the visitor’s
@@ -365,9 +374,9 @@ not decorative borders and should remain where required.
   to sharp, 8px up, 300ms) as the line fades on the same clock. The URL and
   tab title change only once the gate is passed. Friction is visual, never
   wheel or touch hijacking. See `doc/case-study-continuous-scroll-plan.md`.
-- Case-study video follows the Video.js v10 player: a translucent black,
-  blurred control strip floating 12px inside the frame. Frame and strip are
-  16px squircles. The progress bar and playback controls start hidden and
+- Case-study video uses a 4px squircle frame and a 16px squircle control strip.
+  The translucent black strip floats 12px inside the frame. The progress bar
+  and playback controls start hidden and
   appear when the reader taps, clicks, or uses the keyboard to activate the
   video surface. It plays muted while on screen and pauses when it leaves.
   Scrolling respects a reader's pause. See
@@ -383,11 +392,9 @@ not decorative borders and should remain where required.
   card (Apple Notes style, yellow band, ruled paper, Copy prompt) written as
   a prompt to rebuild it. Matt asked for this on 2026-10-18; see
   `doc/case-study-voice.md`.
-- Screen recordings are filed like a folder: a two-to-four-word caption on a
-  line-grey tab at the top-left, an inside curve joining it to the recording,
-  and the recording at full width. Matt drew this on 2026-10-18 after a
-  padded backdrop frame made the video too small: never pad a recording
-  inside a frame.
+- Centre captions below Writing images and case-study videos in regular
+  muted text. Keep recording captions to a few words and let the video fill
+  the full width of its frame.
 - Thinking and the intro's LinkedIn, Github, and email links share the same
   sunset shimmer palette. State-specific pause timing may differ.
 - Let a response surface grow with its full text. Do not crop it, cap its visual
@@ -435,7 +442,7 @@ not decorative borders and should remain where required.
 Matt asked for these on 2026-10-17, taking the structure of a reference
 portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
 
-- The column is 640px on every page. Hierarchy still comes from colour and
+- The default reading column is 640px wide. Hierarchy still comes from colour and
   position; the wider measure is not permission for larger type.
 - A case study opens with a thumbnail up to 840px (whatever sits before the
   first section heading); imagery inside a section stays at the text's 640px.
@@ -477,13 +484,10 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   that waver, taper and swell, left open (never filled) and shaded only by
   hatching on the shadow side (`components/EngravedFigures.tsx`), still in
   fg, muted and the hairline colour. Both are covered in `doc/engraving-graphics.md`.
-- Hermes Task’s three Problem graphics now use original generated ink scenes
-  based on the accompanying copy (Matt, 2026-10-19): overflowing contact
-  cards, a slipping follow-up note, and a tired person with a closed laptop
-  and a phone message. Do not use the previous graphics as visual references.
-  These explainers now animate once on viewport entry, then hold their final
-  frame. Reduced motion keeps that final frame. An SVG ink filter follows the
-  theme foreground colour; all three may appear in the Drawn point row.
+- Hermes Task’s Problem row uses three still drawings in the newer editorial
+  ink style. The scenes show overflowing contact cards, a slipping follow-up
+  note, and a phone message beside a closed laptop. Each transparent mask
+  follows the theme foreground colour. See `doc/editorial-ink-illustrations.md`.
 
 - Illustration interiors must remain transparent in both themes (Matt,
   2026-10-19). Use foreground-coloured ink; do not keep white or cream fills
@@ -535,10 +539,11 @@ portfolio but not its look. See `doc/reading-width-rail-cursor-stats-plan.md`.
   `doc/profile-comments-plan.md`.
 
 - Fun (Matt, 2026-10-23, after a hackathon portfolio grid and a file
-  inspector view of one poster): side work as a masonry wall that breaks out
-  to 1200px, three columns, two on a phone, under the name alone — no
-  intro. All, 3D, Motion, and Illustration are text links in the column, active
-  in fg. Incipe Board pre-order appears under both 3D and Motion.
+  inspector view of one poster): side work as a masonry wall up to 1200px wide,
+  with three columns on desktop and two on a phone. The title and filters align with
+  the gallery's left edge, as on Components. All, 3D, Motion, and Illustration
+  are text links with the active filter in fg. Incipe Board pre-order appears
+  under both 3D and Motion.
   A tile morphs into its piece's page, like a gallery card into a case
   study, and the dock contracts to Back and Home. That page is the work
   centred with its colours as 32px dots on the left and its details on the

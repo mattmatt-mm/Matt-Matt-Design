@@ -98,9 +98,18 @@ function Message() {
 }
 
 const ILLUSTRATIONS = {
-  "contacts-illustrated": "/figures/hermes/people-pen-v3.webp",
-  "follow-up-illustrated": "/figures/hermes/promises-pen-v3.webp",
-  "app-fatigue-illustrated": "/figures/hermes/apps-pen-v3.webp",
+  "contacts-illustrated": {
+    src: "/figures/hermes/people-editorial.webp",
+    alt: "Two hands try to hold an overflowing stack of contact cards.",
+  },
+  "follow-up-illustrated": {
+    src: "/figures/hermes/promises-editorial.webp",
+    alt: "A reminder with an empty checkbox slips below a handshake.",
+  },
+  "app-fatigue-illustrated": {
+    src: "/figures/hermes/apps-editorial.webp",
+    alt: "Beside a closed laptop, a person sends a message that reads “Meet John tmr”.",
+  },
 } as const;
 
 type IllustratedFigureName = keyof typeof ILLUSTRATIONS;
@@ -120,11 +129,13 @@ export function PointFigure({ name }: { name: PointFigureName }) {
   ) {
     // These assets contain only ink alpha: no light fills or raster background.
     // Paint with the theme foreground rather than inverting the source image.
-    const mask = `url("${ILLUSTRATIONS[name]}")`;
+    const { src, alt } = ILLUSTRATIONS[name];
+    const mask = `url("${src}")`;
     return (
       <span
         className="point-illustration"
-        aria-hidden="true"
+        role="img"
+        aria-label={alt}
         style={{ maskImage: mask, WebkitMaskImage: mask }}
       />
     );

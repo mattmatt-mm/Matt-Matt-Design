@@ -1,0 +1,593 @@
+.demo {
+  --demo-ease: cubic-bezier(0.2, 0, 0, 1);
+  --demo-short: 180ms;
+  --demo-line: color-mix(in srgb, var(--color-line) 72%, var(--color-surface));
+  --demo-control: color-mix(in srgb, var(--color-fg) 5%, var(--color-surface));
+  --demo-row-size: max(calc(8 * var(--spacing)), calc(1lh + var(--spacing)));
+  container: writing-demo / inline-size;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(6 * var(--spacing));
+  padding: calc(6 * var(--spacing));
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 1px var(--demo-line);
+}
+
+.pane {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: calc(4 * var(--spacing));
+}
+
+.caption {
+  color: var(--color-muted-readable);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sample {
+  min-block-size: calc(26 * var(--spacing));
+  display: grid;
+  align-items: center;
+}
+
+.stage [hidden] {
+  display: none;
+}
+
+.demo:is([data-demo="squash"], [data-demo="appeal"], [data-demo="secondary"], [data-demo="duration"]) .stage {
+  grid-template-columns: repeat(2, minmax(0, calc(36 * var(--spacing))));
+  justify-content: center;
+}
+
+.demo:is([data-demo="squash"], [data-demo="appeal"], [data-demo="secondary"]) .pane {
+  gap: calc(2 * var(--spacing));
+}
+
+.demo:is([data-demo="staging"], [data-demo="stagger"], [data-demo="depth"], [data-demo="poses"], [data-demo="easing"]) .sample {
+  align-items: stretch;
+}
+
+.demo[data-demo="depth"] .sample {
+  min-block-size: calc(42 * var(--spacing));
+}
+
+@container writing-demo (max-width: 31rem) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(4 * var(--spacing));
+    padding: calc(4 * var(--spacing));
+  }
+
+  .demo:is([data-demo="anticipation"], [data-demo="staging"], [data-demo="poses"], [data-demo="stagger"], [data-demo="easing"], [data-demo="arc"], [data-demo="shake"], [data-demo="depth"]) .pane + .pane {
+    border-top: 1px solid var(--demo-line);
+    padding-top: calc(4 * var(--spacing));
+  }
+}
+
+.workspace {
+  display: grid;
+  align-content: start;
+  gap: calc(2 * var(--spacing));
+  padding: calc(3 * var(--spacing));
+  background: color-mix(in srgb, var(--color-bg) 75%, var(--demo-control));
+  box-shadow: inset 0 0 0 1px var(--demo-line);
+}
+
+.centered,
+.codeForm {
+  display: grid;
+  justify-items: start;
+  gap: calc(2 * var(--spacing));
+}
+
+.centered {
+  justify-items: center;
+}
+
+.button {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  place-items: center;
+  min-height: calc(11 * var(--spacing));
+  padding-inline: calc(3 * var(--spacing));
+  color: var(--color-fg);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.button:focus-visible,
+.codeInput:focus-visible,
+.filterLabel:has(input:focus-visible) {
+  outline: 1px solid currentColor;
+  outline-offset: 2px;
+}
+
+.buttonSurface {
+  position: absolute;
+  inset: var(--spacing) 0;
+  z-index: -1;
+  background: var(--demo-control);
+}
+
+@media (hover: hover) {
+  .button:not([data-primary]):hover .buttonSurface {
+    background: var(--color-surface-active);
+  }
+}
+
+.button[data-primary] {
+  color: var(--color-bg);
+}
+
+.button[data-primary]:focus-visible {
+  outline-color: var(--color-fg);
+}
+
+.button[data-primary] .buttonSurface {
+  background: var(--color-fg);
+}
+
+.buttonLabel,
+.document,
+.toolbar > strong,
+.timingResult {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(2 * var(--spacing));
+}
+
+.buttonLabel svg,
+.documentIcon,
+.row svg,
+.timingResult svg {
+  flex: none;
+}
+
+.documentIcon {
+  display: grid;
+  place-items: center;
+  width: calc(10 * var(--spacing));
+  height: calc(10 * var(--spacing));
+  background: var(--demo-control);
+}
+
+.document,
+.documentName {
+  min-width: 0;
+}
+
+.documentName {
+  display: grid;
+  gap: var(--spacing);
+  overflow-wrap: anywhere;
+}
+
+.documentName small,
+.row small {
+  color: var(--color-muted-readable);
+  font-size: 0.875em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.status {
+  min-block-size: calc(6 * var(--spacing));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted-readable);
+}
+
+.toolbar,
+.archiveAction,
+.codeControls,
+.codeForm {
+  width: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(2 * var(--spacing));
+}
+
+.toolbar > strong {
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--spacing));
+  min-block-size: var(--demo-row-size);
+}
+
+.rowName {
+  flex: 1;
+  min-width: 0;
+}
+
+.row[data-unread] .rowName {
+  font-weight: 600;
+}
+
+.row + .row {
+  border-top: 1px solid var(--color-line);
+}
+
+.inboxRows,
+.notifications {
+  width: 100%;
+}
+
+.dot {
+  flex: none;
+  width: calc(1.5 * var(--spacing));
+  height: calc(1.5 * var(--spacing));
+  border-radius: 50%;
+}
+
+.dot[data-unread="true"] {
+  background: var(--color-fg);
+}
+
+.filters {
+  width: 100%;
+}
+
+/* Keep room for expanded content so the article below stays in place. */
+:is(.filters, .details, .notifications)[inert] {
+  visibility: hidden;
+}
+
+.filterLabel {
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--spacing));
+  min-block-size: calc(11 * var(--spacing));
+  padding-inline: calc(3 * var(--spacing));
+  background: var(--demo-control);
+  cursor: pointer;
+}
+
+.filterLabel input {
+  accent-color: var(--color-fg);
+}
+
+.details {
+  width: 100%;
+  padding-top: var(--spacing);
+  border-top: 1px solid var(--demo-line);
+}
+
+.details div {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(2 * var(--spacing));
+  padding-block: var(--spacing);
+}
+
+.details dt {
+  color: var(--color-muted-readable);
+}
+
+.archiveAction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: calc(2 * var(--spacing));
+}
+
+.archiveAction .button {
+  grid-column: 1;
+  grid-row: 1;
+  inline-size: calc(26 * var(--spacing));
+}
+
+.archiveAction[data-state="restored"] .button {
+  inline-size: calc(30 * var(--spacing));
+  cursor: default;
+}
+
+.archiveHint {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  text-align: end;
+  pointer-events: none;
+  visibility: var(--archive-hint-visibility, hidden);
+}
+
+.pane[data-alternate="true"] .archiveAction:has(.archiveHint:not([hidden])) {
+  &:has(.button:focus-visible, .button:hover) {
+    --archive-hint-visibility: visible;
+  }
+
+  @media (hover: none) {
+    --archive-hint-visibility: visible;
+  }
+}
+
+.timingControl,
+.sortMenu {
+  --select-menu-outline: inset 0 0 0 1px var(--demo-line);
+  --select-menu-trigger: var(--demo-control);
+  --select-menu-duration: var(--demo-short);
+  --select-menu-ease: var(--demo-ease);
+}
+
+.timingControl {
+  --select-menu-trigger: var(--color-surface);
+  --select-menu-trigger-outline: inset 0 0 0 1px var(--demo-line);
+  display: grid;
+  align-content: end;
+  min-block-size: calc(46 * var(--spacing));
+  gap: calc(3 * var(--spacing));
+}
+
+.demo[data-demo="duration"] .pane[data-alternate="false"] .timingControl {
+  --select-menu-duration: 400ms;
+}
+
+.timingResult {
+  padding-inline: calc(2 * var(--spacing));
+  color: var(--color-muted-readable);
+}
+
+.timingResult svg {
+  opacity: 0.75;
+}
+
+.sortMenu {
+  width: min(100%, calc(28 * var(--spacing)));
+}
+
+.demo[data-demo="depth"] .pane[data-alternate="false"] .sortMenu {
+  --select-menu-elevation: none;
+}
+
+.codeControls {
+  display: flex;
+  align-items: stretch;
+  gap: calc(2 * var(--spacing));
+}
+
+.codeControls .buttonSurface {
+  inset-block: 0;
+}
+
+.codeInput {
+  min-width: 0;
+  flex: 1;
+  padding-inline: calc(3 * var(--spacing));
+  background: var(--demo-control);
+}
+
+.codeInput:focus-visible {
+  outline-offset: -2px;
+}
+
+.codeInput::placeholder {
+  color: var(--color-muted-readable);
+}
+
+.codeInput[aria-invalid="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-muted-readable);
+}
+
+.error[data-invalid="true"] {
+  color: var(--color-error);
+}
+
+.pin {
+  --pin-size: calc(5 * var(--spacing));
+  --pin-inset: calc(3 * var(--spacing));
+  --pin-flight: 280ms;
+  --pin-ease: cubic-bezier(0.28, 0.12, 0.32, 1);
+  position: relative;
+  display: grid;
+  min-height: calc(28 * var(--spacing));
+  align-content: space-between;
+  align-items: start;
+}
+
+.pinDestination {
+  display: flex;
+  align-items: center;
+  gap: calc(2 * var(--spacing));
+  justify-self: end;
+  min-height: calc(11 * var(--spacing));
+  color: var(--color-muted-readable);
+}
+
+.pinDestinationIcon {
+  display: grid;
+}
+
+.pinDestinationIcon > * {
+  grid-area: 1 / 1;
+}
+
+.pinDestinationIcon[data-pinned="true"] .pinOutline {
+  opacity: 0;
+}
+
+.landedPin {
+  color: var(--color-fg);
+}
+
+.pinButton {
+  justify-self: start;
+}
+
+.pinButton[aria-pressed="true"] svg {
+  color: var(--color-muted-readable);
+}
+
+.flyingPin {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.confirmation {
+  display: flex;
+  color: var(--color-fg);
+}
+
+.demo[data-demo="secondary"] .status {
+  position: relative;
+  min-height: calc(8 * var(--spacing));
+}
+
+.demo[data-demo="secondary"] .confirmation {
+  position: absolute;
+  inset-inline-start: calc(100% + 2 * var(--spacing));
+}
+
+@keyframes enter {
+  from { opacity: 0; transform: translateY(calc(-2 * var(--spacing))); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes settle {
+  0% { opacity: 0; transform: translateY(calc(-2 * var(--spacing))); }
+  55% { opacity: 1; transform: translateY(var(--spacing)); }
+  77% { transform: translateY(calc(-0.5 * var(--spacing))); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes inboxMove {
+  50% { transform: translateY(var(--spacing)); }
+}
+
+@keyframes flyX {
+  from { inset-inline-start: var(--pin-inset); }
+  to { inset-inline-start: calc(100% - var(--pin-size)); }
+}
+
+@keyframes flyY {
+  from { inset-block-start: calc(100% - var(--pin-inset) - var(--pin-size)); }
+  to { inset-block-start: var(--pin-inset); }
+}
+
+@keyframes hidePin {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes showPin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pinLand {
+  0%, 100% { transform: none; }
+  20% { transform: scale(1.12, 0.9); }
+  55% { transform: translateY(calc(-1 * var(--spacing))) scale(0.98, 1.04); }
+  80% { transform: scale(1.025, 0.98); }
+}
+
+@keyframes shake {
+  20%, 60% { transform: translateX(calc(-1 * var(--spacing))); }
+  40%, 80% { transform: translateX(var(--spacing)); }
+}
+
+@keyframes heart {
+  45% { transform: scale(1.24); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .archiveAction .button {
+    transition: inline-size var(--demo-short) var(--demo-ease);
+  }
+
+  .squash,
+  .pane[data-alternate="true"] .squash .buttonSurface {
+    transition: transform 160ms var(--demo-ease);
+  }
+
+  .pane[data-alternate="false"] .squash:active {
+    transform: scale(1.04, 0.86);
+    transition-duration: 0ms;
+  }
+
+  .pane[data-alternate="true"] .squash:active .buttonSurface {
+    transform: scale(1.02, 0.96);
+    transition-duration: 0ms;
+  }
+
+  .filters:not([inert]),
+  .details:not([inert]),
+  .notifications:not([inert]) .row,
+  .confirmation {
+    animation: enter var(--demo-short) var(--demo-ease) both;
+  }
+
+  .demo[data-demo="staging"] .pane[data-alternate="false"] [data-open="true"] .inboxRows {
+    animation: inboxMove var(--demo-short) var(--demo-ease);
+  }
+
+  .demo[data-demo="poses"] .pane[data-alternate="false"] .details:not([inert]) {
+    animation-name: settle;
+    animation-duration: 260ms;
+  }
+
+  .demo:is([data-demo="poses"], [data-demo="easing"]) .details:not([inert]) {
+    animation-duration: 260ms;
+  }
+
+  .demo[data-demo="easing"] .pane[data-alternate="false"] .details:not([inert]) {
+    animation-timing-function: linear;
+  }
+
+  .pane[data-alternate="true"] .notifications .row:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .pane[data-alternate="true"] .notifications .row:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .flyingPin {
+    animation:
+      flyX var(--pin-flight) var(--pin-ease) both,
+      flyY var(--pin-flight) var(--pin-rise, var(--pin-ease)) both,
+      hidePin var(--pin-flight) steps(1, jump-end) both;
+  }
+
+  .pane[data-alternate="true"] .flyingPin {
+    /* Let the horizontal motion lead before the pin turns upward. */
+    --pin-rise: cubic-bezier(0.52, 0, 0.49, 0.9);
+  }
+
+  .pinDestinationIcon[data-pinned="true"] .pinOutline {
+    animation: hidePin var(--pin-flight) steps(1, jump-end) both;
+  }
+
+  .landedPin {
+    animation:
+      showPin var(--pin-flight) steps(1, jump-end) both,
+      pinLand 200ms ease-out var(--pin-flight) both;
+  }
+
+  .pane[data-alternate="true"] .confirmation {
+    animation-duration: 120ms;
+    animation-delay: 160ms;
+  }
+
+  .pane[data-alternate="true"] .error[data-invalid="true"] {
+    animation: shake 200ms ease-out;
+  }
+
+  .pane[data-alternate="true"] .button[aria-pressed="true"] .heart {
+    animation: heart 200ms var(--demo-ease);
+  }
+}

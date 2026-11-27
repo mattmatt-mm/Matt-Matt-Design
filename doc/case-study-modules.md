@@ -24,8 +24,8 @@ added, renamed or retired.
 | **Drawn point row** | A Point row with a small line drawing above each point | Hermes Task, Problem ("People pile up…") |
 | **Step comparison** | Two step lists side by side, meeting in one outcome | Incipe's six steps against two |
 | **Notes** | An Apple Notes card holding an interaction's exact numbers, with a Copy prompt button | Incipe's "Panel recipe" |
-| **Framed recording** | A full-width screen recording filed under a short caption tab | Every recording in Incipe and Hermes |
-| **Bare recording** | The player alone, no frame or caption | — (any video without a caption) |
+| **Framed recording** | A full-width screen recording with a short centred caption below | Every recording in Incipe and Hermes |
+| **Bare recording** | The standalone video player | Any video without a caption |
 | **Image** | A still at text width; zooms on click | Neardeal's leaf logo |
 | **ISD dot hero** | The animated ISD dot story, ending on the ISD logo | HKUST AIS opening |
 | **Lottie sequence** | Lottie clips played in order, looped | Kedonia's opening |
@@ -129,16 +129,10 @@ Give every pressable element one shared press state:
 ```
 
 ### Framed recording
-A screen recording filed like a folder: a very short caption (two to four
-words, e.g. "Live board preview") on a grey tab at its top-left, an inside
-curve where the tab meets the recording, and the recording itself at full
-width beneath (`components/Recording.tsx`). Added 2026-10-18; on the same day
-Matt replaced the first version, a padded backdrop frame, because the padding
-made the video too small.
-
-- The tab is the page's line grey with the text colour on it, so the caption
-  is legible in light and dark without any measuring.
-- `title` is the longer description for screen readers; it is not shown.
+A full-width recording in a 4px squircle frame (`components/Recording.tsx`).
+The short caption, such as “Live board preview”, sits centred below the
+video in regular muted text. Use `title` for the longer description for
+screen readers.
 
 ```
 {% video src="/videos/experience/incipe-workspace/agent.mp4"

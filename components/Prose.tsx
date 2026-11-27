@@ -6,14 +6,17 @@ import Markdoc, {
   type RenderableTreeNode,
   type RenderableTreeNodes,
 } from "@markdoc/markdoc";
+import { INTERFACE_DEMOS } from "@/lib/interface-demos";
 import { Demo } from "./Demo";
 import { Flow, Flows } from "./Flows";
+import { InterfaceDemo } from "./InterfaceDemo";
 import { IsdDotHero } from "./isd/IsdDotHero";
 import { LottieSequence } from "./LottieSequence";
 import { Notes } from "./Notes";
 import { POINT_FIGURES } from "./PointFigure";
 import { Point, Points } from "./Points";
 import { Recording } from "./Recording";
+import { ThumbnailSquircle } from "./SiteSquircle";
 import { Stat, Stats } from "./Stats";
 import { VideoPlayer } from "./VideoPlayer";
 
@@ -84,13 +87,15 @@ const config = {
       },
       // Every image opens larger (components/effects/ImageZoom.tsx), so it is
       // a button to the keyboard and reads "Zoom" under the view cursor.
-      transform(node: Node, cfg: object) {
+      transform(node: Node, cfg: Config) {
         const attributes = node.transformAttributes(cfg);
         const alt = typeof attributes.alt === "string" ? attributes.alt : "";
-        return new Markdoc.Tag(
+        const rounded = cfg.variables?.roundImages === true;
+        const image = new Markdoc.Tag(
           "img",
           {
             ...attributes,
+            className: rounded ? "focus-visible:-outline-offset-4" : undefined,
             loading: "lazy",
             decoding: "async",
             "data-zoom": "",
@@ -101,10 +106,28 @@ const config = {
           },
           [],
         );
+        return rounded ? new Markdoc.Tag("ThumbnailSquircle", {}, [image]) : image;
       },
     },
   },
   tags: {
+    "media-figure": {
+      render: "figure",
+    },
+    "media-caption": {
+      transform(node: Node, cfg: Config) {
+        return new Markdoc.Tag("figcaption", { className: "media-caption" }, node.transformChildren(cfg));
+      },
+    },
+    "image-pair": {
+      transform(node: Node, cfg: Config) {
+        return new Markdoc.Tag(
+          "div",
+          { className: "grid grid-cols-2 items-start gap-3 sm:gap-4" },
+          node.transformChildren(cfg),
+        );
+      },
+    },
     lottie: {
       render: "LottieSequence",
       attributes: { title: { type: String } },
@@ -169,8 +192,7 @@ const config = {
         label: { type: String },
       },
     },
-    // A recording with a caption is filed under a caption tab (Recording);
-    // without one it is the bare player.
+    // A recording groups the player and its caption in a figure.
     video: {
       render: "VideoPlayer",
       selfClosing: true,
@@ -212,6 +234,13 @@ const config = {
         },
       },
     },
+    "ui-demo": {
+      render: "InterfaceDemo",
+      selfClosing: true,
+      attributes: {
+        kind: { type: String, required: true, matches: Object.keys(INTERFACE_DEMOS) },
+      },
+    },
   },
 };
 
@@ -219,6 +248,7 @@ const components = {
   Demo,
   Flow,
   Flows,
+  InterfaceDemo,
   IsdDotHero,
   LottieSequence,
   Notes,
@@ -228,6 +258,7 @@ const components = {
   Recording,
   Stat,
   Stats,
+  ThumbnailSquircle,
   VideoPlayer,
 };
 
@@ -245,7 +276,7 @@ function thumbnailEnd(content: RenderableTreeNode[]) {
     if (!Markdoc.Tag.isTag(item)) return false;
     return thumbnailTags.has(item.name) ||
       (item.name === "p" && item.children.some(
-        (child) => Markdoc.Tag.isTag(child) && child.name === "img",
+        (child) => Markdoc.Tag.isTag(child) && (child.name === "img" || child.name === "ThumbnailSquircle"),
       ));
   }) + 1;
 }
@@ -255,6 +286,7 @@ export function Prose({
   lang,
   idPrefix,
   afterThumbnail,
+  roundImages,
 }: {
   node: Node;
   lang?: "en" | "zh";
@@ -262,10 +294,11 @@ export function Prose({
   idPrefix?: string;
   /** Optional content between the opening media and the body. */
   afterThumbnail?: React.ReactNode;
+  roundImages?: boolean;
 }) {
   const transformed = Markdoc.transform(node, {
     ...config,
-    variables: { idPrefix },
+    variables: { idPrefix, roundImages },
   });
 
   // Markdoc wraps the document in its own <article>. The page already provides

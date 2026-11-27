@@ -19,7 +19,10 @@
   padding-inline: calc(var(--spacing) * 3);
 }
 
-.triggerSurface { background: var(--color-surface-active); }
+.triggerSurface {
+  background: var(--select-menu-trigger, var(--color-surface-active));
+  box-shadow: var(--select-menu-trigger-outline, none);
+}
 .trigger:hover .triggerSurface { background: color-mix(in srgb, var(--color-fg) 9%, var(--color-bg)); }
 .trigger[aria-expanded="true"] svg { transform: rotate(180deg); }
 .triggerSurface svg, .option svg { flex: none; }
@@ -35,9 +38,34 @@
   z-index: 2;
   inset-block-start: calc(100% + var(--spacing));
   inset-inline: 0;
-  filter: var(--filter-elevated);
+  filter: var(--select-menu-elevation, var(--filter-elevated));
 }
 
-.list { background: var(--color-surface); }
+.root[data-placement="above"] .popup {
+  inset-block-start: auto;
+  inset-block-end: calc(100% + var(--spacing));
+  transform-origin: bottom center;
+}
+
+.list {
+  background: var(--color-surface);
+  box-shadow: var(--select-menu-outline, none);
+}
+
+@keyframes popup-enter {
+  from { opacity: 0; transform: translateY(var(--select-menu-offset, -4px)) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-placement] .popup {
+    animation: popup-enter var(--select-menu-duration, 0ms) var(--select-menu-ease, ease-out) both;
+  }
+
+  .root[data-placement="above"] .popup {
+    --select-menu-offset: var(--spacing);
+  }
+}
+
 .option { cursor: pointer; overflow-wrap: anywhere; }
 .option[data-active="true"] { background: var(--color-surface-active); }
